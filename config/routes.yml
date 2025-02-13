@@ -1,0 +1,25 @@
+routes:
+  - route: /
+
+  - route: /profile
+  - route: /profile/{profile}
+
+  - route: /settings
+    auth: true
+  - route: /settings/profile
+    auth: true
+  - route: /settings/profile
+    method: POST
+    auth: true
+
+  - route: /minecraft
+  - route: /dirk
+
+  - route: /snt/linus
+  - route: /snt/linux
+  - route: /snt/musset
+
+  - route: /auth/login
+  - route: /auth/logout
+  - route: /auth/{provider}
+  - route: /auth/{provider}/callback

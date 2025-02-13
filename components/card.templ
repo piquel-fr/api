@@ -1,0 +1,21 @@
+package components
+
+import "strconv"
+
+templ Card(class_name string, use_default_classes bool, pop_out bool, hover_scale int) {
+    <div class={make_class(class_name, use_default_classes, pop_out, hover_scale)}>
+        { children... }
+    </div>
+}
+
+func make_class(class_name string, use_default_classes bool, pop_out bool, hover_scale int) string {
+    class := class_name
+    if pop_out {
+         class += " transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-" + strconv.Itoa(hover_scale)
+    }
+    if use_default_classes {
+        class += " rounded-md bg-gray-100 shadow"
+    }
+
+    return class
+}

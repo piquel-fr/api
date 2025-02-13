@@ -1,0 +1,20 @@
+# Go files
+go.sum
+
+# Compiled binaries
+*.exe
+bin/
+
+# Environment
+.env
+.env.*
+
+# Templ files
+*_templ.txt
+*_templ.go*
+
+# TailwindCSS files
+public/styles.css
+
+# sqlc files
+database/generated

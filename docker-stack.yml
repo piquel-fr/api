@@ -1,0 +1,32 @@
+services:
+  piquel-api:
+    image: ghcr.io/piquelorganization/api.piquel.fr:${GIT_COMMIT_HASH:-latest}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.piquel-api.loadbalancer.server.port=${PORT}"
+      - "traefik.http.routers.piquel-api.rule=Host(`${PUBLIC_HOST}`)"
+      - "traefik.http.routers.piquel-api.entrypoints=piquel-https"
+      - "traefik.http.routers.piquel-api.tls.certresolver=piquel-resolver"
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST}
+      HOST: ${HOST}
+      PORT: ${PORT}
+      SSL: "true"
+      DB_URL: ${DB_URL}
+      # Auth
+      AUTH_GITHUB_CLIENT_ID: ${AUTH_GITHUB_CLIENT_ID}
+      AUTH_GITHUB_CLIENT_SECRET: ${AUTH_GITHUB_CLIENT_SECRET}
+      AUTH_GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_CLIENT_ID}
+      AUTH_GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_CLIENT_SECRET}
+      # Cookies
+      COOKIES_AUTH_SECRET: ${COOKIES_AUTH_SECRET}
+    deploy:
+      update_config:
+        order: start-first
+    networks:
+      - piquel-network
+
+networks:
+  piquel-network:
+    external: true
+    name: piquel-network

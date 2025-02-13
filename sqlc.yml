@@ -1,0 +1,15 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "./database/schema.sql"
+    queries: "./database/queries"
+    gen:
+      go:
+        package: "repository"
+        out: "database/generated"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "timestamptz"
+            go_type:
+              import: "time"
+              type: "Time"

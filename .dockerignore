@@ -1,0 +1,37 @@
+# Go files
+go.sum
+
+# Compiled binaries
+*.exe
+bin/
+
+# Dockerfiles
+Dockerfile
+.dockerignore
+docker-stack.yml
+
+# Git files
+.gitignore
+.gitattributes
+.git/
+.github/
+
+# Other config and files
+.air.toml
+Makefile
+README.md
+LICENSE
+
+# Environment
+.env
+.env.*
+
+# Templ files
+*_templ.txt
+*_templ.go*
+
+# sqlc files
+database/generated/
+
+# TailwindCSS files
+public/styles.css

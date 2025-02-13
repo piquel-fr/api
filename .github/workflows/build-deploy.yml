@@ -1,0 +1,70 @@
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/piquelorganization/api.piquel.fr:latest
+            ghcr.io/piquelorganization/api.piquel.fr:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+    
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-push
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create env file
+        run: |
+          echo "PUBLIC_HOST=${{ vars.PUBLIC_HOST }}" >> ./.env
+          echo "HOST=${{ vars.HOST }}" >> ./.env
+          echo "PORT=${{ vars.PORT }}" >> ./.env
+
+          echo "DB_URL=${{ secrets.DB_URL }}" >> ./.env
+
+          echo "AUTH_GITHUB_CLIENT_ID=${{ secrets.AUTH_GITHUB_CLIENT_ID }}" >> ./.env
+          echo "AUTH_GITHUB_CLIENT_SECRET=${{ secrets.AUTH_GITHUB_CLIENT_SECRET }}" >> ./.env
+          echo "AUTH_GOOGLE_CLIENT_ID=${{ secrets.AUTH_GOOGLE_CLIENT_ID }}" >> ./.env
+          echo "AUTH_GOOGLE_CLIENT_SECRET=${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}" >> ./.env
+          echo "COOKIES_AUTH_SECRET=${{ secrets.COOKIES_AUTH_SECRET }}" >> ./.env
+
+          echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./.env
+
+      - name: Docker Stack Deploy
+        uses: cssnr/stack-deploy-action@v1
+        with:
+          name: piquel-api
+          file: docker-stack.yml
+          host: piquel.fr
+          user: deploy
+          ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          env_file: ./.env

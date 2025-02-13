@@ -1,0 +1,13 @@
+package components
+
+templ NavButton(class_name string, pop_out bool, use_card_classes bool, destination string, new_tab bool) {
+    <a href={templ.SafeURL(destination)}
+       if new_tab {
+           target="_blank"
+       }
+    >
+        @Card(class_name, use_card_classes, pop_out, 110) {
+            { children... }
+        }
+    </a>
+}
