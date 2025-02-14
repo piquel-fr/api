@@ -3,6 +3,7 @@ routes:
 
   - route: /profile
   - route: /profile/{profile}
+    slug: true
 
   - route: /settings
     auth: true
@@ -22,4 +23,6 @@ routes:
   - route: /auth/login
   - route: /auth/logout
   - route: /auth/{provider}
+    slug: true
   - route: /auth/{provider}/callback
+    slug: true

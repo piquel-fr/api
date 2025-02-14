@@ -1,10 +1,12 @@
 package router
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/PiquelChips/piquel.fr/services/auth"
+	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/gorilla/mux"
 )
 
@@ -32,9 +34,9 @@ func (router *Router) Start(address string) {
     log.Fatalf("%s", http.ListenAndServe(address, router.Router).Error())
 }
 
-func (router *Router) AddRoute(path string, handler func(http.ResponseWriter, *http.Request), method string) {
-    // Check with configuration
-    
-
-    router.Router.HandleFunc(path, handler).Methods(method)
+func (router *Router) AddRoute(route string, handler func(http.ResponseWriter, *http.Request), method string) {
+    if !config.RouteExists(route) {
+        panic(errors.New("Please add %s route to config!"))
+    }
+    router.Router.HandleFunc(route, handler).Methods(method)
 }

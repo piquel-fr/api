@@ -29,7 +29,7 @@ func LoadConfig() {
 	}
 	log.Printf("[Config] Loaded environment configuration!")
 
-    loadRouteConfig()
+    loadRoutesConfig()
 }
 
 func getEnv(key string) string {

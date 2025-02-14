@@ -45,6 +45,8 @@ func buildCallbackURL(provider string) string {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        routeConfig := config.GetRouteConfig(r)
+        log.Printf("%v", routeConfig)
         /*
 		routeConfig := config.RouteSettings[r.URL.Path]
 		if !routeConfig.IsAuthenticated {
