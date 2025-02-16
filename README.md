@@ -13,6 +13,7 @@ The [piquel.fr](https://piquel.fr) website.
   - Fix google not working as auth provider
   - make sure users cant access settings page and other logged in only pages
 - Add 404 and 405 pages
+- Setup Webauthn for passkeys
 
 ### Refactor permission and routing system
 
