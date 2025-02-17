@@ -51,6 +51,8 @@ func cORSMiddleware(next http.Handler) http.Handler {
 
         isValidOrigin, allowCredentials := validateOrigin(origin, config.CORS.AllowedOrigins)
 
+        // Temporarily ingoring invalid origins
+        isValidOrigin = true
 		if !isValidOrigin {
 			http.Error(w, "Origin not allowed", http.StatusForbidden)
             return
