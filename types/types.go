@@ -5,7 +5,7 @@ import (
 )
 
 type UserProfile struct {
-	User      repository.User `json:"user"`
-	UserColor string          `json:"user_color"`
-	UserGroup string          `json:"user_group"`
+	repository.User
+	Color string          `json:"color"`
+	Group string          `json:"group"`
 }

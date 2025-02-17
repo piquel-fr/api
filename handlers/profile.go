@@ -38,8 +38,8 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 		panic(err)
 	}
 
-	profile.UserColor = group.Color
-	profile.UserGroup = group.Displayname.String
+	profile.Color = group.Color
+	profile.Group = group.Displayname.String
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(profile)
