@@ -4,19 +4,19 @@ import (
 	"context"
 	"log"
 
-	"github.com/PiquelChips/piquel.fr/services/config"
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
-	"github.com/jackc/pgx/v5"
+	"github.com/PiquelChips/piquel.fr/services/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var Queries *repository.Queries
-var connection *pgx.Conn
+var connection *pgxpool.Pool
 
 func InitDatabase() {
-
 	log.Printf("[Database] Attempting to connect to the database...\n")
 
-	connection, err := pgx.Connect(context.Background(), config.Envs.DB_URL)
+
+    connection, err := pgxpool.New(context.Background(), config.Envs.DB_URL)
 	if err != nil {
 		panic(err)
 	}
@@ -31,6 +31,6 @@ func InitDatabase() {
 }
 
 func DeinitDatabase() {
-    connection.Close(context.Background())
+    connection.Close()
 }
 
