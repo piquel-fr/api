@@ -8,6 +8,7 @@ services:
       - "traefik.http.routers.piquel-api.entrypoints=piquel-https"
       - "traefik.http.routers.piquel-api.tls.certresolver=piquel-resolver"
     environment:
+      ORG_DOMAIN: ${ORG_DOMAIN}
       PUBLIC_HOST: ${PUBLIC_HOST}
       HOST: ${HOST}
       PORT: ${PORT}
