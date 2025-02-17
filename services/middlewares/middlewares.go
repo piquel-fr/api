@@ -54,7 +54,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
         // Temporarily ingoring invalid origins
         isValidOrigin = true
 		if !isValidOrigin {
-			http.Error(w, "Origin not allowed", http.StatusForbidden)
+			http.Error(w, "Origin not allowed", http.StatusUnauthorized)
             return
 		}
 
