@@ -42,10 +42,3 @@ func buildCallbackURL(provider string) string {
 	log.Printf("[Auth] Added auth provider listener for %s on %s", provider, url)
 	return url
 }
-
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        // Check if user in authenticated unless in an authentication route
-        next.ServeHTTP(w, r)
-	})
-}

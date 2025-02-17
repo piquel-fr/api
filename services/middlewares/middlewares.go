@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/gorilla/mux"
-	"github.com/markbates/goth/gothic"
 )
 
 func SetupMiddlewares(router *mux.Router) {
@@ -23,7 +23,8 @@ func authMiddleware(next http.Handler) http.Handler {
             return
         }
 
-	    _, err := gothic.CompleteUserAuth(w, r)
+	    // _, err := gothic.CompleteUserAuth(w, r)
+        _, err := auth.GetSessionUser(r)
         if err != nil {
             http.Error(w, "You are not authenticated", http.StatusForbidden)
             return
