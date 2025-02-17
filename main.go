@@ -8,6 +8,7 @@ import (
 	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/PiquelChips/piquel.fr/services/database"
+	"github.com/PiquelChips/piquel.fr/services/middlewares"
 	"github.com/gorilla/mux"
 )
 
@@ -21,15 +22,11 @@ func main() {
     database.InitDatabase()
     defer database.DeinitDatabase()
 
-    // Setup various services
+    // Initialize the router
 	router := mux.NewRouter()
+	middlewares.SetupMiddlewares(router)
 
-	// Setup middleware
-	router.Use(auth.AuthMiddleware)
-    router.Use(mux.CORSMethodMiddleware(router))
-    router.Use(auth.CORSMiddleware)
-
-	log.Printf("[Router] Initialized router!")
+	log.Printf("[Router] Initialized router!\n")
 
     router.HandleFunc("/profile", handlers.HandleProfileQuery).Methods(http.MethodGet, http.MethodOptions)
     router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodOptions)
@@ -42,11 +39,7 @@ func main() {
 
 	address := config.Envs.Host + ":" + config.Envs.Port
 
-	log.Printf("[Router] Starting router...")
-
-	// Serve static files
-	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public"))))
-
-	log.Printf("[Router] Listening on %s!", address)
+	log.Printf("[Router] Starting router...\n")
+	log.Printf("[Router] Listening on %s!\n", address)
 	log.Fatalf("%s", http.ListenAndServe(address, router).Error())
 }
