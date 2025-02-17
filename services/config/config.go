@@ -21,13 +21,12 @@ func LoadConfig() {
 		Host:               getEnv("HOST"),
 		Port:               getEnv("PORT"),
 		SSL:                getEnv("SSL"),
-		DB_URL:             getEnv("DB_URL"),
+		DBURL:             getEnv("DB_URL"),
 		CookiesAuthSecret:  getEnv("COOKIES_AUTH_SECRET"),
 		GoogleClientID:     getEnv("AUTH_GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: getEnv("AUTH_GOOGLE_CLIENT_SECRET"),
 		GithubClientID:     getEnv("AUTH_GITHUB_CLIENT_ID"),
 		GithubClientSecret: getEnv("AUTH_GITHUB_CLIENT_SECRET"),
-		ConfigPath:         getDefaultEnv("CONFIG_PATH", "config"),
 	}
 	log.Printf("[Config] Loaded environment configuration!")
 

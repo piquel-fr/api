@@ -6,7 +6,7 @@ type EnvsConfig struct {
 	Host               string
 	Port               string
 	SSL                string
-	DB_URL             string
+	DBURL             string
 	CookiesAuthSecret  string
 	GoogleClientID     string
 	GoogleClientSecret string

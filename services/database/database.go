@@ -16,7 +16,7 @@ func InitDatabase() {
 	log.Printf("[Database] Attempting to connect to the database...\n")
 
 
-    connection, err := pgxpool.New(context.Background(), config.Envs.DB_URL)
+    connection, err := pgxpool.New(context.Background(), config.Envs.DBURL)
 	if err != nil {
 		panic(err)
 	}
