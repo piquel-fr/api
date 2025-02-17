@@ -23,12 +23,17 @@ func CORSMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if !isValidOrigin(origin, config.CORS.AllowedOrigins) {
+        isValidOrigin, allowCredentials := validateOrigin(origin, config.CORS.AllowedOrigins)
+
+		if !isValidOrigin {
 			http.Error(w, "Origin not allowed", http.StatusForbidden)
 		}
 
         w.Header().Set("Access-Control-Allow-Origin", origin)
         w.Header().Set("Access-Control-Max-Age", strconv.Itoa(config.CORS.MaxAge))
+        if allowCredentials {
+            w.Header().Set("Access-Control-Allow-Credentials", "true")
+        }
 
 		if r.Method == http.MethodOptions {
 			// Return immediately for OPTIONS requests
@@ -40,14 +45,14 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func isValidOrigin(origin string, allowedOrigins []string) bool {
+func validateOrigin(origin string, allowedOrigins map[string]bool) (bool, bool) {
 	if origin == "" {
-		return false
+		return false, false
 	}
 
-	for _, allowed := range allowedOrigins {
+	for allowed, credentials := range allowedOrigins {
 		if allowed == origin {
-			return true
+			return true, credentials
 		}
 
 		// For example *.piquel.fr
@@ -55,10 +60,10 @@ func isValidOrigin(origin string, allowedOrigins []string) bool {
 			// Would then be .piquel.fr
 			domain := strings.Split(allowed, "*")[1]
 			if strings.HasSuffix(origin, domain) {
-				return true
+				return true, credentials
 			}
 		}
 	}
 
-	return false
+	return false, false
 }

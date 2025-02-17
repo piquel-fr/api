@@ -32,7 +32,9 @@ func LoadConfig() {
 	log.Printf("[Config] Loaded environment configuration!")
 
     CORS = CORSConfig{
-        AllowedOrigins: []string{"https://*.piquel.fr"},
+        AllowedOrigins: map[string]bool{
+            "https://*.piquel.fr": true,
+        },
         MaxAge: 43200,
     }
     log.Printf("[Config] Set hardcoded configuration variables!")

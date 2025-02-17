@@ -16,9 +16,9 @@ type EnvsConfig struct {
 }
 
 type CORSConfig struct {
-    AllowedOrigins []string
-    // Duration of preflight caching
-    MaxAge int
+	AllowedOrigins   map[string]bool
+	// Duration of preflight caching
+	MaxAge           int
 }
 
 type Route struct {
