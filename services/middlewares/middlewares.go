@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -36,6 +37,7 @@ func authMiddleware(next http.Handler) http.Handler {
 func cORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
+        log.Printf("[CORS] %s requesting...", origin)
 
 		if origin == "" {
 			if r.Host != r.Header.Get("Host") {
@@ -52,6 +54,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
 
 		if !isValidOrigin {
 			http.Error(w, "Origin not allowed", http.StatusUnauthorized)
+            log.Printf("[CORS] Just rejected %s! This origin is unauthorized!", origin)
             return
 		}
 
@@ -66,6 +69,8 @@ func cORSMiddleware(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
+
+        log.Printf("[CORS] Just allowed request from %s!", origin)
 
 		next.ServeHTTP(w, r)
 	})
