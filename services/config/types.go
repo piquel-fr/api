@@ -1,6 +1,6 @@
 package config
 
-type Config struct {
+type EnvsConfig struct {
 	PublicHost         string
 	OrgDomain          string
 	Host               string
@@ -13,6 +13,12 @@ type Config struct {
 	GithubClientID     string
 	GithubClientSecret string
 	ConfigPath         string
+}
+
+type CORSConfig struct {
+    AllowedOrigins []string
+    // Duration of preflight caching
+    MaxAge int
 }
 
 type Route struct {

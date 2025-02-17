@@ -7,14 +7,15 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var Envs Config
+var Envs EnvsConfig
+var CORS CORSConfig
 
 func LoadConfig() {
 	godotenv.Load()
 	log.Printf("[Config] Loading configuration...")
 
 	// Load config from environment
-	Envs = Config{
+	Envs = EnvsConfig{
 		PublicHost:         getEnv("PUBLIC_HOST"),
 		OrgDomain:          getEnv("ORG_DOMAIN"),
 		Host:               getEnv("HOST"),
@@ -29,6 +30,12 @@ func LoadConfig() {
 		ConfigPath:         getDefaultEnv("CONFIG_PATH", "config"),
 	}
 	log.Printf("[Config] Loaded environment configuration!")
+
+    CORS = CORSConfig{
+        AllowedOrigins: []string{"https://*.piquel.fr"},
+        MaxAge: 43200,
+    }
+    log.Printf("[Config] Set hardcoded configuration variables!")
 
 	loadRoutesConfig()
 }
