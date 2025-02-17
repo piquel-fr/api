@@ -3,7 +3,6 @@ package auth
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/markbates/goth"
