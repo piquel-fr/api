@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/PiquelChips/piquel.fr/handlers"
 	"github.com/PiquelChips/piquel.fr/services/auth"
@@ -23,14 +24,14 @@ func main() {
     // Setup various services
     router := router.InitRouter()
 
-    router.AddRoute("/profile", handlers.HandleProfileQuery, "GET")
-    router.AddRoute("/profile/{profile}", handlers.HandleProfile, "GET")
+    router.AddRoute("/profile", handlers.HandleProfileQuery, http.MethodGet)
+    router.AddRoute("/profile/{profile}", handlers.HandleProfile, http.MethodGet)
 
-    router.AddRoute("/settings/profile", handlers.HandleProfileSettingsUpdate, "POST")
+    router.AddRoute("/settings/profile", handlers.HandleProfileSettingsUpdate, http.MethodPost)
 
-	router.AddRoute("/auth/logout", handlers.HandleLogout, "GET")
-	router.AddRoute("/auth/{provider}", handlers.HandleProviderLogin, "GET")
-	router.AddRoute("/auth/{provider}/callback", handlers.HandleAuthCallback, "GET")
+	router.AddRoute("/auth/logout", handlers.HandleLogout, http.MethodGet)
+	router.AddRoute("/auth/{provider}", handlers.HandleProviderLogin, http.MethodGet)
+	router.AddRoute("/auth/{provider}/callback", handlers.HandleAuthCallback, http.MethodGet)
 
 	address := config.Envs.Host + ":" + config.Envs.Port
     router.Start(address)
