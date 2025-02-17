@@ -38,6 +38,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
+        /*
 		if origin == "" {
 			if r.Host != r.Header.Get("Host") {
 				http.Error(w, "Missing Origin Header", http.StatusForbidden)
@@ -48,6 +49,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+        */
 
         isValidOrigin, allowCredentials := validateOrigin(origin, config.CORS.AllowedOrigins)
 
