@@ -10,8 +10,6 @@ import (
 	"github.com/markbates/goth/providers/google"
 )
 
-const SessionName = "user_session"
-
 func InitAuthentication() {
 	goth.UseProviders(
 		google.New(

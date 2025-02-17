@@ -11,6 +11,8 @@ import (
 	"github.com/markbates/goth/gothic"
 )
 
+const SessionName = "user_session"
+
 func InitCookieStore() {
     store := sessions.NewCookieStore([]byte(config.Envs.CookiesAuthSecret))
 
