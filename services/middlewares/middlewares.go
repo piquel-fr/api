@@ -53,6 +53,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
 
 		if !isValidOrigin {
 			http.Error(w, "Origin not allowed", http.StatusForbidden)
+            return
 		}
 
         w.Header().Set("Access-Control-Allow-Origin", origin)
@@ -84,7 +85,7 @@ func validateOrigin(origin string, allowedOrigins map[string]bool) (bool, bool) 
 		// For example *.piquel.fr
 		if strings.Contains(allowed, "*.") {
 			// Would then be .piquel.fr
-			domain := strings.Split(allowed, "*")[1]
+			domain := strings.Split(allowed, "*.")[1]
 			if strings.HasSuffix(origin, domain) {
 				return true, credentials
 			}
