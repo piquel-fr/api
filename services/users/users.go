@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
@@ -12,6 +11,7 @@ import (
 	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/database"
 	"github.com/PiquelChips/piquel.fr/types"
+	"github.com/PiquelChips/piquel.fr/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/markbates/goth"
 )
@@ -68,9 +68,9 @@ func registerUser(context context.Context, inUser *goth.User) {
 
     switch inUser.Provider {
     case "google":
-        params.Username = strings.ReplaceAll(strings.ToLower(inUser.Name), " ", "")
+        params.Username = utils.FormatUsername(inUser.Name)
     case "github":
-        params.Username = strings.ReplaceAll(strings.ToLower(inUser.NickName), " ", "")
+        params.Username = utils.FormatUsername(inUser.NickName)
     }
 
     err := database.Queries.AddUser(context, params)
