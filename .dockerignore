@@ -26,12 +26,5 @@ LICENSE
 .env
 .env.*
 
-# Templ files
-*_templ.txt
-*_templ.go*
-
 # sqlc files
 database/generated/
-
-# TailwindCSS files
-public/styles.css
