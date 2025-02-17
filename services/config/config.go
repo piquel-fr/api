@@ -13,9 +13,10 @@ func LoadConfig() {
 	godotenv.Load()
 	log.Printf("[Config] Loading configuration...")
 
-    // Load config from environment
+	// Load config from environment
 	Envs = Config{
 		PublicHost:         getEnv("PUBLIC_HOST"),
+		OrgDomain:          getEnv("ORG_DOMAIN"),
 		Host:               getEnv("HOST"),
 		Port:               getEnv("PORT"),
 		SSL:                getEnv("SSL"),
@@ -29,7 +30,7 @@ func LoadConfig() {
 	}
 	log.Printf("[Config] Loaded environment configuration!")
 
-    loadRoutesConfig()
+	loadRoutesConfig()
 }
 
 func getEnv(key string) string {
@@ -38,7 +39,7 @@ func getEnv(key string) string {
 	}
 
 	log.Fatalf("Environment variable %s is not set", key)
-    return ""
+	return ""
 }
 
 func getDefaultEnv(key string, defaultValue string) string {

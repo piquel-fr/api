@@ -9,6 +9,9 @@ import (
 )
 
 func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
+    // Save redirect URL to cookies
+    // Verify that it is a registered domain (so piquel.fr)
+
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		gothic.BeginAuthHandler(w, r)
@@ -16,8 +19,9 @@ func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
     users.VerifyUser(r.Context(), &user)
-
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+    
+    // Check if redirect URL is in cookies
+    // Otherise just return redirect to main page
 }
 
 func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +37,8 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+    // Check if redirect URL is in cookies
+    // Otherise just return redirect to main page
 }
 
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
@@ -44,4 +49,7 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 
     auth.RemoveUserSession(w, r)
     http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+
+    // Check if redirect URL is in request query params
+    // Otherise just return redirect to main page
 }

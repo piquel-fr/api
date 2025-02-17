@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	PublicHost         string
+	OrgDomain          string
 	Host               string
 	Port               string
 	SSL                string

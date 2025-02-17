@@ -18,6 +18,7 @@ func InitCookieStore() {
     store.Options.Path = "/"
     store.Options.HttpOnly = false // should be true if http
     store.Options.Secure = true // should be true if https
+    store.Options.Domain = config.Envs.OrgDomain
 
     log.Printf("[Cookies] Initialized cookie service!\n")
 
