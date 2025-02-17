@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/PiquelChips/piquel.fr/services/database"
@@ -11,7 +12,7 @@ import (
 
 func HandleProfileQuery(w http.ResponseWriter, r *http.Request) {
     // Get username from query params. Should look likes "GET api.piquel.fr/profile?[username]
-    username := ""
+    username := r.URL.Query().Get("profile")
 
     writeProfile(w, r, username)
 }
@@ -41,5 +42,6 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 	profile.UserColor = group.Color
 	profile.UserGroup = group.Displayname.String
 
-    // Write json of the object to the requesting client
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(profile)
 }

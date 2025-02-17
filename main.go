@@ -23,6 +23,7 @@ func main() {
     // Setup various services
     router := router.InitRouter()
 
+    router.AddRoute("/profile", handlers.HandleProfileQuery, "GET")
     router.AddRoute("/profile/{profile}", handlers.HandleProfile, "GET")
 
     router.AddRoute("/settings/profile", handlers.HandleProfileSettingsUpdate, "POST")
