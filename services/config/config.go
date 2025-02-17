@@ -21,7 +21,7 @@ func LoadConfig() {
 		Host:               getEnv("HOST"),
 		Port:               getEnv("PORT"),
 		SSL:                getEnv("SSL"),
-		DBURL:             getEnv("DB_URL"),
+		DBURL:              getEnv("DB_URL"),
 		CookiesAuthSecret:  getEnv("COOKIES_AUTH_SECRET"),
 		GoogleClientID:     getEnv("AUTH_GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: getEnv("AUTH_GOOGLE_CLIENT_SECRET"),
@@ -30,13 +30,13 @@ func LoadConfig() {
 	}
 	log.Printf("[Config] Loaded environment configuration!")
 
-    CORS = CORSConfig{
-        AllowedOrigins: map[string]bool{
-            "https://*.piquel.fr": true,
-        },
-        MaxAge: 43200,
-    }
-    log.Printf("[Config] Set hardcoded configuration variables!")
+	CORS = CORSConfig{
+		AllowedOrigins: map[string]bool{
+			"https://*.piquel.fr": true,
+		},
+		MaxAge: 43200,
+	}
+	log.Printf("[Config] Set hardcoded configuration variables!")
 }
 
 func getEnv(key string) string {

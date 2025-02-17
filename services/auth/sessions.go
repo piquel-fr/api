@@ -66,4 +66,3 @@ func RemoveUserSession(w http.ResponseWriter, r *http.Request) {
     session.Options.MaxAge = -1
     session.Save(r, w)
 }
-

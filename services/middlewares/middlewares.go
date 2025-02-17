@@ -11,7 +11,7 @@ import (
 )
 
 func SetupMiddlewares(router *mux.Router) {
-	router.Use(authMiddleware)
+	//router.Use(authMiddleware)
     router.Use(mux.CORSMethodMiddleware(router))
     router.Use(cORSMiddleware)
 }
@@ -23,7 +23,6 @@ func authMiddleware(next http.Handler) http.Handler {
             return
         }
 
-	    // _, err := gothic.CompleteUserAuth(w, r)
         _, err := auth.GetSessionUser(r)
         if err != nil {
             http.Error(w, "You are not authenticated", http.StatusForbidden)
@@ -38,7 +37,6 @@ func cORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-        /*
 		if origin == "" {
 			if r.Host != r.Header.Get("Host") {
 				http.Error(w, "Missing Origin Header", http.StatusForbidden)
@@ -49,12 +47,9 @@ func cORSMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-        */
 
         isValidOrigin, allowCredentials := validateOrigin(origin, config.CORS.AllowedOrigins)
 
-        // Temporarily ingoring invalid origins
-        isValidOrigin = true
 		if !isValidOrigin {
 			http.Error(w, "Origin not allowed", http.StatusUnauthorized)
             return
