@@ -14,7 +14,6 @@ The [piquel.fr](https://piquel.fr) website.
   - make sure users cant access settings page and other logged in only pages
 - Add 404 and 405 pages
 - Setup Webauthn for passkeys
-- Setup database connection pooling
 
 ### Refactor permission and routing system
 

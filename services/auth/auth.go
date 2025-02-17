@@ -45,42 +45,7 @@ func buildCallbackURL(provider string) string {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        routeConfig := config.GetRouteConfig(r)
-        log.Printf("%v", routeConfig)
-        /*
-		routeConfig := config.RouteSettings[r.URL.Path]
-		if !routeConfig.IsAuthenticated {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		session, err := GetSessionUser(r)
-		if err != nil {
-        http.Redirect(w, r, "/auth/login", http.StatusMethodNotAllowed)
-			return
-		}
-
-        if routeConfig.Permission == "" {
-		    next.ServeHTTP(w, r)
-            return
-        }
-
-		user, err := database.Queries.GetUserByEmail(r.Context(), session.Email)
-		if err != nil {
-			if err != pgx.ErrNoRows {
-				http.Redirect(w, r, "/auth/login", http.StatusMethodNotAllowed)
-				return
-			}
-	        panic(err)
-		}
-        
-        if permissions.UserHasPermission(user.ID, routeConfig.Permission) {
-		    next.ServeHTTP(w, r)
-            return
-        }
-
-        http.Redirect(w, r, "/auth/login", http.StatusMethodNotAllowed)
-        */
+        // Check if user in authenticated unless in an authentication route
         next.ServeHTTP(w, r)
 	})
 }

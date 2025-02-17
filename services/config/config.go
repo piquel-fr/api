@@ -38,8 +38,6 @@ func LoadConfig() {
         MaxAge: 43200,
     }
     log.Printf("[Config] Set hardcoded configuration variables!")
-
-	loadRoutesConfig()
 }
 
 func getEnv(key string) string {

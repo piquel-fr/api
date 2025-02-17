@@ -1,4 +1,4 @@
-package router
+package auth
 
 import (
 	"net/http"
@@ -58,7 +58,7 @@ func validateOrigin(origin string, allowedOrigins map[string]bool) (bool, bool) 
 		// For example *.piquel.fr
 		if strings.Contains(allowed, "*.") {
 			// Would then be .piquel.fr
-			domain := strings.Split(allowed, "*.")[1]
+			domain := strings.Split(allowed, "*")[1]
 			if strings.HasSuffix(origin, domain) {
 				return true, credentials
 			}

@@ -8,7 +8,7 @@ import (
 	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/PiquelChips/piquel.fr/services/database"
-	"github.com/PiquelChips/piquel.fr/services/router"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -22,17 +22,31 @@ func main() {
     defer database.DeinitDatabase()
 
     // Setup various services
-    router := router.InitRouter()
+	router := mux.NewRouter()
 
-    router.AddRoute("/profile", handlers.HandleProfileQuery, http.MethodGet)
-    router.AddRoute("/profile/{profile}", handlers.HandleProfile, http.MethodGet)
+	// Setup middleware
+	router.Use(auth.AuthMiddleware)
+    router.Use(mux.CORSMethodMiddleware(router))
+    router.Use(auth.CORSMiddleware)
 
-    router.AddRoute("/settings/profile", handlers.HandleProfileSettingsUpdate, http.MethodPost)
+	log.Printf("[Router] Initialized router!")
 
-	router.AddRoute("/auth/logout", handlers.HandleLogout, http.MethodGet)
-	router.AddRoute("/auth/{provider}", handlers.HandleProviderLogin, http.MethodGet)
-	router.AddRoute("/auth/{provider}/callback", handlers.HandleAuthCallback, http.MethodGet)
+    router.HandleFunc("/profile", handlers.HandleProfileQuery).Methods(http.MethodGet, http.MethodOptions)
+    router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodOptions)
+
+    router.HandleFunc("/settings/profile", handlers.HandleProfileSettingsUpdate).Methods(http.MethodPost, http.MethodOptions)
+
+	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/auth/{provider}/callback", handlers.HandleAuthCallback).Methods(http.MethodGet, http.MethodOptions)
 
 	address := config.Envs.Host + ":" + config.Envs.Port
-    router.Start(address)
+
+	log.Printf("[Router] Starting router...")
+
+	// Serve static files
+	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public"))))
+
+	log.Printf("[Router] Listening on %s!", address)
+	log.Fatalf("%s", http.ListenAndServe(address, router).Error())
 }
