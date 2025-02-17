@@ -11,32 +11,35 @@ import (
 )
 
 type Router struct {
-    Router *mux.Router
+	Router *mux.Router
 }
 
 func InitRouter() *Router {
-    router := &Router{Router: mux.NewRouter()}
+	router := &Router{Router: mux.NewRouter()}
 
-    // Setup middleware
+	// Setup middleware
 	router.Router.Use(auth.AuthMiddleware)
+    router.Router.Use(mux.CORSMethodMiddleware(router.Router))
+    router.Router.Use(CORSMiddleware)
 
-    log.Printf("[Router] Initialized router!")
-    return router
+	log.Printf("[Router] Initialized router!")
+	return router
 }
 
 func (router *Router) Start(address string) {
-    log.Printf("[Router] Starting router...")
+	log.Printf("[Router] Starting router...")
 
-    // Serve static files
+	// Serve static files
 	router.Router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public"))))
 
-    log.Printf("[Router] Listening on %s!", address)
-    log.Fatalf("%s", http.ListenAndServe(address, router.Router).Error())
+	log.Printf("[Router] Listening on %s!", address)
+	log.Fatalf("%s", http.ListenAndServe(address, router.Router).Error())
 }
 
-func (router *Router) AddRoute(route string, handler func(http.ResponseWriter, *http.Request), method string) {
-    if !config.RouteExists(route) {
-        panic(errors.New("Please add %s route to config!"))
-    }
-    router.Router.HandleFunc(route, handler).Methods(method)
+func (router *Router) AddRoute(route string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
+	if !config.RouteExists(route) {
+		panic(errors.New("Please add %s route to config!"))
+	}
+    _methods := append(methods, http.MethodOptions)
+	router.Router.HandleFunc(route, handler).Methods(_methods...)
 }
