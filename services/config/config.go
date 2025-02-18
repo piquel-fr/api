@@ -41,7 +41,7 @@ func LoadConfig() {
         panic(err)
     }
 
-    log.Printf("[Config] Loaded configuration file: %v!", Config)
+    log.Printf("[Config] Loaded configuration file!")
 }
 
 func getEnv(key string) string {
