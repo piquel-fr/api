@@ -1,0 +1,5 @@
+cors:
+  allowed_origins:
+    https://*.piquel.fr: true
+    http://localhost:5173: true
+  max_age: 43200

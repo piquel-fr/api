@@ -32,5 +32,6 @@ WORKDIR /api.piquel.fr
 
 # Copy static files and configuration
 COPY --from=builder /api.piquel.fr/bin/main .
+COPY --from=builder /api.piquel.fr/config.yml .
 
 CMD [ "./main" ]

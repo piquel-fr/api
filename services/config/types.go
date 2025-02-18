@@ -6,7 +6,7 @@ type EnvsConfig struct {
 	Host               string
 	Port               string
 	SSL                string
-	DBURL             string
+	DBURL              string
 	CookiesAuthSecret  string
 	GoogleClientID     string
 	GoogleClientSecret string
@@ -15,8 +15,11 @@ type EnvsConfig struct {
 	ConfigPath         string
 }
 
+type ConfigType struct {
+	CORS CORSConfig `yaml:"cors"`
+}
+
 type CORSConfig struct {
-	AllowedOrigins   map[string]bool
-	// Duration of preflight caching
-	MaxAge           int
+	AllowedOrigins map[string]bool `yaml:"allowed_origins"`
+	MaxAge         int             `yaml:"max_age"`
 }

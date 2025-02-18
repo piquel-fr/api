@@ -5,10 +5,11 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"gopkg.in/yaml.v3"
 )
 
 var Envs EnvsConfig
-var CORS CORSConfig
+var Config ConfigType
 
 func LoadConfig() {
 	godotenv.Load()
@@ -30,13 +31,17 @@ func LoadConfig() {
 	}
 	log.Printf("[Config] Loaded environment configuration!")
 
-	CORS = CORSConfig{
-		AllowedOrigins: map[string]bool{
-			"https://*.piquel.fr": true,
-		},
-		MaxAge: 43200,
-	}
-	log.Printf("[Config] Set hardcoded configuration variables!")
+    configData, err := os.ReadFile("./config.yml")
+    if err != nil {
+        panic(err)
+    }
+
+    err = yaml.Unmarshal(configData, &Config)
+    if err != nil {
+        panic(err)
+    }
+
+    log.Printf("[Config] Loaded configuration file: %v!", Config)
 }
 
 func getEnv(key string) string {

@@ -50,7 +50,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-        isValidOrigin, allowCredentials := validateOrigin(origin, config.CORS.AllowedOrigins)
+        isValidOrigin, allowCredentials := validateOrigin(origin, config.Config.CORS.AllowedOrigins)
 
 		if !isValidOrigin {
 			http.Error(w, "Origin not allowed", http.StatusUnauthorized)
@@ -59,7 +59,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
 		}
 
         w.Header().Set("Access-Control-Allow-Origin", origin)
-        w.Header().Set("Access-Control-Max-Age", strconv.Itoa(config.CORS.MaxAge))
+        w.Header().Set("Access-Control-Max-Age", strconv.Itoa(config.Config.CORS.MaxAge))
         if allowCredentials {
             w.Header().Set("Access-Control-Allow-Credentials", "true")
         }
