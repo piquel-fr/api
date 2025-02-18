@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/users"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +13,13 @@ import (
 func HandleProfileQuery(w http.ResponseWriter, r *http.Request) {
 	// Get username from query params. Should look likes "GET api.piquel.fr/profile?[username]
 	username := r.URL.Query().Get("profile")
+    if username == "" {
+        var err error = nil
+        username, err = auth.GetUsername(r)
+        if err != nil {
+            panic(err)
+        }
+    }
 	writeProfile(w, r, username)
 }
 
