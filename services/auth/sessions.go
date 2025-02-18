@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/PiquelChips/piquel.fr/errors"
+	"github.com/PiquelChips/piquel.fr/services/config"
+	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/gorilla/sessions"
-	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 )
 
@@ -27,42 +27,66 @@ func InitCookieStore() {
     gothic.Store = store
 }
 
-func GetSessionUser(r *http.Request) (goth.User, error) {
+func VerifyUserSession(r *http.Request) error {
 	session, err := gothic.Store.Get(r, SessionName)
 	if err != nil {
-		return goth.User{}, err
+		return err
 	}
 
 	user := session.Values["user"]
 	if user == nil {
-		return goth.User{}, errors.ErrorNotAuthenticated
+		return errors.ErrorNotAuthenticated
 	}
-	return user.(goth.User), nil
-}
-
-func StoreUserSession(w http.ResponseWriter, r *http.Request, user goth.User) error {
-	session, err := gothic.Store.Get(r, SessionName)
-    if err != nil {
-        panic(err)
-    }
-
-	session.Values["user"] = user
-
-	err = session.Save(r, w)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		panic(err)
-	}
-
 	return nil
 }
 
-func RemoveUserSession(w http.ResponseWriter, r *http.Request) {
+func StoreUserSession(w http.ResponseWriter, r *http.Request, username string, userSession *types.UserSession) error {
+	session, err := gothic.Store.Get(r, SessionName)
+    if err != nil {
+        return err
+    }
+
+	session.Values["username"] = username
+    session.Values["session"] = userSession
+
+	err = session.Save(r, w)
+	return err
+}
+
+func GetUserSession(r *http.Request) (*types.UserSession, error) {
+	session, err := gothic.Store.Get(r, SessionName)
+	if err != nil {
+		return nil, err
+	}
+
+	userSession := session.Values["session"]
+	if userSession == nil {
+		return nil, errors.ErrorNotAuthenticated
+	}
+	return userSession.(*types.UserSession), nil
+}
+
+func GetUsername(r *http.Request) (string, error) {
+	session, err := gothic.Store.Get(r, SessionName)
+	if err != nil {
+		return "", err
+	}
+
+	username := session.Values["username"]
+	if username == "" {
+		return "", errors.ErrorNotAuthenticated
+	}
+	return username.(string), nil
+}
+
+func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {
     session , err := gothic.Store.Get(r, SessionName)
     if err != nil {
-        panic(err)
+        return err
     }
-    session.Values["user"] = goth.User{}
+    session.Values["username"] = ""
+    session.Values["session"] = types.UserSession{}
     session.Options.MaxAge = -1
     session.Save(r, w)
+    return nil
 }

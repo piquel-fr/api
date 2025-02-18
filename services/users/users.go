@@ -12,18 +12,19 @@ import (
 	"github.com/markbates/goth"
 )
 
-func VerifyUser(context context.Context, inUser *goth.User) {
-	_, err := database.Queries.GetUserByEmail(context, inUser.Email)
+func VerifyUser(context context.Context, inUser *goth.User) (string, error) {
+	user, err := database.Queries.GetUserByEmail(context, inUser.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			registerUser(context, inUser)
-			return
+			return registerUser(context, inUser)
 		}
 		panic(err)
 	}
+
+    return user.Username, nil
 }
 
-func registerUser(context context.Context, inUser *goth.User) {
+func registerUser(context context.Context, inUser *goth.User) (string, error) {
 	params := repository.AddUserParams{}
 
 	params.Email = inUser.Email
@@ -40,9 +41,7 @@ func registerUser(context context.Context, inUser *goth.User) {
 	}
 
 	err := database.Queries.AddUser(context, params)
-	if err != nil {
-		panic(err)
-	}
+    return params.Username, err
 }
 
 func GetProfile(username string) (*types.UserProfile, error) {

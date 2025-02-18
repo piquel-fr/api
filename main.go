@@ -24,7 +24,7 @@ func main() {
 
     // Initialize the router
 	router := mux.NewRouter()
-	middlewares.SetupMiddlewares(router)
+	middlewares.Setup(router)
 
 	log.Printf("[Router] Initialized router!\n")
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/users"
+	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/markbates/goth/gothic"
 )
 
@@ -18,7 +19,11 @@ func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    users.VerifyUser(r.Context(), &user)
+    _, err = users.VerifyUser(r.Context(), &user)
+    if err != nil {
+        http.Error(w, "Error verifying user", http.StatusInternalServerError)
+        panic(err)
+    }
     
     // Check if redirect URL is in cookies
     // Otherise just return redirect to main page
@@ -27,13 +32,19 @@ func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
+        http.Error(w, "Error authencticating", http.StatusInternalServerError)
 		panic(err)
 	}
 
-    users.VerifyUser(r.Context(), &user)
+    username, err := users.VerifyUser(r.Context(), &user)
+    if err != nil {
+        http.Error(w, "Error verifying user", http.StatusInternalServerError)
+        panic(err)
+    }
 
-	err = auth.StoreUserSession(w, r, user)
+	err = auth.StoreUserSession(w, r, username, types.UserSessionFromGothUser(&user))
 	if err != nil {
+        http.Error(w, "Error authencticating", http.StatusInternalServerError)
 		panic(err)
 	}
 
@@ -44,10 +55,15 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
     err := gothic.Logout(w, r)
     if err != nil {
-        panic(err)
+        http.Error(w, "Error authencticating", http.StatusInternalServerError)
+		panic(err)
     }
 
-    auth.RemoveUserSession(w, r)
+    err = auth.RemoveUserSession(w, r)
+	if err != nil {
+        http.Error(w, "Error removing cookies", http.StatusInternalServerError)
+		panic(err)
+	}
     http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 
     // Check if redirect URL is in request query params

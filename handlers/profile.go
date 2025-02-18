@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/PiquelChips/piquel.fr/services/database"
 	"github.com/PiquelChips/piquel.fr/services/users"
-	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 )
