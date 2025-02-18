@@ -25,7 +25,7 @@ func authMiddleware(next http.Handler) http.Handler {
 
         err := auth.VerifyUserSession(r)
         if err != nil {
-            http.Error(w, "You are not authenticated", http.StatusForbidden)
+            http.Error(w, "You are not authenticated", http.StatusUnauthorized)
             return
         }
 
@@ -51,7 +51,7 @@ func cORSMiddleware(next http.Handler) http.Handler {
         isValidOrigin, allowCredentials := validateOrigin(origin, config.Config.CORS.AllowedOrigins)
 
 		if !isValidOrigin {
-			http.Error(w, "Origin not allowed", http.StatusUnauthorized)
+			http.Error(w, "Origin not allowed", http.StatusForbidden)
             return
 		}
 
