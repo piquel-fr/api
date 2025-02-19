@@ -73,7 +73,7 @@ func GetUsername(r *http.Request) (string, error) {
 	}
 
 	username := session.Values["username"]
-	if username == "" {
+	if username == "" || username == nil {
 		return "", errors.ErrorNotAuthenticated
 	}
 	return username.(string), nil
