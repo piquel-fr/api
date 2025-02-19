@@ -14,10 +14,10 @@ func HandleProfileQuery(w http.ResponseWriter, r *http.Request) {
 	// Get username from query params. Should look likes "GET api.piquel.fr/profile?[username]
 	username := r.URL.Query().Get("profile")
     if username == "" {
-        var err error = nil
-        username, err = auth.GetUsername(r)
-        if err != nil {
-            panic(err)
+        username, _ = auth.GetUsername(r)
+        if username == "" {
+            http.Error(w, "You are not logged in", http.StatusUnauthorized)
+            return
         }
     }
 	writeProfile(w, r, username)
