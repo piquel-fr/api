@@ -5,11 +5,9 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"gopkg.in/yaml.v3"
 )
 
 var Envs EnvsConfig
-var Config ConfigType
 
 func LoadConfig() {
 	godotenv.Load()
@@ -30,18 +28,6 @@ func LoadConfig() {
 		GithubClientSecret: getEnv("AUTH_GITHUB_CLIENT_SECRET"),
 	}
 	log.Printf("[Config] Loaded environment configuration!")
-
-    configData, err := os.ReadFile("./config.yml")
-    if err != nil {
-        panic(err)
-    }
-
-    err = yaml.Unmarshal(configData, &Config)
-    if err != nil {
-        panic(err)
-    }
-
-    log.Printf("[Config] Loaded configuration file!")
 }
 
 func getEnv(key string) string {

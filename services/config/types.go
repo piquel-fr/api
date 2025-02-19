@@ -14,12 +14,3 @@ type EnvsConfig struct {
 	GithubClientSecret string
 	ConfigPath         string
 }
-
-type ConfigType struct {
-	CORS CORSConfig `yaml:"cors"`
-}
-
-type CORSConfig struct {
-	AllowedOrigins map[string]bool `yaml:"allowed_origins"`
-	MaxAge         int             `yaml:"max_age"`
-}
