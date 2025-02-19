@@ -1,11 +1,16 @@
 package types
 
 import (
+	"encoding/gob"
 	"time"
 
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
 	"github.com/markbates/goth"
 )
+
+func Init() {
+	gob.Register(UserSession{})
+}
 
 type UserProfile struct {
 	repository.User

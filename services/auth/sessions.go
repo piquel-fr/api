@@ -14,17 +14,17 @@ import (
 const SessionName = "user_session"
 
 func InitCookieStore() {
-    store := sessions.NewCookieStore([]byte(config.Envs.CookiesAuthSecret))
+	store := sessions.NewCookieStore([]byte(config.Envs.CookiesAuthSecret))
 
-    store.MaxAge(178200)
-    store.Options.Path = "/"
-    store.Options.HttpOnly = false // should be true if http
-    store.Options.Secure = true // should be true if https
-    store.Options.Domain = config.Envs.OrgDomain
+	store.MaxAge(178200)
+	store.Options.Path = "/"
+	store.Options.HttpOnly = false // should be true if http
+	store.Options.Secure = true    // should be true if https
+	store.Options.Domain = config.Envs.OrgDomain
 
-    log.Printf("[Cookies] Initialized cookie service!\n")
+	log.Printf("[Cookies] Initialized cookie service!\n")
 
-    gothic.Store = store
+	gothic.Store = store
 }
 
 func VerifyUserSession(r *http.Request) error {
@@ -42,12 +42,12 @@ func VerifyUserSession(r *http.Request) error {
 
 func StoreUserSession(w http.ResponseWriter, r *http.Request, username string, userSession *types.UserSession) error {
 	session, err := gothic.Store.Get(r, SessionName)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
 	session.Values["username"] = username
-    session.Values["session"] = userSession
+	session.Values["session"] = userSession
 
 	err = session.Save(r, w)
 	return err
@@ -80,13 +80,13 @@ func GetUsername(r *http.Request) (string, error) {
 }
 
 func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {
-    session , err := gothic.Store.Get(r, SessionName)
-    if err != nil {
-        return err
-    }
-    session.Values["username"] = ""
-    session.Values["session"] = types.UserSession{}
-    session.Options.MaxAge = -1
-    session.Save(r, w)
-    return nil
+	session, err := gothic.Store.Get(r, SessionName)
+	if err != nil {
+		return err
+	}
+	session.Values["username"] = ""
+	session.Values["session"] = types.UserSession{}
+	session.Options.MaxAge = -1
+	session.Save(r, w)
+	return nil
 }

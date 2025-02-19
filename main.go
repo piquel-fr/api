@@ -9,6 +9,7 @@ import (
 	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/PiquelChips/piquel.fr/services/database"
 	"github.com/PiquelChips/piquel.fr/services/middlewares"
+	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/gorilla/mux"
 )
 
@@ -21,6 +22,7 @@ func main() {
     auth.InitCookieStore()
     database.InitDatabase()
     defer database.DeinitDatabase()
+    types.Init()
 
     // Initialize the router
 	router := mux.NewRouter()
