@@ -3,15 +3,13 @@ services:
     image: ghcr.io/piquelorganization/api.piquel.fr:${GIT_COMMIT_HASH:-latest}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.piquel-api.loadbalancer.server.port=${PORT}"
-      - "traefik.http.routers.piquel-api.rule=Host(`${PUBLIC_HOST}`)"
+      - "traefik.http.services.piquel-api.loadbalancer.server.port=80"
+      - "traefik.http.routers.piquel-api.rule=Host(`${HOST}`)"
       - "traefik.http.routers.piquel-api.entrypoints=piquel-https"
       - "traefik.http.routers.piquel-api.tls.certresolver=piquel-resolver"
     environment:
-      ORG_DOMAIN: ${ORG_DOMAIN}
-      PUBLIC_HOST: ${PUBLIC_HOST}
+      DOMAIN: ${DOMAIN}
       HOST: ${HOST}
-      PORT: ${PORT}
       SSL: "true"
       DB_URL: ${DB_URL}
       # Auth

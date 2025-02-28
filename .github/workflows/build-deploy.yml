@@ -45,10 +45,8 @@ jobs:
 
       - name: Create env file
         run: |
-          echo "PUBLIC_HOST=${{ vars.PUBLIC_HOST }}" >> ./.env
-          echo "ORG_DOMAIN=${{ vars.ORG_DOMAIN }}" >> ./.env
+          echo "DOMAIN=${{ vars.DOMAIN }}" >> ./.env
           echo "HOST=${{ vars.HOST }}" >> ./.env
-          echo "PORT=${{ vars.PORT }}" >> ./.env
 
           echo "DB_URL=${{ secrets.DB_URL }}" >> ./.env
 

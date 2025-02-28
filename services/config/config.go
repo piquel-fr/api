@@ -15,10 +15,9 @@ func LoadConfig() {
 
 	// Load config from environment
 	Envs = EnvsConfig{
-		PublicHost:         getEnv("PUBLIC_HOST"),
-		OrgDomain:          getEnv("ORG_DOMAIN"),
+		Domain:             getEnv("DOMAIN"),
 		Host:               getEnv("HOST"),
-		Port:               getEnv("PORT"),
+		Port:               getDefaultEnv("PORT", "80"),
 		SSL:                getEnv("SSL"),
 		DBURL:              getEnv("DB_URL"),
 		CookiesAuthSecret:  getEnv("COOKIES_AUTH_SECRET"),

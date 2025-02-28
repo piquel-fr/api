@@ -1,8 +1,7 @@
 package config
 
 type EnvsConfig struct {
-	PublicHost         string
-	OrgDomain          string
+	Domain             string
 	Host               string
 	Port               string
 	SSL                string
@@ -12,5 +11,4 @@ type EnvsConfig struct {
 	GoogleClientSecret string
 	GithubClientID     string
 	GithubClientSecret string
-	ConfigPath         string
 }

@@ -32,9 +32,9 @@ func InitAuthentication() {
 func buildCallbackURL(provider string) string {
 	var url string
 	if config.Envs.SSL == "true" {
-		url = fmt.Sprintf("https://%s/auth/%s/callback", config.Envs.PublicHost, provider)
+		url = fmt.Sprintf("https://%s/auth/%s/callback", config.Envs.Host, provider)
 	} else {
-		url = fmt.Sprintf("http://%s:%s/auth/%s/callback", config.Envs.PublicHost, config.Envs.Port, provider)
+		url = fmt.Sprintf("http://%s:%s/auth/%s/callback", config.Envs.Host, config.Envs.Port, provider)
 	}
 	log.Printf("[Auth] Added auth provider listener for %s on %s", provider, url)
 	return url
