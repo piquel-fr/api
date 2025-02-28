@@ -28,3 +28,6 @@ ALTER TABLE
 ALTER TABLE
     "users" ADD CONSTRAINT "users_group_foreign" FOREIGN KEY("group") REFERENCES "groups"("name");
 
+INSERT INTO "groups" VALUES ('admin', 'red', 'Admin', '100');
+INSERT INTO "groups" VALUES ('dev', 'blue', 'Developer', '99');
+INSERT INTO "groups" VALUES ('default', 'gray', '', '1');
