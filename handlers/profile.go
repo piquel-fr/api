@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/PiquelChips/piquel.fr/services/auth"
@@ -13,14 +14,14 @@ import (
 func HandleProfileQuery(w http.ResponseWriter, r *http.Request) {
 	// Get username from query params. Should look likes "GET api.piquel.fr/profile?[username]
 	username := r.URL.Query().Get("profile")
-    if username == "" {
-        var err error
-        username, err = auth.GetUsername(r)
-        if username == "" || err != nil {
-            http.Error(w, "You are not logged in", http.StatusUnauthorized)
-            return
-        }
-    }
+	if username == "" {
+		var err error
+		username, err = auth.GetUsername(r)
+		if username == "" || err != nil {
+			http.Error(w, "You are not logged in", http.StatusUnauthorized)
+			return
+		}
+	}
 	writeProfile(w, r, username)
 }
 
@@ -33,6 +34,7 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 	profile, err := users.GetProfile(username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
+            log.Printf("User %s does not exist!", username)
 			// Properly redirect to cookied URL
 			http.Redirect(w, r, "/", http.StatusNotFound)
 			return
