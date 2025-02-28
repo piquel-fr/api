@@ -31,7 +31,6 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
-	log.Printf("Fetching profile for %s!", username)
 	profile, err := users.GetProfile(username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
