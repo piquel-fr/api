@@ -31,10 +31,10 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
+	log.Printf("Fetching profile for %s!", username)
 	profile, err := users.GetProfile(username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-            log.Printf("User %s does not exist!", username)
 			// Properly redirect to cookied URL
 			http.Redirect(w, r, "/", http.StatusNotFound)
 			return
