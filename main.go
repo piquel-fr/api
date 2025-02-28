@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -39,7 +40,7 @@ func main() {
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}/callback", handlers.HandleAuthCallback).Methods(http.MethodGet, http.MethodOptions)
 
-	address := config.Envs.Host + ":" + config.Envs.Port
+    address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
 
 	log.Printf("[Router] Starting router...\n")
 	log.Printf("[Router] Listening on %s!\n", address)
