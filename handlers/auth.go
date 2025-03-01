@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/config"
@@ -71,6 +72,7 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 func saveRedirectURL(w http.ResponseWriter, r *http.Request) {
 	redirectTo := r.URL.Query().Get("redirectTo")
 	redirectURL := fmt.Sprintf("https://%s/%s", config.Envs.Domain, redirectTo)
+    redirectURL = strings.TrimRight(redirectURL, "/")
 
 	session, err := gothic.Store.Get(r, RedirectSession)
 	if err != nil {
