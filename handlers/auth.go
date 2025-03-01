@@ -66,13 +66,19 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error removing cookies", http.StatusInternalServerError)
 		panic(err)
 	}
-    redirectUser(w, r)
+
+	redirectURL := getRedirectURL(r)
+    http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
+}
+
+func getRedirectURL(r *http.Request) string {
+	redirectTo := r.URL.Query().Get("redirectTo")
+
+    return fmt.Sprintf("https://%s/%s", config.Envs.Domain, strings.Trim(redirectTo, "/"))
 }
 
 func saveRedirectURL(w http.ResponseWriter, r *http.Request) {
-	redirectTo := r.URL.Query().Get("redirectTo")
-	redirectURL := fmt.Sprintf("https://%s/%s", config.Envs.Domain, redirectTo)
-    redirectURL = strings.TrimRight(redirectURL, "/")
+	redirectURL := getRedirectURL(r)
 
 	session, err := gothic.Store.Get(r, RedirectSession)
 	if err != nil {
