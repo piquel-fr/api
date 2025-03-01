@@ -101,6 +101,8 @@ func redirectUser(w http.ResponseWriter, r *http.Request) {
 
     redirectURL := session.Values["redirectTo"]
     session.Values["redirectTo"] = ""
+	session.Options.MaxAge = -1
+	session.Save(r, w)
 
     if redirectURL == nil || redirectURL == "" {
         redirectURL = fmt.Sprintf("https://%s", config.Envs.Domain)
