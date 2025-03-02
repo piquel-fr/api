@@ -15,8 +15,7 @@ func Init() {
 type UserProfile struct {
 	repository.User
 	Color     string `json:"color"`
-	Group     string `json:"group"`
-	GroupName string `json:"group_name"`
+	RoleName string `json:"role_name"`
 }
 
 type UserSession struct {

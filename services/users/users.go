@@ -6,6 +6,7 @@ import (
 
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
 	"github.com/PiquelChips/piquel.fr/services/database"
+	"github.com/PiquelChips/piquel.fr/services/permissions"
 	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/PiquelChips/piquel.fr/utils"
 	"github.com/jackc/pgx/v5"
@@ -21,14 +22,14 @@ func VerifyUser(context context.Context, inUser *goth.User) (string, error) {
 		panic(err)
 	}
 
-    return user.Username, nil
+	return user.Username, nil
 }
 
 func registerUser(context context.Context, inUser *goth.User) (string, error) {
 	params := repository.AddUserParams{}
 
 	params.Email = inUser.Email
-	params.Group = "default"
+	params.Role = "default"
 	params.Image = inUser.AvatarURL
 	params.Created = time.Now()
 	params.Name = inUser.Name
@@ -41,7 +42,7 @@ func registerUser(context context.Context, inUser *goth.User) (string, error) {
 	}
 
 	err := database.Queries.AddUser(context, params)
-    return params.Username, err
+	return params.Username, err
 }
 
 func GetProfile(username string) (*types.UserProfile, error) {
@@ -52,14 +53,10 @@ func GetProfile(username string) (*types.UserProfile, error) {
 
 	profile := &types.UserProfile{User: user}
 
-	group, err := database.Queries.GetGroupInfo(context.Background(), user.Group)
-	if err != nil {
-		return nil, err
-	}
+	role := permissions.Policy.Roles[profile.Role]
 
-	profile.Color = group.Color
-	profile.Group = group.Name
-	profile.GroupName = group.Displayname.String
+	profile.RoleName = role.Name
+	profile.Color = role.Color
 
 	return profile, nil
 }
