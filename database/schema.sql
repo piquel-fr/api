@@ -5,7 +5,7 @@ CREATE TABLE "users"(
     "image" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "role" TEXT NOT NULL,
-    "created" TIMESTAMPTZ NOT NULL
+    "createdAt" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE
     "users" ADD PRIMARY KEY("id");

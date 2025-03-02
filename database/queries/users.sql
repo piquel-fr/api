@@ -1,5 +1,5 @@
 -- name: AddUser :exec
-INSERT INTO "users" ("username", "name", "image", "email", "role", "created")
+INSERT INTO "users" ("username", "name", "image", "email", "role", "createdAt")
 VALUES ($1, $2, $3, $4, $5, $6);
 
 -- name: GetUserByUsername :one

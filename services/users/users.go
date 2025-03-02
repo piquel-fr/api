@@ -31,7 +31,7 @@ func registerUser(context context.Context, inUser *goth.User) (string, error) {
 	params.Email = inUser.Email
 	params.Role = "default"
 	params.Image = inUser.AvatarURL
-	params.Created = time.Now()
+	params.CreatedAt = time.Now()
 	params.Name = inUser.Name
 
 	switch inUser.Provider {
