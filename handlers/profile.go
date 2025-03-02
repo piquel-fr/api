@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func HandleProfileQuery(w http.ResponseWriter, r *http.Request) {
+func HandleBaseProfile(w http.ResponseWriter, r *http.Request) {
 	// Get username from query params. Should look likes "GET api.piquel.fr/profile?[username]
 	username := r.URL.Query().Get("profile")
 	if username == "" {

@@ -9,7 +9,7 @@ import (
 	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/config"
 	"github.com/PiquelChips/piquel.fr/services/database"
-	"github.com/PiquelChips/piquel.fr/services/middlewares"
+	"github.com/PiquelChips/piquel.fr/services/middleware"
 	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/gorilla/mux"
 )
@@ -27,14 +27,12 @@ func main() {
 
     // Initialize the router
 	router := mux.NewRouter()
-	middlewares.Setup(router)
+	middleware.Setup(router)
 
 	log.Printf("[Router] Initialized router!\n")
 
-    router.HandleFunc("/profile", handlers.HandleProfileQuery).Methods(http.MethodGet, http.MethodOptions)
-    router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodOptions)
-
-    router.HandleFunc("/settings/profile", handlers.HandleProfileSettingsUpdate).Methods(http.MethodPost, http.MethodOptions)
+    router.HandleFunc("/profile", handlers.HandleBaseProfile).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
+    router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 
 	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
