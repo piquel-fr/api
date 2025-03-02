@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"time"
 
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
 	"github.com/PiquelChips/piquel.fr/services/database"
@@ -31,7 +30,6 @@ func registerUser(context context.Context, inUser *goth.User) (string, error) {
 	params.Email = inUser.Email
 	params.Role = "default"
 	params.Image = inUser.AvatarURL
-	params.CreatedAt = time.Now()
 	params.Name = inUser.Name
 
 	switch inUser.Provider {
