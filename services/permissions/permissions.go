@@ -4,14 +4,14 @@ import "github.com/PiquelChips/piquel.fr/utils"
 
 func Authorize(request *Request) error {
 	if request.User == nil || request.Ressource == nil {
-        return newRequestMalformedError(request)
+		return newRequestMalformedError(request)
 	}
 
 	role := request.User.Role
 	resourceName := request.Ressource.GetRessourceName()
 
 	if role == "" || resourceName == "" {
-        return newRequestMalformedError(request)
+		return newRequestMalformedError(request)
 	}
 
 	isAuthozized, err := authorize(request, role, resourceName, []string{})
@@ -23,7 +23,7 @@ func Authorize(request *Request) error {
 		return nil
 	}
 
-    return newAccessDeniedError()
+	return newAccessDeniedError()
 }
 
 func authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
