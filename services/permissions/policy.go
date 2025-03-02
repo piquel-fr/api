@@ -9,8 +9,7 @@ var Policy = &PolicyConfiguration{
 					if request.Ressource.GetOwner() == string(request.User.ID) {
 						return nil
 					}
-					// Handler access denied error
-					return nil
+					return newAccessDeniedError()
 				},
 			},
 		},

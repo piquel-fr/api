@@ -4,16 +4,14 @@ import "github.com/PiquelChips/piquel.fr/utils"
 
 func Authorize(request *Request) error {
 	if request.User == nil || request.Ressource == nil {
-		// Handle request malformed error
-        return nil
+        return newRequestMalformedError(request)
 	}
 
 	role := request.User.Role
 	resourceName := request.Ressource.GetRessourceName()
 
 	if role == "" || resourceName == "" {
-		// Handle request malformed error
-        return nil
+        return newRequestMalformedError(request)
 	}
 
 	isAuthozized, err := authorize(request, role, resourceName, []string{})
@@ -25,15 +23,13 @@ func Authorize(request *Request) error {
 		return nil
 	}
 
-	// Return access denied error
-	return nil
+    return newAccessDeniedError()
 }
 
 func authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
 	role, ok := Policy.Roles[roleName]
 	if !ok {
-		// Handle role not found error
-		return false, nil
+		return false, newRoleNotFoundError(roleName)
 	}
 
 	var permissions []*Permission
@@ -48,8 +44,7 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 
 	for _, action := range request.Actions {
 		if action == "" {
-			// Handle request malformed error
-			return false, nil
+			return false, newRequestMalformedError(request)
 		}
 
 		isAuthozized, err := validateAction(permissions, action, request)
@@ -68,8 +63,7 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 				}
 
 				if utils.StringSliceContains(checkedRoles, parent) {
-					// Handle role inheritance cycle error
-					return false, nil
+					return false, newRoleInheritanceCycleError(checkedRoles, parent)
 				}
 
 				isAuthozized, err := authorize(parentRequest, parent, resourceName, checkedRoles)
