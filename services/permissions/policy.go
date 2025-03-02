@@ -6,6 +6,10 @@ var Policy = &PolicyConfiguration{
 			Action: "update",
 			Conditions: Conditions{
 				func(request *Request) error {
+					if request.Ressource.GetOwner() == string(request.User.ID) {
+						return nil
+					}
+					// Handler access denied error
 					return nil
 				},
 			},
@@ -13,33 +17,25 @@ var Policy = &PolicyConfiguration{
 	},
 	Roles: Roles{
 		"admin": {
-			Name: "Admin",
-            Color: "red",
+			Name:  "Admin",
+			Color: "red",
 			Permissions: map[string][]*Permission{
 				"user": {
 					{Action: "create"},
+					{Action: "update"},
+					{Action: "delete"},
 				},
 			},
 			Parents: []string{"default", "developer"},
 		},
+		"developer": {
+			Name:    "developer",
+			Color:   "blue",
+			Parents: []string{"default"},
+		},
 		"default": {
-			Name: "",
-            Color: "gray",
-			Permissions: map[string][]*Permission{
-				"post": {
-					{Action: "read"},
-					{Action: "create"},
-					{Preset: "updateOwn"},
-					{
-						Action: "delete",
-						Conditions: Conditions{
-							func(request *Request) error {
-								return nil
-							},
-						},
-					},
-				},
-			},
+			Name:  "",
+			Color: "gray",
 		},
 	},
 }
