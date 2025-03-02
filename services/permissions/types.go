@@ -26,11 +26,11 @@ type Roles map[string]*struct {
 
 type Request struct {
 	User      *repository.User
-	Ressource Ressource
+	Ressource Resource
 	Actions   []string
 }
 
-type Ressource interface {
-	GetRessourceName() string
+type Resource interface {
+	GetResourceName() string
     GetOwner() string
 }

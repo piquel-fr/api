@@ -8,7 +8,7 @@ func Authorize(request *Request) error {
 	}
 
 	role := request.User.Role
-	resourceName := request.Ressource.GetRessourceName()
+	resourceName := request.Ressource.GetResourceName()
 
 	if role == "" || resourceName == "" {
 		return newRequestMalformedError(request)
