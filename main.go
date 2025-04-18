@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	log.Printf("Initializing piquel.fr website...\n")
+	log.Printf("Initializing piquel.fr API...\n")
 
     // Intialize services
     config.LoadConfig()
