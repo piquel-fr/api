@@ -3,6 +3,12 @@ on:
   push:
     branches:
       - "main"
+    paths-ignore:
+      - '.gitignore'
+      - '.air.toml'
+      - 'README.md'
+      - 'Makefile'
+
 
 jobs:
   build-and-push:
