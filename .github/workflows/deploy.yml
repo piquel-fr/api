@@ -1,18 +1,21 @@
-name: Build and Deploy
+name: Deploy
 on:
   push:
     branches:
       - "main"
     paths-ignore:
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
       - '.gitignore'
       - '.air.toml'
       - 'README.md'
       - 'Makefile'
 
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    name: Build Container and Push to Registry
     permissions:
       contents: read
       packages: write
@@ -43,6 +46,7 @@ jobs:
     
   deploy:
     runs-on: ubuntu-latest
+    name: Deploy to Production
     needs:
       - build-and-push
     steps:
@@ -53,7 +57,6 @@ jobs:
         run: |
           echo "DOMAIN=${{ vars.DOMAIN }}" >> ./.env
           echo "HOST=${{ vars.HOST }}" >> ./.env
-
           echo "DB_URL=${{ secrets.DB_URL }}" >> ./.env
 
           echo "AUTH_GITHUB_CLIENT_ID=${{ secrets.AUTH_GITHUB_CLIENT_ID }}" >> ./.env
