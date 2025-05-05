@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
+      - '.air.toml'
+      - 'README.md'
+      - 'Makefile'
+      - 'Dockerfile'
+      - 'docker-stack.yml'
+      - '.dockerignore'
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
+      - '.air.toml'
+      - 'README.md'
+      - 'Makefile'
+      - 'Dockerfile'
+      - 'docker-stack.yml'
+      - '.dockerignore'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Build the Server
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+
+      - name: Install dependencies
+        run: |
+          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+          go mod tidy
+          go mod download
+
+      - name: Build the service
+        run: |
+          sqlc generate
+          go build -o bin/api main.go
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-${{ github.sha }}
+          path: bin/
