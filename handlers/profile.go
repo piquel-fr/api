@@ -11,7 +11,7 @@ import (
 )
 
 func HandleBaseProfile(w http.ResponseWriter, r *http.Request) {
-	// Get username from query params. Should look likes "GET api.piquel.fr/profile?[username]
+	// Get username from query params. Should look likes "GET api.piquel.fr/profile?profile=[username]
 	username := r.URL.Query().Get("profile")
 	if username == "" {
 		var err error
@@ -42,4 +42,8 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(profile)
+}
+
+func updateProfile(w http.ResponseWriter, r *http.Request, username string) {
+	w.WriteHeader(http.StatusOK)
 }
