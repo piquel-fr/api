@@ -35,6 +35,11 @@ var Policy = &PolicyConfiguration{
 		"default": {
 			Name:  "",
 			Color: "gray",
+			Permissions: map[string][]*Permission{
+				"user": {
+					{Preset: "updateOwn"},
+				},
+			},
 		},
 	},
 }
