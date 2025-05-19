@@ -49,7 +49,7 @@ func GetProfile(username string) (*types.UserProfile, error) {
 		return nil, err
 	}
 
-	profile := &types.UserProfile{User: user}
+	profile := &types.UserProfile{User: &user}
 
 	role := permissions.Policy.Roles[profile.Role]
 
