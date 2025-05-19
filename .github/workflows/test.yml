@@ -37,7 +37,6 @@ jobs:
       - name: Install dependencies
         run: |
           go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-          go mod tidy
           go mod download
 
       - name: Build the service
