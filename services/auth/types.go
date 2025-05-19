@@ -1,4 +1,4 @@
-package permissions
+package auth
 
 import (
 	repository "github.com/PiquelChips/piquel.fr/database/generated"

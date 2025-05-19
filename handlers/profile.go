@@ -6,7 +6,6 @@ import (
 
 	"github.com/PiquelChips/piquel.fr/errors"
 	"github.com/PiquelChips/piquel.fr/services/auth"
-	"github.com/PiquelChips/piquel.fr/services/permissions"
 	"github.com/PiquelChips/piquel.fr/services/users"
 	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/gorilla/mux"
@@ -47,13 +46,13 @@ func handleProfile(w http.ResponseWriter, r *http.Request, username string) {
 	case http.MethodGet:
 		writeProfile(w, r, profile)
 	case http.MethodPut:
-		request := &permissions.Request{
+		request := &auth.Request{
 			User:      profile.User,
 			Ressource: profile,
 			Actions:   []string{"update"},
 		}
 
-		if err := permissions.Authorize(request); err != nil {
+		if err := auth.Authorize(request); err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}

@@ -1,4 +1,4 @@
-package permissions
+package auth
 
 import "github.com/PiquelChips/piquel.fr/errors"
 
