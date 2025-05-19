@@ -42,6 +42,7 @@ jobs:
       - name: Build the service
         run: |
           sqlc generate
+          go mod tidy
           go build -o bin/api main.go
 
       - name: Upload artifact
