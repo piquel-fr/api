@@ -1,31 +1,37 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-var ErrorNotAuthenticated error = NewError("User is not authenticated!", http.StatusUnauthorized)
+var ErrorNotAuthenticated Error = NewError("User is not authenticated!", http.StatusUnauthorized)
 
 type Error struct {
-	status int
-	error
+	message string
+	status  int
 }
 
 func NewError(message string, status int) Error {
-	return Error{error: fmt.Errorf(message), status: status}
+	return Error{message: fmt.Sprintf(message), status: status}
 }
 
-func (e *Error) Handle(w http.ResponseWriter) {
-	http.Error(w, e.Error(), e.status)
+func (e *Error) Error() string {
+	return e.message
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
-	if internalError, ok := err.(Error); ok {
-		internalError.Handle(w)
-		return
+	switch err.(type) {
+	case *Error:
+		e := err.(*Error)
+		http.Error(w, e.Error(), e.status)
+	case *json.SyntaxError:
+		http.Error(w, "syntax error in json payload", http.StatusBadRequest)
+	case *json.UnmarshalTypeError:
+		http.Error(w, "type error in json payload", http.StatusBadRequest)
+	default:
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		panic(err)
 	}
-
-	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	panic(err)
 }
