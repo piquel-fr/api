@@ -6,15 +6,15 @@ import (
 	"net/http"
 )
 
-var ErrorNotAuthenticated Error = NewError("User is not authenticated!", http.StatusUnauthorized)
+var ErrorNotAuthenticated *Error = NewError("User is not authenticated!", http.StatusUnauthorized)
 
 type Error struct {
 	message string
 	status  int
 }
 
-func NewError(message string, status int) Error {
-	return Error{message: fmt.Sprintf(message), status: status}
+func NewError(message string, status int) *Error {
+	return &Error{message: fmt.Sprintf(message), status: status}
 }
 
 func (e *Error) Error() string {
