@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	repository "github.com/PiquelChips/piquel.fr/database/generated"
 	"github.com/PiquelChips/piquel.fr/errors"
 	"github.com/PiquelChips/piquel.fr/services/auth"
+	"github.com/PiquelChips/piquel.fr/services/database"
 	"github.com/PiquelChips/piquel.fr/services/users"
 	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/gorilla/mux"
@@ -56,6 +58,7 @@ func handleProfile(w http.ResponseWriter, r *http.Request, username string) {
 			errors.HandleError(w, r, err)
 			return
 		}
+
 		updateProfile(w, r, profile)
 	}
 }
@@ -66,5 +69,32 @@ func writeProfile(w http.ResponseWriter, r *http.Request, profile *types.UserPro
 }
 
 func updateProfile(w http.ResponseWriter, r *http.Request, profile *types.UserProfile) {
+	w.WriteHeader(http.StatusOK)
+
+	params := repository.UpdateUserParams{}
+	if r.Header.Get("Content-Type") == "application/json" {
+		err := json.NewDecoder(r.Body).Decode(params)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+	} else if r.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
+		if err := r.ParseForm(); err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		params.Name = r.FormValue("name")
+		params.Username = r.FormValue("username")
+		params.Image = r.FormValue("image")
+	}
+
+	params.ID = profile.ID
+
+	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
