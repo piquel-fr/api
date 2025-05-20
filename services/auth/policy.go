@@ -30,7 +30,7 @@ var Policy = &PolicyConfiguration{
 			Parents: []string{"default", "developer"},
 		},
 		"developer": {
-			Name:    "developer",
+			Name:    "Developer",
 			Color:   "blue",
 			Parents: []string{"default"},
 		},
