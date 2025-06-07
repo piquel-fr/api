@@ -6,12 +6,10 @@ changelog:
   categories:
     - title: Features
       labels:
-        - feature
         - enhancement
     - title: Bugs and Optimizations
       labels:
-        - fix
-        - optmization
+        - bug
     - title: Other
       labels:
         - "*"
