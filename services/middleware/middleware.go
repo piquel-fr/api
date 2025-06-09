@@ -8,10 +8,10 @@ import (
 )
 
 func Setup(router *mux.Router) {
-	router.Use(cORSMiddleware(router))
+	router.Use(CORSMiddleware(router))
 }
 
-func cORSMiddleware(router *mux.Router) mux.MiddlewareFunc {
+func CORSMiddleware(router *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
