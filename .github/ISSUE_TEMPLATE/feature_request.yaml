@@ -1,0 +1,22 @@
+name: Feature Request
+description: Request a new feature.
+title: "[FEAT] "
+labels: ["enhancement"]
+projects: ["PiquelOrganization/1"]
+body:
+  - type: markdown
+    attributes:
+      values: |
+        Please properly describe the requested feature.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the feature
+      description: What system is this feature a part of? what exactly do you want to change?
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      options:
+        - label: Would you be willing/able to implement this feature yourself?
+          required: true
