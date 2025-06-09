@@ -13,9 +13,17 @@ func Init() {
 }
 
 type UserProfile struct {
-	repository.User
+	*repository.User
 	Color    string `json:"color"`
 	RoleName string `json:"role_name"`
+}
+
+func (profile *UserProfile) GetResourceName() string {
+	return "user"
+}
+
+func (profile *UserProfile) GetOwner() string {
+	return string(profile.ID)
 }
 
 type UserSession struct {

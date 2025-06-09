@@ -4,8 +4,8 @@ import (
 	"context"
 
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
+	"github.com/PiquelChips/piquel.fr/services/auth"
 	"github.com/PiquelChips/piquel.fr/services/database"
-	"github.com/PiquelChips/piquel.fr/services/permissions"
 	"github.com/PiquelChips/piquel.fr/types"
 	"github.com/PiquelChips/piquel.fr/utils"
 	"github.com/jackc/pgx/v5"
@@ -49,9 +49,9 @@ func GetProfile(username string) (*types.UserProfile, error) {
 		return nil, err
 	}
 
-	profile := &types.UserProfile{User: user}
+	profile := &types.UserProfile{User: &user}
 
-	role := permissions.Policy.Roles[profile.Role]
+	role := auth.Policy.Roles[profile.Role]
 
 	profile.RoleName = role.Name
 	profile.Color = role.Color

@@ -1,4 +1,6 @@
-package permissions
+package auth
+
+import "github.com/PiquelChips/piquel.fr/errors"
 
 var Policy = &PolicyConfiguration{
 	Permissions: map[string]*Permission{
@@ -9,7 +11,7 @@ var Policy = &PolicyConfiguration{
 					if request.Ressource.GetOwner() == string(request.User.ID) {
 						return nil
 					}
-					return newAccessDeniedError()
+					return errors.ErrorNotAuthenticated
 				},
 			},
 		},
@@ -28,13 +30,18 @@ var Policy = &PolicyConfiguration{
 			Parents: []string{"default", "developer"},
 		},
 		"developer": {
-			Name:    "developer",
+			Name:    "Developer",
 			Color:   "blue",
 			Parents: []string{"default"},
 		},
 		"default": {
 			Name:  "",
 			Color: "gray",
+			Permissions: map[string][]*Permission{
+				"user": {
+					{Preset: "updateOwn"},
+				},
+			},
 		},
 	},
 }

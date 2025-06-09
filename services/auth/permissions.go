@@ -1,6 +1,9 @@
-package permissions
+package auth
 
-import "github.com/PiquelChips/piquel.fr/utils"
+import (
+	"github.com/PiquelChips/piquel.fr/errors"
+	"github.com/PiquelChips/piquel.fr/utils"
+)
 
 func Authorize(request *Request) error {
 	if request.User == nil || request.Ressource == nil {
@@ -23,7 +26,7 @@ func Authorize(request *Request) error {
 		return nil
 	}
 
-	return newAccessDeniedError()
+	return errors.ErrorNotAuthenticated
 }
 
 func authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {

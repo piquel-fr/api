@@ -1,4 +1,4 @@
-package permissions
+package auth
 
 import (
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
@@ -32,5 +32,5 @@ type Request struct {
 
 type Resource interface {
 	GetResourceName() string
-    GetOwner() string
+	GetOwner() string
 }

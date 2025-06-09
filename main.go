@@ -31,8 +31,8 @@ func main() {
 
 	log.Printf("[Router] Initialized router!\n")
 
-	router.HandleFunc("/profile", handlers.HandleBaseProfile).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
-	router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/profile", handlers.HandleBaseProfile).Methods(http.MethodGet, http.MethodPut, http.MethodOptions)
+	router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodPut, http.MethodOptions)
 
 	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
