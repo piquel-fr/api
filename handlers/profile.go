@@ -73,8 +73,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request, profile *types.UserPr
 
 	params := repository.UpdateUserParams{}
 	if r.Header.Get("Content-Type") == "application/json" {
-		err := json.NewDecoder(r.Body).Decode(params)
-		if err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
