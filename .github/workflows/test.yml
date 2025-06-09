@@ -3,50 +3,42 @@ name: Build
 on:
   push:
     paths-ignore:
-      - '.github/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
       - '.gitignore'
       - '.air.toml'
       - 'README.md'
       - 'Makefile'
-      - 'Dockerfile'
+      - 'LICENSE'
       - 'docker-stack.yml'
-      - '.dockerignore'
   pull_request:
     paths-ignore:
-      - '.github/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
       - '.gitignore'
       - '.air.toml'
       - 'README.md'
       - 'Makefile'
-      - 'Dockerfile'
+      - 'LICENSE'
       - 'docker-stack.yml'
-      - '.dockerignore'
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-    name: Build the Server
+    name: Build Container
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
         with:
-          go-version: '1.24.x'
-
-      - name: Install dependencies
-        run: |
-          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-          go mod download
-
-      - name: Build the service
-        run: |
-          sqlc generate
-          go mod tidy
-          go build -o bin/api main.go
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-${{ github.sha }}
-          path: bin/
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
