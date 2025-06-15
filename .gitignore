@@ -8,6 +8,3 @@ bin/
 # Environment
 .env
 .env.*
-
-# sqlc files
-database/generated

@@ -25,6 +25,3 @@ LICENSE
 # Environment
 .env
 .env.*
-
-# sqlc files
-database/generated/
