@@ -6,7 +6,7 @@ projects: ["PiquelOrganization/1"]
 body:
   - type: markdown
     attributes:
-      values: |
+      value: |
         Please properly describe the requested feature.
   - type: textarea
     id: description
@@ -17,6 +17,7 @@ body:
       required: true
   - type: checkboxes
     attributes:
+      label: A few questions
       options:
         - label: Would you be willing/able to implement this feature yourself?
           required: true

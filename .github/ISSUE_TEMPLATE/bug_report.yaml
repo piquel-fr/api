@@ -6,7 +6,7 @@ projects: ["PiquelOrganization/1"]
 body:
   - type: markdown
     attributes:
-      values: |
+      value: |
         Please fill out the bug report as accurately and diligently as possible.
   - type: textarea
     id: description
@@ -24,6 +24,7 @@ body:
       required: false
   - type: checkboxes
     attributes:
+      label: A few questions
       options:
         - label: Would you be willing/able to fix this bug yourself?
           required: true
