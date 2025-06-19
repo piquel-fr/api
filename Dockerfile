@@ -1,4 +1,4 @@
-FROM golang:1.24.2 AS builder
+FROM golang:1.24.4 AS builder
 
 WORKDIR /api.piquel.fr
 
@@ -7,6 +7,7 @@ RUN export PATH="$PATH:$(go env GOPATH)/bin"
 
 # Setup go dependencies
 COPY go.mod .
+COPY go.sum .
 RUN go mod download
 
 # Copy everything else
