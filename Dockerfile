@@ -7,6 +7,7 @@ RUN export PATH="$PATH:$(go env GOPATH)/bin"
 
 # Setup go dependencies
 COPY go.mod .
+COPY go.sum .
 RUN go mod download
 
 # Copy everything else
