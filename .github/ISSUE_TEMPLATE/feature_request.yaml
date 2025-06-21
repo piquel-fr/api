@@ -20,4 +20,3 @@ body:
       label: A few questions
       options:
         - label: Would you be willing/able to implement this feature yourself?
-          required: true
