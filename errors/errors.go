@@ -2,7 +2,6 @@ package errors
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -14,7 +13,7 @@ type Error struct {
 }
 
 func NewError(message string, status int) *Error {
-	return &Error{message: fmt.Sprintf(message), status: status}
+	return &Error{message: message, status: status}
 }
 
 func (e *Error) Error() string {
