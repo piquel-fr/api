@@ -9,6 +9,7 @@ services:
       - "traefik.http.routers.piquel-api.tls.certresolver=piquel-resolver"
     environment:
       DOMAIN: ${DOMAIN}
+      REDIRECT_TO: ${REDIRECT_TO}
       HOST: ${HOST}
       SSL: "true"
       DB_URL: ${DB_URL}

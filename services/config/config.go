@@ -16,6 +16,7 @@ func LoadConfig() {
 	// Load config from environment
 	Envs = EnvsConfig{
 		Domain:             getEnv("DOMAIN"),
+		RedirectTo:         getEnv("REDIRECT_TO"),
 		Host:               getEnv("HOST"),
 		Port:               getDefaultEnv("PORT", "80"),
 		SSL:                getEnv("SSL"),

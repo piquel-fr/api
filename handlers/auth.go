@@ -104,7 +104,7 @@ func redirectUser(w http.ResponseWriter, r *http.Request) {
 	session.Save(r, w)
 
 	if redirectURL == nil || redirectURL == "" {
-		redirectURL = fmt.Sprintf("http://%s", config.Envs.Domain)
+		redirectURL = config.Envs.RedirectTo
 	}
 
 	http.Redirect(w, r, redirectURL.(string), http.StatusTemporaryRedirect)
