@@ -23,6 +23,7 @@ func CORSMiddleware(router *mux.Router) mux.MiddlewareFunc {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Max-Age", "43100")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 			if r.Method == http.MethodOptions {
 				var match mux.RouteMatch
