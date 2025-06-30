@@ -6,6 +6,7 @@ import (
 )
 
 var ErrorNotAuthenticated *Error = NewError("User is not authenticated!", http.StatusUnauthorized)
+var ErrorForbidden *Error = NewError("You are not allowed to access this ressource!", http.StatusForbidden)
 
 type Error struct {
 	message string

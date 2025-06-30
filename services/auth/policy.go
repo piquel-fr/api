@@ -11,7 +11,7 @@ var Policy = &PolicyConfiguration{
 					if request.Ressource.GetOwner() == request.User.ID {
 						return nil
 					}
-					return errors.ErrorNotAuthenticated
+					return errors.ErrorForbidden
 				},
 			},
 		},

@@ -26,7 +26,7 @@ func Authorize(request *Request) error {
 		return nil
 	}
 
-	return errors.ErrorNotAuthenticated
+	return errors.ErrorForbidden
 }
 
 func authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
