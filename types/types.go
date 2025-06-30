@@ -22,8 +22,8 @@ func (profile *UserProfile) GetResourceName() string {
 	return "user"
 }
 
-func (profile *UserProfile) GetOwner() string {
-	return string(profile.ID)
+func (profile *UserProfile) GetOwner() int32 {
+	return profile.ID
 }
 
 type UserSession struct {
