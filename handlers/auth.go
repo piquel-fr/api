@@ -29,7 +29,7 @@ func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-    redirectUser(w, r)
+	redirectUser(w, r)
 }
 
 func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
@@ -68,13 +68,12 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	redirectURL := getRedirectURL(r)
-    http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 }
 
 func getRedirectURL(r *http.Request) string {
 	redirectTo := r.URL.Query().Get("redirectTo")
-
-    return fmt.Sprintf("https://%s/%s", config.Envs.Domain, strings.Trim(redirectTo, "/"))
+	return fmt.Sprintf("%s/%s", config.Envs.RedirectTo, strings.Trim(redirectTo, "/"))
 }
 
 func saveRedirectURL(w http.ResponseWriter, r *http.Request) {
@@ -87,10 +86,10 @@ func saveRedirectURL(w http.ResponseWriter, r *http.Request) {
 
 	session.Values["redirectTo"] = redirectURL
 
-    err = session.Save(r, w)
-    if err != nil {
-        panic(err)
-    }
+	err = session.Save(r, w)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func redirectUser(w http.ResponseWriter, r *http.Request) {
@@ -99,14 +98,14 @@ func redirectUser(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-    redirectURL := session.Values["redirectTo"]
-    session.Values["redirectTo"] = ""
+	redirectURL := session.Values["redirectTo"]
+	session.Values["redirectTo"] = ""
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 
-    if redirectURL == nil || redirectURL == "" {
-        redirectURL = fmt.Sprintf("https://%s", config.Envs.Domain)
-    }
+	if redirectURL == nil || redirectURL == "" {
+		redirectURL = fmt.Sprintf("http://%s", config.Envs.Domain)
+	}
 
-    http.Redirect(w, r, redirectURL.(string), http.StatusTemporaryRedirect)
+	http.Redirect(w, r, redirectURL.(string), http.StatusTemporaryRedirect)
 }
