@@ -40,7 +40,6 @@ func CORSMiddleware(router *mux.Router) mux.MiddlewareFunc {
 
 				w.Header().Set("Access-Control-Allow-Methods", strings.Join(allMethods, ","))
 				w.WriteHeader(http.StatusOK)
-				// Return immediately for OPTIONS requests
 				return
 			}
 

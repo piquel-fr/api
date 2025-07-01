@@ -22,6 +22,9 @@ func (e *Error) Error() string {
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+	if err == nil {
+		panic("nil error being handled")
+	}
 	switch err.(type) {
 	case *Error:
 		e := err.(*Error)
