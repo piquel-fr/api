@@ -49,8 +49,7 @@ func StoreUserSession(w http.ResponseWriter, r *http.Request, username string, u
 	session.Values["username"] = username
 	session.Values["session"] = userSession
 
-	err = session.Save(r, w)
-	return err
+	return session.Save(r, w)
 }
 
 func GetUserSession(r *http.Request) (*types.UserSession, error) {
@@ -77,6 +76,17 @@ func GetUsername(r *http.Request) (string, error) {
 		return "", errors.ErrorNotAuthenticated
 	}
 	return username.(string), nil
+}
+
+func SetUsername(w http.ResponseWriter, r *http.Request, username string) error {
+	session, err := gothic.Store.Get(r, SessionName)
+	if err != nil {
+		return err
+	}
+
+	session.Values["username"] = username
+
+	return session.Save(r, w)
 }
 
 func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {

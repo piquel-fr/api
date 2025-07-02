@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	repository "github.com/PiquelChips/piquel.fr/database/generated"
@@ -16,6 +17,7 @@ import (
 
 func HandleBaseProfile(w http.ResponseWriter, r *http.Request) {
 	// Get username from query params. Should look likes "GET api.piquel.fr/profile?profile=[username]
+
 	username := r.URL.Query().Get("profile")
 	if username == "" {
 		var err error
@@ -38,7 +40,7 @@ func handleProfile(w http.ResponseWriter, r *http.Request, username string) {
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			// Properly redirect to cookied URL
-			http.Redirect(w, r, "/", http.StatusNotFound)
+			http.Error(w, fmt.Sprintf("user %s does not exist", username), http.StatusNotFound)
 			return
 		}
 		panic(err)
@@ -95,5 +97,8 @@ func updateProfile(w http.ResponseWriter, r *http.Request, profile *types.UserPr
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	if err := auth.SetUsername(w, r, params.Username); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
 }

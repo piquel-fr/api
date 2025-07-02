@@ -8,10 +8,10 @@ var Policy = &PolicyConfiguration{
 			Action: "update",
 			Conditions: Conditions{
 				func(request *Request) error {
-					if request.Ressource.GetOwner() == string(request.User.ID) {
+					if request.Ressource.GetOwner() == request.User.ID {
 						return nil
 					}
-					return errors.ErrorNotAuthenticated
+					return errors.ErrorForbidden
 				},
 			},
 		},

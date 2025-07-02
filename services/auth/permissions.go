@@ -26,7 +26,7 @@ func Authorize(request *Request) error {
 		return nil
 	}
 
-	return errors.ErrorNotAuthenticated
+	return errors.ErrorForbidden
 }
 
 func authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
@@ -90,6 +90,11 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 
 func validateAction(permissions []*Permission, action string, request *Request) (bool, error) {
 	for _, permission := range permissions {
+
+		if permission.Preset != "" {
+			permission = Policy.Permissions[permission.Preset]
+		}
+
 		if permission.Action != action {
 			continue
 		}

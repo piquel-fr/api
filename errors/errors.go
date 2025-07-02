@@ -6,6 +6,7 @@ import (
 )
 
 var ErrorNotAuthenticated *Error = NewError("User is not authenticated!", http.StatusUnauthorized)
+var ErrorForbidden *Error = NewError("You are not allowed to access this ressource!", http.StatusForbidden)
 
 type Error struct {
 	message string
@@ -21,6 +22,9 @@ func (e *Error) Error() string {
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+	if err == nil {
+		panic("nil error being handled")
+	}
 	switch err.(type) {
 	case *Error:
 		e := err.(*Error)

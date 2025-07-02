@@ -32,5 +32,5 @@ type Request struct {
 
 type Resource interface {
 	GetResourceName() string
-	GetOwner() string
+	GetOwner() int32
 }
