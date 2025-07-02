@@ -91,11 +91,12 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 func validateAction(permissions []*Permission, action string, request *Request) (bool, error) {
 	for _, permission := range permissions {
 
-		if permission.Action != action {
+		if permission.Preset != "" {
 			permission = Policy.Permissions[permission.Preset]
-			if permission.Action != action {
-				continue
-			}
+		}
+
+		if permission.Action != action {
+			continue
 		}
 
 		if len(permission.Conditions) == 0 {
