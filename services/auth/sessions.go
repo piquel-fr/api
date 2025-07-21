@@ -18,8 +18,8 @@ func InitCookieStore() {
 
 	store.MaxAge(178200)
 	store.Options.Path = "/"
-	store.Options.HttpOnly = false // should be true if http
-	store.Options.Secure = true    // should be true if https
+	store.Options.HttpOnly = false
+	store.Options.Secure = true
 	store.Options.Domain = config.Envs.Domain
 
 	log.Printf("[Cookies] Initialized cookie service!\n")
@@ -33,20 +33,20 @@ func VerifyUserSession(r *http.Request) error {
 		return err
 	}
 
-	user := session.Values["user"]
+	user := session.Values["session"]
 	if user == nil {
 		return errors.ErrorNotAuthenticated
 	}
 	return nil
 }
 
-func StoreUserSession(w http.ResponseWriter, r *http.Request, username string, userSession *types.UserSession) error {
+func StoreUserSession(w http.ResponseWriter, r *http.Request, userId int32, userSession *types.UserSession) error {
 	session, err := gothic.Store.Get(r, SessionName)
 	if err != nil {
 		return err
 	}
 
-	session.Values["username"] = username
+	session.Values["userId"] = userId
 	session.Values["session"] = userSession
 
 	return session.Save(r, w)
@@ -65,28 +65,17 @@ func GetUserSession(r *http.Request) (*types.UserSession, error) {
 	return userSession.(*types.UserSession), nil
 }
 
-func GetUsername(r *http.Request) (string, error) {
+func GetUserId(r *http.Request) (int32, error) {
 	session, err := gothic.Store.Get(r, SessionName)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
-	username := session.Values["username"]
-	if username == "" || username == nil {
-		return "", errors.ErrorNotAuthenticated
+	userId := session.Values["userId"]
+	if userId == 0 || userId == nil {
+		return 0, errors.ErrorNotAuthenticated
 	}
-	return username.(string), nil
-}
-
-func SetUsername(w http.ResponseWriter, r *http.Request, username string) error {
-	session, err := gothic.Store.Get(r, SessionName)
-	if err != nil {
-		return err
-	}
-
-	session.Values["username"] = username
-
-	return session.Save(r, w)
+	return userId.(int32), nil
 }
 
 func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {
@@ -94,7 +83,7 @@ func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	session.Values["username"] = ""
+	session.Values["userId"] = 0
 	session.Values["session"] = types.UserSession{}
 	session.Options.MaxAge = -1
 	session.Save(r, w)

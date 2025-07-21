@@ -39,13 +39,13 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	username, err := users.VerifyUser(r.Context(), &user)
+	userId, err := users.VerifyUser(r.Context(), &user)
 	if err != nil {
 		http.Error(w, "Error verifying user", http.StatusInternalServerError)
 		panic(err)
 	}
 
-	err = auth.StoreUserSession(w, r, username, types.UserSessionFromGothUser(&user))
+	err = auth.StoreUserSession(w, r, userId, types.UserSessionFromGothUser(&user))
 	if err != nil {
 		http.Error(w, "Error authencticating", http.StatusInternalServerError)
 		panic(err)

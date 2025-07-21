@@ -16,16 +16,21 @@ import (
 )
 
 func HandleBaseProfile(w http.ResponseWriter, r *http.Request) {
-	// Get username from query params. Should look likes "GET api.piquel.fr/profile?profile=[username]
+	// Get username from query params. Should look likes "GET api.piquel.fr/profile?username=[username]
 
-	username := r.URL.Query().Get("profile")
+	username := r.URL.Query().Get("username")
 	if username == "" {
-		var err error
-		username, err = auth.GetUsername(r)
-		if username == "" || err != nil {
+		id, err := auth.GetUserId(r)
+		if err != nil {
 			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
 			return
 		}
+		profile, err := users.GetProfileFromUserId(id)
+		if err != nil {
+			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
+			return
+		}
+		username = profile.Username
 	}
 	handleProfile(w, r, username)
 }
@@ -36,7 +41,7 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleProfile(w http.ResponseWriter, r *http.Request, username string) {
-	profile, err := users.GetProfile(username)
+	profile, err := users.GetProfileFromUsername(username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			// Properly redirect to cookied URL
@@ -93,11 +98,6 @@ func updateProfile(w http.ResponseWriter, r *http.Request, profile *types.UserPr
 	params.ID = profile.ID
 
 	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if err := auth.SetUsername(w, r, params.Username); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

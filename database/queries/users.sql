@@ -1,6 +1,6 @@
--- name: AddUser :exec
+-- name: AddUser :one
 INSERT INTO "users" ("username", "name", "image", "email", "role")
-VALUES ($1, $2, $3, $4, $5);
+VALUES ($1, $2, $3, $4, $5) RETURNING "id";
 
 -- name: GetUserByUsername :one
 SELECT * FROM "users" WHERE "username" = $1;
