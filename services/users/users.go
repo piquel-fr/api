@@ -12,7 +12,7 @@ import (
 	"github.com/markbates/goth"
 )
 
-func VerifyUser(context context.Context, inUser *goth.User) (string, error) {
+func VerifyUser(context context.Context, inUser *goth.User) (int32, error) {
 	user, err := database.Queries.GetUserByEmail(context, inUser.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -21,10 +21,10 @@ func VerifyUser(context context.Context, inUser *goth.User) (string, error) {
 		panic(err)
 	}
 
-	return user.Username, nil
+	return user.ID, nil
 }
 
-func registerUser(context context.Context, inUser *goth.User) (string, error) {
+func registerUser(context context.Context, inUser *goth.User) (int32, error) {
 	params := repository.AddUserParams{}
 
 	params.Email = inUser.Email
@@ -39,12 +39,28 @@ func registerUser(context context.Context, inUser *goth.User) (string, error) {
 		params.Username = utils.FormatUsername(inUser.NickName)
 	}
 
-	err := database.Queries.AddUser(context, params)
-	return params.Username, err
+	id, err := database.Queries.AddUser(context, params)
+	return id, err
 }
 
-func GetProfile(username string) (*types.UserProfile, error) {
+func GetProfileFromUsername(username string) (*types.UserProfile, error) {
 	user, err := database.Queries.GetUserByUsername(context.Background(), username)
+	if err != nil {
+		return nil, err
+	}
+
+	profile := &types.UserProfile{User: &user}
+
+	role := auth.Policy.Roles[profile.Role]
+
+	profile.RoleName = role.Name
+	profile.Color = role.Color
+
+	return profile, nil
+}
+
+func GetProfileFromUserId(userId int32) (*types.UserProfile, error) {
+	user, err := database.Queries.GetUserById(context.Background(), userId)
 	if err != nil {
 		return nil, err
 	}
