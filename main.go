@@ -5,13 +5,14 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/database"
+	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/types"
-	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -23,6 +24,7 @@ func main() {
 	auth.InitCookieStore()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
+	gh.InitGithubWrapper()
 	types.Init()
 
 	// Initialize the router
