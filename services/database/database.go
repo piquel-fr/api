@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	repository "github.com/PiquelChips/piquel.fr/database/generated"
-	"github.com/PiquelChips/piquel.fr/services/config"
+	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/services/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

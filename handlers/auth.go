@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/PiquelChips/piquel.fr/services/auth"
-	"github.com/PiquelChips/piquel.fr/services/config"
-	"github.com/PiquelChips/piquel.fr/services/users"
-	"github.com/PiquelChips/piquel.fr/types"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/services/users"
+	"github.com/piquel-fr/api/types"
 	"github.com/markbates/goth/gothic"
 )
 

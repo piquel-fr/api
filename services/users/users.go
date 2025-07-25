@@ -3,11 +3,11 @@ package users
 import (
 	"context"
 
-	repository "github.com/PiquelChips/piquel.fr/database/generated"
-	"github.com/PiquelChips/piquel.fr/services/auth"
-	"github.com/PiquelChips/piquel.fr/services/database"
-	"github.com/PiquelChips/piquel.fr/types"
-	"github.com/PiquelChips/piquel.fr/utils"
+	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/markbates/goth"
 )

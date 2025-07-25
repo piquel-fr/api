@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"time"
 
-	repository "github.com/PiquelChips/piquel.fr/database/generated"
+	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/markbates/goth"
 )
 

@@ -1,6 +1,6 @@
 package auth
 
-import "github.com/PiquelChips/piquel.fr/errors"
+import "github.com/piquel-fr/api/errors"
 
 var Policy = &PolicyConfiguration{
 	Permissions: map[string]*Permission{

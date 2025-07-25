@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/PiquelChips/piquel.fr/services/config"
+	"github.com/piquel-fr/api/services/config"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/github"
 	"github.com/markbates/goth/providers/google"

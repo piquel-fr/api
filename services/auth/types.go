@@ -1,7 +1,7 @@
 package auth
 
 import (
-	repository "github.com/PiquelChips/piquel.fr/database/generated"
+	repository "github.com/piquel-fr/api/database/generated"
 )
 
 type PolicyConfiguration struct {

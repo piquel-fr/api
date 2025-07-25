@@ -1,4 +1,4 @@
-module github.com/PiquelChips/piquel.fr
+module github.com/piquel-fr/api
 
 go 1.24.4
 

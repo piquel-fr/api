@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	repository "github.com/PiquelChips/piquel.fr/database/generated"
-	"github.com/PiquelChips/piquel.fr/errors"
-	"github.com/PiquelChips/piquel.fr/services/auth"
-	"github.com/PiquelChips/piquel.fr/services/database"
-	"github.com/PiquelChips/piquel.fr/services/users"
-	"github.com/PiquelChips/piquel.fr/types"
+	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/services/users"
+	"github.com/piquel-fr/api/types"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 )

@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/PiquelChips/piquel.fr/errors"
-	"github.com/PiquelChips/piquel.fr/services/config"
-	"github.com/PiquelChips/piquel.fr/types"
+	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/types"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth/gothic"
 )

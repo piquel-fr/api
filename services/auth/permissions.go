@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"github.com/PiquelChips/piquel.fr/errors"
-	"github.com/PiquelChips/piquel.fr/utils"
+	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/utils"
 )
 
 func Authorize(request *Request) error {
