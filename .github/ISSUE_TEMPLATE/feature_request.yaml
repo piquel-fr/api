@@ -2,7 +2,7 @@ name: Feature Request
 description: Request a new feature.
 title: "[FEAT] "
 labels: ["enhancement"]
-projects: ["PiquelOrganization/1"]
+projects: ["piquel-fr/1"]
 body:
   - type: markdown
     attributes:
