@@ -20,12 +20,12 @@ func main() {
 	log.Printf("Initializing piquel.fr API...\n")
 
 	// Intialize services
+	gh.InitGithubWrapper()
 	config.LoadConfig()
 	auth.InitAuthentication()
 	auth.InitCookieStore()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
-	gh.InitGithubWrapper()
 
 	if err := docs.InitDocumentation(); err != nil {
 		panic(err)

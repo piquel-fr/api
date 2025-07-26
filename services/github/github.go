@@ -16,7 +16,7 @@ func InitGithubWrapper() {
 }
 
 func GetRepositoryFile(owner, repo, ref, route string) ([]byte, error) {
-	file, _, res, err := Client.Repositories.GetContents(context.Background(), "piquel-fr", "docs-test", route, &github.RepositoryContentGetOptions{Ref: "main"})
+	file, _, res, err := Client.Repositories.GetContents(context.Background(), owner, repo, route, &github.RepositoryContentGetOptions{Ref: "main"})
 	if err != nil {
 		return nil, err
 	}
@@ -35,4 +35,12 @@ func GetRepositoryFile(owner, repo, ref, route string) ([]byte, error) {
 	}
 
 	return []byte(data), nil
+}
+
+func RepositoryExists(owner, name string) bool {
+	_, res, _ := Client.Repositories.Get(context.Background(), owner, name)
+	if res.StatusCode == 200 {
+		return true
+	}
+	return false
 }
