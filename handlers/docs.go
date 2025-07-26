@@ -26,6 +26,7 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
+		return
 	}
 	docsConfig := models.Documentation(config)
 
@@ -50,6 +51,7 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 	html, err := docs.GetDocumentaionPage(page, &docsConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -92,8 +94,6 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
-
-	w.Write([]byte("you are allowed to create a documentation instance"))
 }
 
 func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +101,7 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
+		return
 	}
 	docsConfig := models.Documentation(config)
 
@@ -130,6 +131,7 @@ func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
 	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
+		return
 	}
 	docsConfig := models.Documentation(config)
 
@@ -159,6 +161,7 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
+		return
 	}
 	docsConfig := models.Documentation(config)
 
