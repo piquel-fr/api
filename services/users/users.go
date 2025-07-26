@@ -2,14 +2,15 @@ package users
 
 import (
 	"context"
+	"net/http"
 
-	repository "github.com/piquel-fr/api/database/generated"
-	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/database"
-	"github.com/piquel-fr/api/models"
-	"github.com/piquel-fr/api/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/markbates/goth"
+	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/utils"
 )
 
 func VerifyUser(context context.Context, inUser *goth.User) (int32, error) {
@@ -73,4 +74,14 @@ func GetProfileFromUserId(userId int32) (*models.UserProfile, error) {
 	profile.Color = role.Color
 
 	return profile, nil
+}
+
+func GetUserFromRequest(r *http.Request) (*repository.User, error) {
+	userId, err := auth.GetUserId(r)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := database.Queries.GetUserById(r.Context(), userId)
+	return &user, err
 }

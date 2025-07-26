@@ -80,7 +80,7 @@ var Policy = &PolicyConfiguration{
 						Action: "create",
 						Conditions: Conditions{
 							func(request *Request) error {
-								count, err := database.Queries.CountUserDocumentations(request.Context, request.Ressource.GetOwner())
+								count, err := database.Queries.CountUserDocumentations(request.Context, request.User.ID)
 								if err != nil {
 									return err
 								}
