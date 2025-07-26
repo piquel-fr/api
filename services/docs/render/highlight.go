@@ -10,10 +10,10 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 )
 
-func renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock, entering bool, config *types.UserDocsConfig) error {
+func renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock, entering bool, config *models.Documentation) error {
 	lang := string(codeBlock.Info)
 	source := string(codeBlock.Literal)
 	l := lexers.Get(lang)
@@ -37,8 +37,8 @@ func renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock, entering bool, confi
 	return htmlFormatter.Format(w, style, iterator)
 }
 
-func getHighlightStyle(config *types.UserDocsConfig) (*chroma.Style, error) {
-	styleName := config.HighlightStyleName
+func getHighlightStyle(config *models.Documentation) (*chroma.Style, error) {
+	styleName := config.HighlightStyle
 	if styleName == "" {
 		styleName = "tokyonight"
 	}

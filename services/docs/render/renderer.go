@@ -6,7 +6,7 @@ import (
 
 	"github.com/alecthomas/chroma/v2/formatters/html"
 	gh "github.com/piquel-fr/api/services/github"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 )
 
 var (
@@ -35,7 +35,7 @@ func InitRenderer() error {
 	return nil
 }
 
-func RenderPage(data []byte, config *types.UserDocsConfig) ([]byte, error) {
+func RenderPage(data []byte, config *models.Documentation) ([]byte, error) {
 	custom, err := renderCustom(data, config)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func RenderPage(data []byte, config *types.UserDocsConfig) ([]byte, error) {
 	return addStyles(html, config), nil
 }
 
-func loadInclude(path string, config *types.UserDocsConfig) ([]byte, error) {
+func loadInclude(path string, config *models.Documentation) ([]byte, error) {
 	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, ".common/includes/"+path+".md")
 	return file, err
 }

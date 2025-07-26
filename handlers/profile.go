@@ -10,7 +10,7 @@ import (
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/users"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 )
@@ -70,12 +70,12 @@ func handleProfile(w http.ResponseWriter, r *http.Request, username string) {
 	}
 }
 
-func writeProfile(w http.ResponseWriter, r *http.Request, profile *types.UserProfile) {
+func writeProfile(w http.ResponseWriter, r *http.Request, profile *models.UserProfile) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(profile)
 }
 
-func updateProfile(w http.ResponseWriter, r *http.Request, profile *types.UserProfile) {
+func updateProfile(w http.ResponseWriter, r *http.Request, profile *models.UserProfile) {
 	w.WriteHeader(http.StatusOK)
 
 	params := repository.UpdateUserParams{}

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 )
 
-func renderCustom(md []byte, config *types.UserDocsConfig) ([]byte, error) {
+func renderCustom(md []byte, config *models.Documentation) ([]byte, error) {
 	var err error
 	md, err = renderSingleline(md, config)
 	if err != nil {
@@ -22,7 +22,7 @@ func renderCustom(md []byte, config *types.UserDocsConfig) ([]byte, error) {
 	return md, nil
 }
 
-func renderSingleline(md []byte, config *types.UserDocsConfig) ([]byte, error) {
+func renderSingleline(md []byte, config *models.Documentation) ([]byte, error) {
 	match := singleline.FindSubmatch(md)
 	if match == nil {
 		return md, nil
@@ -46,7 +46,7 @@ func renderSingleline(md []byte, config *types.UserDocsConfig) ([]byte, error) {
 	return renderSingleline(md, config)
 }
 
-func renderMultiline(md []byte, config *types.UserDocsConfig) ([]byte, error) {
+func renderMultiline(md []byte, config *models.Documentation) ([]byte, error) {
 	match := multiline.FindSubmatch(md)
 	if match == nil {
 		return md, nil

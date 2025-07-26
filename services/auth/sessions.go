@@ -6,7 +6,7 @@ import (
 
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth/gothic"
 )
@@ -40,7 +40,7 @@ func VerifyUserSession(r *http.Request) error {
 	return nil
 }
 
-func StoreUserSession(w http.ResponseWriter, r *http.Request, userId int32, userSession *types.UserSession) error {
+func StoreUserSession(w http.ResponseWriter, r *http.Request, userId int32, userSession *models.UserSession) error {
 	session, err := gothic.Store.Get(r, SessionName)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func StoreUserSession(w http.ResponseWriter, r *http.Request, userId int32, user
 	return session.Save(r, w)
 }
 
-func GetUserSession(r *http.Request) (*types.UserSession, error) {
+func GetUserSession(r *http.Request) (*models.UserSession, error) {
 	session, err := gothic.Store.Get(r, SessionName)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func GetUserSession(r *http.Request) (*types.UserSession, error) {
 	if userSession == nil {
 		return nil, errors.ErrorNotAuthenticated
 	}
-	return userSession.(*types.UserSession), nil
+	return userSession.(*models.UserSession), nil
 }
 
 func GetUserId(r *http.Request) (int32, error) {
@@ -84,7 +84,7 @@ func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	session.Values["userId"] = 0
-	session.Values["session"] = types.UserSession{}
+	session.Values["session"] = models.UserSession{}
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 	return nil

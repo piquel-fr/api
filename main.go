@@ -13,7 +13,7 @@ import (
 	"github.com/piquel-fr/api/services/docs"
 	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 		panic(err)
 	}
 
-	types.Init()
+	models.Init()
 
 	// Initialize the router
 	router := mux.NewRouter()

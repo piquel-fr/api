@@ -9,7 +9,7 @@ import (
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/utils"
 )
 
@@ -22,13 +22,13 @@ const tailwindBase = `
     h6 { font-size: 0.67em; }
 `
 
-func parseMarkdown(md []byte, config *types.UserDocsConfig) ast.Node {
+func parseMarkdown(md []byte, config *models.Documentation) ast.Node {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)
 	return p.Parse(md)
 }
 
-func renderHTML(doc ast.Node, config *types.UserDocsConfig) []byte {
+func renderHTML(doc ast.Node, config *models.Documentation) []byte {
 	htmlFlags := html.CommonFlags
 
 	if config.FullPage {
@@ -44,7 +44,7 @@ func renderHTML(doc ast.Node, config *types.UserDocsConfig) []byte {
 	return markdown.Render(doc, renderer)
 }
 
-func renderHook(config *types.UserDocsConfig) html.RenderNodeFunc {
+func renderHook(config *models.Documentation) html.RenderNodeFunc {
 	return func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 		switch node := node.(type) {
 		case *ast.CodeBlock:
@@ -55,7 +55,7 @@ func renderHook(config *types.UserDocsConfig) html.RenderNodeFunc {
 	}
 }
 
-func addStyles(html []byte, config *types.UserDocsConfig) []byte {
+func addStyles(html []byte, config *models.Documentation) []byte {
 	var styles []byte
 
 	if config.UseTailwind {
@@ -70,7 +70,7 @@ func addStyles(html []byte, config *types.UserDocsConfig) []byte {
 	return slices.Concat(html, styles)
 }
 
-func fixupAST(doc ast.Node, config *types.UserDocsConfig) ast.Node {
+func fixupAST(doc ast.Node, config *models.Documentation) ast.Node {
 	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
 		switch node := node.(type) {
 		case *ast.Link:
@@ -82,7 +82,7 @@ func fixupAST(doc ast.Node, config *types.UserDocsConfig) ast.Node {
 	return doc
 }
 
-func fixupLink(link *ast.Link, entering bool, config *types.UserDocsConfig) {
+func fixupLink(link *ast.Link, entering bool, config *models.Documentation) {
 	if !entering {
 		return
 	}
