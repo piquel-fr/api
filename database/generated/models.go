@@ -15,9 +15,10 @@ type Documentation struct {
 	RepoName       string `json:"repoName"`
 	RepoRef        string `json:"repoRef"`
 	HighlightStyle string `json:"highlightStyle"`
+	Root           string `json:"root"`
 	FullPage       bool   `json:"fullPage"`
 	UseTailwind    bool   `json:"useTailwind"`
-	Root           string `json:"root"`
+	Public         bool   `json:"public"`
 }
 
 type User struct {

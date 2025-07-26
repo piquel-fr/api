@@ -17,7 +17,8 @@ CREATE TABLE "documentation" (
   "repoRef" TEXT NOT NULL,
   
   "highlightStyle" VARCHAR(127) NOT NULL DEFAULT "tokyonight",
+  "root" VARCHAR(127) NOT NULL DEFAULT "/",
   "fullPage" BOOLEAN NOT NULL DEFAULT FALSE,
   "useTailwind" BOOLEAN NOT NULL DEFAULT FALSE,
-  "root" VARCHAR(127) NOT NULL
+  "public" BOOLEAN NOT NULL DEFAULT FALSE
 );

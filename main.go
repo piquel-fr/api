@@ -7,13 +7,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/piquel-fr/api/handlers"
+	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/docs"
 	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
-	"github.com/piquel-fr/api/models"
 )
 
 func main() {
