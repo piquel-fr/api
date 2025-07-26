@@ -50,6 +50,17 @@ func (q *Queries) AddDocumentation(ctx context.Context, arg AddDocumentationPara
 	return id, err
 }
 
+const countUserDocumentations = `-- name: CountUserDocumentations :one
+SELECT COUNT(*) FROM "documentation" WHERE "ownerId" = $1
+`
+
+func (q *Queries) CountUserDocumentations(ctx context.Context, ownerid int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserDocumentations, ownerid)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getDocumentationById = `-- name: GetDocumentationById :one
 SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "documentation" WHERE "id" = $1
 `

@@ -31,5 +31,8 @@ SELECT * FROM "documentation" WHERE "id" = $1;
 -- name: GetUserDocumentations :many
 SELECT * FROM "documentation" WHERE "ownerId" = $1;
 
+-- name: CountUserDocumentations :one
+SELECT COUNT(*) FROM "documentation" WHERE "ownerId" = $1;
+
 -- name: RemoveDocumentation :exec
 DELETE FROM "documentation" WHERE "id" = $1;
