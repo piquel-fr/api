@@ -11,6 +11,8 @@ import (
 type Documentation struct {
 	ID             int32  `json:"id"`
 	OwnerId        int32  `json:"ownerId"`
+	Name           string `json:"name"`
+	Public         bool   `json:"public"`
 	RepoOwner      string `json:"repoOwner"`
 	RepoName       string `json:"repoName"`
 	RepoRef        string `json:"repoRef"`
@@ -18,7 +20,6 @@ type Documentation struct {
 	Root           string `json:"root"`
 	FullPage       bool   `json:"fullPage"`
 	UseTailwind    bool   `json:"useTailwind"`
-	Public         bool   `json:"public"`
 }
 
 type User struct {
