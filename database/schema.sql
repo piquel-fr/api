@@ -16,11 +16,11 @@ CREATE TABLE "documentation" (
     
     "repoOwner" TEXT NOT NULL,
     "repoName" TEXT NOT NULL,
-    "repoRef" TEXT NOT NULL,
+    "repoRef" TEXT NOT NULL DEFAULT 'main',
     
-    "root" VARCHAR(127) NOT NULL DEFAULT "index.md",
-    "pathPrefix" VARCHAR(127) NOT NULL DEFAULT "/",
-    "highlightStyle" VARCHAR(127) NOT NULL DEFAULT "tokyonight",
+    "root" TEXT NOT NULL DEFAULT 'index.md',
+    "pathPrefix" TEXT NOT NULL DEFAULT '/',
+    "highlightStyle" TEXT NOT NULL DEFAULT 'tokyonight',
     "fullPage" BOOLEAN NOT NULL DEFAULT FALSE,
     "useTailwind" BOOLEAN NOT NULL DEFAULT FALSE
 );
