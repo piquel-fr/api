@@ -14,6 +14,10 @@ import (
 	"github.com/piquel-fr/api/services/docs"
 	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
+<<<<<<< HEAD
+=======
+	"github.com/piquel-fr/api/types"
+>>>>>>> main
 )
 
 func main() {
@@ -39,8 +43,9 @@ func main() {
 
 	log.Printf("[Router] Initialized router!\n")
 
-	router.HandleFunc("/profile", handlers.HandleBaseProfile).Methods(http.MethodGet, http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodPut, http.MethodOptions)
+	router.HandleFunc("/profile", handlers.HandleGetProfileQuery).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/profile/{profile}", handlers.HandleGetProfile).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/profile/{profile}/update", handlers.HandleUpdateProfile).Methods(http.MethodPut, http.MethodOptions)
 
 	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
