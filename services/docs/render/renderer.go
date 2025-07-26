@@ -5,8 +5,8 @@ import (
 	"regexp"
 
 	"github.com/alecthomas/chroma/v2/formatters/html"
-	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/models"
+	gh "github.com/piquel-fr/api/services/github"
 )
 
 var (
@@ -41,13 +41,13 @@ func RenderPage(data []byte, config *models.Documentation) ([]byte, error) {
 		return nil, err
 	}
 
-	doc := parseMarkdown(custom, config)
+	doc := parseMarkdown(custom)
 	doc = fixupAST(doc, config)
 	html := renderHTML(doc, config)
 	return addStyles(html, config), nil
 }
 
 func loadInclude(path string, config *models.Documentation) ([]byte, error) {
-	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, ".common/includes/"+path+".md")
+	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, ".common/includes/"+path)
 	return file, err
 }

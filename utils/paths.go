@@ -27,14 +27,10 @@ func ValidatePath(path string) error {
 	return nil
 }
 
-func FormatLocalPathString(path, ext string) string {
-	trim := strings.Trim(path, "/")
-	trim = strings.TrimSuffix(trim, ext)
-	return fmt.Sprintf("/%s", trim)
+func FormatLocalPathString(path string) string {
+	return fmt.Sprintf("/%s", strings.Trim(path, "/"))
 }
 
-func FormatLocalPath(path []byte, ext string) []byte {
-	trim := bytes.Trim(path, "/")
-	trim = bytes.TrimSuffix(trim, []byte(ext))
-	return fmt.Appendf(nil, "/%s", trim)
+func FormatLocalPath(path []byte) []byte {
+	return fmt.Appendf(nil, "/%s", bytes.Trim(path, "/"))
 }

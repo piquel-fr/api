@@ -22,7 +22,7 @@ const tailwindBase = `
     h6 { font-size: 0.67em; }
 `
 
-func parseMarkdown(md []byte, config *models.Documentation) ast.Node {
+func parseMarkdown(md []byte) ast.Node {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)
 	return p.Parse(md)
@@ -66,8 +66,7 @@ func addStyles(html []byte, config *models.Documentation) []byte {
 		return html
 	}
 
-	styles = slices.Concat([]byte("<style>\n"), styles, []byte("</style>\n"))
-	return slices.Concat(html, styles)
+	return slices.Concat(html, []byte("<style>\n"), styles, []byte("</style>\n"))
 }
 
 func fixupAST(doc ast.Node, config *models.Documentation) ast.Node {
@@ -90,6 +89,6 @@ func fixupLink(link *ast.Link, entering bool, config *models.Documentation) {
 	if bytes.HasPrefix(link.Destination, []byte("http")) {
 		link.AdditionalAttributes = append(link.AdditionalAttributes, "target=\"_blank\"")
 	} else {
-		link.Destination = slices.Concat([]byte(config.Root), utils.FormatLocalPath(link.Destination, ".md"))
+		link.Destination = slices.Concat([]byte(config.Root), utils.FormatLocalPath(link.Destination))
 	}
 }

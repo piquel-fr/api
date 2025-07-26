@@ -14,7 +14,7 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 
 	if strings.Trim(page, "/") == "" {
 		// TODO: get user configurated root
-		page = "index"
+		page = "index.md"
 	}
 
 	config := &models.Documentation{
