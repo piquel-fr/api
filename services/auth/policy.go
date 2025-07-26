@@ -1,6 +1,9 @@
 package auth
 
-import "github.com/piquel-fr/api/errors"
+import (
+	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/models"
+)
 
 var Policy = &PolicyConfiguration{
 	Permissions: map[string]*Permission{
@@ -26,6 +29,9 @@ var Policy = &PolicyConfiguration{
 					{Action: "update"},
 					{Action: "delete"},
 				},
+				"documentation": {
+					{Action: "view"},
+				},
 			},
 			Parents: []string{"default", "developer"},
 		},
@@ -40,6 +46,27 @@ var Policy = &PolicyConfiguration{
 			Permissions: map[string][]*Permission{
 				"user": {
 					{Preset: "updateOwn"},
+				},
+				"documentation": {
+					{
+						Action: "view",
+						Conditions: Conditions{
+							func(request *Request) error {
+								docs, ok := request.Ressource.(*models.Documentation)
+								if !ok {
+									return newRequestMalformedError(request)
+								}
+
+								if docs.Public {
+									return nil
+								} else if docs.GetOwner() == request.User.ID {
+									return nil
+								}
+
+								return errors.ErrorForbidden
+							},
+						},
+					},
 				},
 			},
 		},

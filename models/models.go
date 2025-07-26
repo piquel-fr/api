@@ -1,11 +1,11 @@
-package types
+package models
 
 import (
 	"encoding/gob"
 	"time"
 
-	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/markbates/goth"
+	repository "github.com/piquel-fr/api/database/generated"
 )
 
 func Init() {
@@ -42,4 +42,14 @@ func UserSessionFromGothUser(user *goth.User) *UserSession {
 		ExpiresAt:         user.ExpiresAt,
 		IDToken:           user.IDToken,
 	}
+}
+
+type Documentation repository.Documentation
+
+func (docs *Documentation) GetResourceName() string {
+	return "documentation"
+}
+
+func (docs *Documentation) GetOwner() int32 {
+	return docs.OwnerId
 }

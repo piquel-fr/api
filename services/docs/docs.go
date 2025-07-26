@@ -1,0 +1,25 @@
+package docs
+
+import (
+	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/services/docs/render"
+	gh "github.com/piquel-fr/api/services/github"
+)
+
+func InitDocumentation() error {
+	return render.InitRenderer()
+}
+
+func GetDocumentaionPage(route string, config *models.Documentation) ([]byte, error) {
+	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, route+".md")
+	if err != nil {
+		return nil, err
+	}
+
+	html, err := render.RenderPage(file, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return html, err
+}
