@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
@@ -16,7 +14,7 @@ import (
 
 func HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["profile"]
-	writeProfile(w, username)
+	writeProfile(w, r, username)
 }
 
 func HandleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
@@ -35,18 +33,14 @@ func HandleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 		username = profile.Username
 	}
 
-	writeProfile(w, username)
+	writeProfile(w, r, username)
 }
 
-func writeProfile(w http.ResponseWriter, username string) {
+func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 	profile, err := users.GetProfileFromUsername(username)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			// Properly redirect to cookied URL
-			http.Error(w, fmt.Sprintf("user %s does not exist", username), http.StatusNotFound)
-			return
-		}
-		panic(err)
+		errors.HandleError(w, r, err)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -58,12 +52,8 @@ func HandleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	profile, err := users.GetProfileFromUsername(username)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			// Properly redirect to cookied URL
-			http.Error(w, fmt.Sprintf("user %s does not exist", username), http.StatusNotFound)
-			return
-		}
-		panic(err)
+		errors.HandleError(w, r, err)
+		return
 	}
 
 	request := &auth.Request{

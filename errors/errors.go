@@ -3,6 +3,8 @@ package errors
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrorNotAuthenticated *Error = NewError("User is not authenticated!", http.StatusUnauthorized)
@@ -25,6 +27,12 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	if err == nil {
 		panic("nil error being handled")
 	}
+
+	if err == pgx.ErrNoRows {
+		http.NotFound(w, r)
+		return
+	}
+
 	switch err.(type) {
 	case *Error:
 		e := err.(*Error)

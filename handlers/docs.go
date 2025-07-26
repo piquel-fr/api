@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
@@ -26,13 +25,7 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 
 	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			http.NotFound(w, r)
-			return
-		}
-
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		panic(err)
+		errors.HandleError(w, r, err)
 	}
 	docsConfig := models.Documentation(config)
 
