@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+
+	"github.com/piquel-fr/api/types"
 )
 
-func renderCustom(md []byte, config *RenderConfig) ([]byte, error) {
+func renderCustom(md []byte, config *types.UserDocsConfig) ([]byte, error) {
 	var err error
 	md, err = renderSingleline(md, config)
 	if err != nil {
@@ -20,7 +22,7 @@ func renderCustom(md []byte, config *RenderConfig) ([]byte, error) {
 	return md, nil
 }
 
-func renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
+func renderSingleline(md []byte, config *types.UserDocsConfig) ([]byte, error) {
 	match := singleline.FindSubmatch(md)
 	if match == nil {
 		return md, nil
@@ -44,7 +46,7 @@ func renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
 	return renderSingleline(md, config)
 }
 
-func renderMultiline(md []byte, config *RenderConfig) ([]byte, error) {
+func renderMultiline(md []byte, config *types.UserDocsConfig) ([]byte, error) {
 	match := multiline.FindSubmatch(md)
 	if match == nil {
 		return md, nil

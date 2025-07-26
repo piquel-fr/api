@@ -4,8 +4,8 @@ import (
 	"encoding/gob"
 	"time"
 
-	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/markbates/goth"
+	repository "github.com/piquel-fr/api/database/generated"
 )
 
 func Init() {
@@ -42,4 +42,23 @@ func UserSessionFromGothUser(user *goth.User) *UserSession {
 		ExpiresAt:         user.ExpiresAt,
 		IDToken:           user.IDToken,
 	}
+}
+
+type UserDocsConfig struct {
+	OwnerUserId           int32
+	HighlightStyleName    string
+	FullPage, UseTailwind bool
+	Root                  string
+
+	RepoOwner string
+	RepoName  string
+	RepoRef   string
+}
+
+func (config *UserDocsConfig) GetResourceName() string {
+	return "documentation"
+}
+
+func (config *UserDocsConfig) GetOwner() int32 {
+	return config.OwnerUserId
 }
