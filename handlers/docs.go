@@ -219,7 +219,20 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleListDocs(w http.ResponseWriter, r *http.Request) {
-	username := mux.Vars(r)["username"]
+	username, ok := mux.Vars(r)["username"]
+	if !ok {
+		id, err := auth.GetUserId(r)
+		if err != nil {
+			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
+			return
+		}
+		profile, err := users.GetProfileFromUserId(id)
+		if err != nil {
+			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
+			return
+		}
+		username = profile.Username
+	}
 
 	user, err := users.GetUserFromRequest(r)
 	if err != nil {
