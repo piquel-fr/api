@@ -31,6 +31,10 @@ var Policy = &PolicyConfiguration{
 			Action:     "transfer",
 			Conditions: Conditions{own},
 		},
+		"listOwn": {
+			Action:     "list",
+			Conditions: Conditions{own},
+		},
 	},
 	Roles: Roles{
 		"admin": {
@@ -47,6 +51,7 @@ var Policy = &PolicyConfiguration{
 					{Action: "update"},
 					{Action: "transfer"},
 					{Action: "delete"},
+					{Action: "list"},
 				},
 			},
 			Parents: []string{"default", "developer"},
@@ -102,6 +107,7 @@ var Policy = &PolicyConfiguration{
 					{Preset: "updateOwn"},
 					{Preset: "transferOwn"},
 					{Preset: "deleteOwn"},
+					{Preset: "listOwn"},
 				},
 			},
 		},

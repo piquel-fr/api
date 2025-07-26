@@ -217,3 +217,46 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func HandleListDocs(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	user, err := users.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	requestedUser, err := database.Queries.GetUserByUsername(r.Context(), username)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	authRequest := &auth.Request{
+		User:      user,
+		Ressource: &models.Documentation{OwnerId: requestedUser.ID},
+		Actions:   []string{"list"},
+		Context:   r.Context(),
+	}
+
+	if err = auth.Authorize(authRequest); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	configs, err := database.Queries.GetUserDocumentations(r.Context(), requestedUser.ID)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	data, err := json.Marshal(configs)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
