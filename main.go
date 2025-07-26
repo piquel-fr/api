@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/types"
-	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -31,8 +31,9 @@ func main() {
 
 	log.Printf("[Router] Initialized router!\n")
 
-	router.HandleFunc("/profile", handlers.HandleBaseProfile).Methods(http.MethodGet, http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/profile/{profile}", handlers.HandleProfile).Methods(http.MethodGet, http.MethodPut, http.MethodOptions)
+	router.HandleFunc("/profile", handlers.HandleGetProfileQuery).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/profile/{profile}", handlers.HandleGetProfile).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/profile/{profile}/update", handlers.HandleUpdateProfile).Methods(http.MethodPut, http.MethodOptions)
 
 	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
