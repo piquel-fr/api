@@ -14,10 +14,6 @@ import (
 	"github.com/piquel-fr/api/services/docs"
 	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
-<<<<<<< HEAD
-=======
-	"github.com/piquel-fr/api/types"
->>>>>>> main
 )
 
 func main() {
