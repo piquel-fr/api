@@ -47,7 +47,7 @@ func main() {
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}/callback", handlers.HandleAuthCallback).Methods(http.MethodGet, http.MethodOptions)
 
-	router.HandleFunc("/docs/{documentation}/new", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/docs/new", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/update", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/transfer", handlers.HandleTransferDocs).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/delete", handlers.HandleDeleteDocs).Methods(http.MethodPut, http.MethodOptions)
