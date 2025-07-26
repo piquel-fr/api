@@ -15,24 +15,24 @@ func InitGithubWrapper() {
 	Client = github.NewClient(nil)
 }
 
-func GetRepositoryFile(owner, repo, ref, route string) (string, error) {
+func GetRepositoryFile(owner, repo, ref, route string) ([]byte, error) {
 	file, _, res, err := Client.Repositories.GetContents(context.Background(), "piquel-fr", "docs-test", route, &github.RepositoryContentGetOptions{Ref: "main"})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if res.StatusCode != 200 {
-		return "", fmt.Errorf("github call failed with %d", res.StatusCode)
+		return nil, fmt.Errorf("github call failed with %d", res.StatusCode)
 	}
 
 	if file == nil {
-		return "", errors.NewError(fmt.Sprintf("%s is a directory", route), http.StatusNotFound)
+		return nil, errors.NewError(fmt.Sprintf("%s is a directory", route), http.StatusNotFound)
 	}
 
 	data, err := file.GetContent()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return data, nil
+	return []byte(data), nil
 }
