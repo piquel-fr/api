@@ -9,17 +9,18 @@ CREATE TABLE "users" (
 );
 
 CREATE TABLE "documentation" (
-  "id" SERIAL PRIMARY KEY NOT NULL,
-  "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,
-  "name" TEXT NOT NULL UNIQUE,
-  "public" BOOLEAN NOT NULL DEFAULT FALSE,
-  
-  "repoOwner" TEXT NOT NULL,
-  "repoName" TEXT NOT NULL,
-  "repoRef" TEXT NOT NULL,
-  
-  "highlightStyle" VARCHAR(127) NOT NULL DEFAULT "tokyonight",
-  "root" VARCHAR(127) NOT NULL DEFAULT "/",
-  "fullPage" BOOLEAN NOT NULL DEFAULT FALSE,
-  "useTailwind" BOOLEAN NOT NULL DEFAULT FALSE
+    "id" SERIAL PRIMARY KEY NOT NULL,
+    "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,
+    "name" TEXT NOT NULL UNIQUE,
+    "public" BOOLEAN NOT NULL DEFAULT FALSE,
+    
+    "repoOwner" TEXT NOT NULL,
+    "repoName" TEXT NOT NULL,
+    "repoRef" TEXT NOT NULL,
+    
+    "root" VARCHAR(127) NOT NULL DEFAULT "index.md",
+    "pathPrefix" VARCHAR(127) NOT NULL DEFAULT "/",
+    "highlightStyle" VARCHAR(127) NOT NULL DEFAULT "tokyonight",
+    "fullPage" BOOLEAN NOT NULL DEFAULT FALSE,
+    "useTailwind" BOOLEAN NOT NULL DEFAULT FALSE
 );

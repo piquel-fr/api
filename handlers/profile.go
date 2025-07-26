@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/users"
-	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 )
 
 func HandleGetProfile(w http.ResponseWriter, r *http.Request) {

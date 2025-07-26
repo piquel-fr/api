@@ -12,9 +12,9 @@ import (
 const addDocumentation = `-- name: AddDocumentation :one
 INSERT INTO "documentation" (
     "ownerId", "name", "public", "repoOwner", "repoName", "repoRef",
-    "highlightStyle", "root", "fullPage", "useTailwind"
+    "root", "pathPrefix", "highlightStyle", "fullPage", "useTailwind"
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING "id"
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING "id"
 `
 
 type AddDocumentationParams struct {
@@ -24,8 +24,9 @@ type AddDocumentationParams struct {
 	RepoOwner      string `json:"repoOwner"`
 	RepoName       string `json:"repoName"`
 	RepoRef        string `json:"repoRef"`
-	HighlightStyle string `json:"highlightStyle"`
 	Root           string `json:"root"`
+	PathPrefix     string `json:"pathPrefix"`
+	HighlightStyle string `json:"highlightStyle"`
 	FullPage       bool   `json:"fullPage"`
 	UseTailwind    bool   `json:"useTailwind"`
 }
@@ -38,8 +39,9 @@ func (q *Queries) AddDocumentation(ctx context.Context, arg AddDocumentationPara
 		arg.RepoOwner,
 		arg.RepoName,
 		arg.RepoRef,
-		arg.HighlightStyle,
 		arg.Root,
+		arg.PathPrefix,
+		arg.HighlightStyle,
 		arg.FullPage,
 		arg.UseTailwind,
 	)
@@ -49,7 +51,7 @@ func (q *Queries) AddDocumentation(ctx context.Context, arg AddDocumentationPara
 }
 
 const getDocumentationById = `-- name: GetDocumentationById :one
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", "highlightStyle", root, "fullPage", "useTailwind" FROM "documentation" WHERE "id" = $1
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "documentation" WHERE "id" = $1
 `
 
 func (q *Queries) GetDocumentationById(ctx context.Context, id int32) (Documentation, error) {
@@ -63,8 +65,9 @@ func (q *Queries) GetDocumentationById(ctx context.Context, id int32) (Documenta
 		&i.RepoOwner,
 		&i.RepoName,
 		&i.RepoRef,
-		&i.HighlightStyle,
 		&i.Root,
+		&i.PathPrefix,
+		&i.HighlightStyle,
 		&i.FullPage,
 		&i.UseTailwind,
 	)
@@ -72,7 +75,7 @@ func (q *Queries) GetDocumentationById(ctx context.Context, id int32) (Documenta
 }
 
 const getDocumentationByName = `-- name: GetDocumentationByName :one
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", "highlightStyle", root, "fullPage", "useTailwind" FROM "documentation" WHERE "name" = $1
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "documentation" WHERE "name" = $1
 `
 
 func (q *Queries) GetDocumentationByName(ctx context.Context, name string) (Documentation, error) {
@@ -86,8 +89,9 @@ func (q *Queries) GetDocumentationByName(ctx context.Context, name string) (Docu
 		&i.RepoOwner,
 		&i.RepoName,
 		&i.RepoRef,
-		&i.HighlightStyle,
 		&i.Root,
+		&i.PathPrefix,
+		&i.HighlightStyle,
 		&i.FullPage,
 		&i.UseTailwind,
 	)
@@ -95,7 +99,7 @@ func (q *Queries) GetDocumentationByName(ctx context.Context, name string) (Docu
 }
 
 const getUserDocumentations = `-- name: GetUserDocumentations :many
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", "highlightStyle", root, "fullPage", "useTailwind" FROM "documentation" WHERE "ownerId" = $1
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "documentation" WHERE "ownerId" = $1
 `
 
 func (q *Queries) GetUserDocumentations(ctx context.Context, ownerid int32) ([]Documentation, error) {
@@ -115,8 +119,9 @@ func (q *Queries) GetUserDocumentations(ctx context.Context, ownerid int32) ([]D
 			&i.RepoOwner,
 			&i.RepoName,
 			&i.RepoRef,
-			&i.HighlightStyle,
 			&i.Root,
+			&i.PathPrefix,
+			&i.HighlightStyle,
 			&i.FullPage,
 			&i.UseTailwind,
 		); err != nil {
@@ -155,15 +160,16 @@ func (q *Queries) TransferDocumentation(ctx context.Context, arg TransferDocumen
 
 const updateDocumentation = `-- name: UpdateDocumentation :exec
 UPDATE "documentation" SET
-  "name" = $2,
-  "public" = $3,
-  "repoOwner" = $4,
-  "repoName" = $5,
-  "repoRef" = $6,
-  "highlightStyle" = $7,
-  "root" = $8,
-  "fullPage" = $9,
-  "useTailwind" = $10
+    "name" = $2,
+    "public" = $3,
+    "repoOwner" = $4,
+    "repoName" = $5,
+    "repoRef" = $6,
+    "root" = $7,
+    "pathPrefix" = $8,
+    "highlightStyle" = $9,
+    "fullPage" = $10,
+    "useTailwind" = $11
 WHERE "id" = $1
 `
 
@@ -174,8 +180,9 @@ type UpdateDocumentationParams struct {
 	RepoOwner      string `json:"repoOwner"`
 	RepoName       string `json:"repoName"`
 	RepoRef        string `json:"repoRef"`
-	HighlightStyle string `json:"highlightStyle"`
 	Root           string `json:"root"`
+	PathPrefix     string `json:"pathPrefix"`
+	HighlightStyle string `json:"highlightStyle"`
 	FullPage       bool   `json:"fullPage"`
 	UseTailwind    bool   `json:"useTailwind"`
 }
@@ -188,8 +195,9 @@ func (q *Queries) UpdateDocumentation(ctx context.Context, arg UpdateDocumentati
 		arg.RepoOwner,
 		arg.RepoName,
 		arg.RepoRef,
-		arg.HighlightStyle,
 		arg.Root,
+		arg.PathPrefix,
+		arg.HighlightStyle,
 		arg.FullPage,
 		arg.UseTailwind,
 	)

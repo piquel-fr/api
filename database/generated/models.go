@@ -16,8 +16,9 @@ type Documentation struct {
 	RepoOwner      string `json:"repoOwner"`
 	RepoName       string `json:"repoName"`
 	RepoRef        string `json:"repoRef"`
-	HighlightStyle string `json:"highlightStyle"`
 	Root           string `json:"root"`
+	PathPrefix     string `json:"pathPrefix"`
+	HighlightStyle string `json:"highlightStyle"`
 	FullPage       bool   `json:"fullPage"`
 	UseTailwind    bool   `json:"useTailwind"`
 }
