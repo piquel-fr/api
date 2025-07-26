@@ -63,6 +63,7 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 					User:      request.User,
 					Ressource: request.Ressource,
 					Actions:   []string{action},
+					Context:   request.Context,
 				}
 
 				if utils.StringSliceContains(checkedRoles, parent) {
@@ -121,6 +122,7 @@ func checkPermission(permission *Permission, request *Request) (bool, error) {
 		return true, nil
 	}
 
+	// all conditions must pass
 	for _, condition := range permission.Conditions {
 		err := condition(request)
 		if err != nil {

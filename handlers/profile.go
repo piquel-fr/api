@@ -70,6 +70,7 @@ func HandleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 		User:      profile.User,
 		Ressource: profile,
 		Actions:   []string{"update"},
+		Context:   r.Context(),
 	}
 
 	if err := auth.Authorize(request); err != nil {
