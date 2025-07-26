@@ -27,6 +27,10 @@ var Policy = &PolicyConfiguration{
 			Action:     "delete",
 			Conditions: Conditions{own},
 		},
+		"transferOwn": {
+			Action:     "transfer",
+			Conditions: Conditions{own},
+		},
 	},
 	Roles: Roles{
 		"admin": {
@@ -41,6 +45,7 @@ var Policy = &PolicyConfiguration{
 					{Action: "view"},
 					{Action: "create"},
 					{Action: "update"},
+					{Action: "transfer"},
 					{Action: "delete"},
 				},
 			},
@@ -75,6 +80,7 @@ var Policy = &PolicyConfiguration{
 						},
 					},
 					{Preset: "updateOwn"},
+					{Preset: "transferOwn"},
 					{Preset: "deleteOwn"},
 					{
 						Action: "create",
