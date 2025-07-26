@@ -51,7 +51,7 @@ func main() {
 	router.HandleFunc("/docs/{documentation}/update", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/transfer", handlers.HandleTransferDocs).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/delete", handlers.HandleDeleteDocs).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/docs/{documentation}", handlers.HandleDocs).Methods(http.MethodGet, http.MethodOptions)
+	router.PathPrefix("/docs/{documentation}").HandlerFunc(handlers.HandleDocs).Methods(http.MethodGet, http.MethodOptions)
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
 

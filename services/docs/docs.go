@@ -11,6 +11,10 @@ func InitDocumentation() error {
 }
 
 func GetDocumentaionPage(route string, config *models.Documentation) ([]byte, error) {
+	if route == "/" {
+		route = config.Root
+	}
+
 	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, route)
 	if err != nil {
 		return nil, err

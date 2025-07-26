@@ -4,30 +4,35 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/docs"
+	"github.com/piquel-fr/api/utils"
 )
 
 func HandleDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := mux.Vars(r)["documentation"]
 	page := r.URL.Path
+	page = strings.Replace(page, "docs", "", 1)
+	page = strings.Replace(page, docsName, "", 1)
+	page = utils.FormatLocalPathString(page)
 
-	if strings.Trim(page, "/") == "" {
-		// TODO: get user configurated root
-		page = "index.md"
+	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			http.NotFound(w, r)
+			return
+		}
+
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		panic(err)
 	}
 
-	config := &models.Documentation{
-		HighlightStyle: "tokyonight",
-		FullPage:       false,
-		UseTailwind:    true,
-		Root:           "docs",
-		RepoOwner:      "piquel-fr",
-		RepoName:       "docs-test",
-		RepoRef:        "main",
-	}
-
-	html, err := docs.GetDocumentaionPage(page, config)
+	docsConfig := models.Documentation(config)
+	html, err := docs.GetDocumentaionPage(page, &docsConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
 	}

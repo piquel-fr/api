@@ -17,6 +17,9 @@ func InitGithubWrapper() {
 
 func GetRepositoryFile(owner, repo, ref, route string) ([]byte, error) {
 	file, _, res, err := Client.Repositories.GetContents(context.Background(), owner, repo, route, &github.RepositoryContentGetOptions{Ref: "main"})
+	if res.StatusCode == http.StatusNotFound {
+		return nil, errors.NewError(fmt.Sprintf("path %s does not exist in %s/%s:%s", route, owner, repo, ref), http.StatusNotFound)
+	}
 	if err != nil {
 		return nil, err
 	}
