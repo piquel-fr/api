@@ -211,5 +211,9 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("you are allowed to delete a documentation instance"))
+	err = database.Queries.RemoveDocumentation(r.Context(), docsConfig.ID)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
 }
