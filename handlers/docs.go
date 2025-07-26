@@ -139,6 +139,8 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 
 func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
 	docsName := mux.Vars(r)["documentation"]
+	destination := mux.Vars(r)["username"]
+
 	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -164,7 +166,22 @@ func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("you are allowed to transfer a documentation instance"))
+	destinationUser, err := database.Queries.GetUserByUsername(r.Context(), destination)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params := repository.TransferDocumentationParams{
+		ID:      docsConfig.ID,
+		OwnerId: destinationUser.ID,
+	}
+
+	err = database.Queries.TransferDocumentation(r.Context(), params)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
 }
 
 func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
