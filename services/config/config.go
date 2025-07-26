@@ -5,16 +5,20 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/piquel-fr/api/models"
 )
 
-var Envs EnvsConfig
+var Envs models.EnvsConfig
+var Configuration = models.Configuration{
+	MaxDocumentationCount: 3,
+}
 
 func LoadConfig() {
 	godotenv.Load()
 	log.Printf("[Config] Loading configuration...")
 
 	// Load config from environment
-	Envs = EnvsConfig{
+	Envs = models.EnvsConfig{
 		Domain:             getEnv("DOMAIN"),
 		RedirectTo:         getEnv("REDIRECT_TO"),
 		Host:               getEnv("HOST"),
@@ -27,6 +31,7 @@ func LoadConfig() {
 		GithubClientID:     getEnv("AUTH_GITHUB_CLIENT_ID"),
 		GithubClientSecret: getEnv("AUTH_GITHUB_CLIENT_SECRET"),
 	}
+
 	log.Printf("[Config] Loaded environment configuration!")
 }
 
