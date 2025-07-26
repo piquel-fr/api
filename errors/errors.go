@@ -2,13 +2,14 @@ package errors
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
 )
 
-var ErrorNotAuthenticated *Error = NewError("User is not authenticated!", http.StatusUnauthorized)
-var ErrorForbidden *Error = NewError("You are not allowed to access this ressource!", http.StatusForbidden)
+var ErrorNotAuthenticated *Error = NewError("user is not authenticated", http.StatusUnauthorized)
+var ErrorForbidden *Error = NewError("you are not allowed to access this ressource", http.StatusForbidden)
 
 type Error struct {
 	message string
@@ -28,21 +29,27 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		panic("nil error being handled")
 	}
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		http.NotFound(w, r)
 		return
 	}
 
-	switch err.(type) {
-	case *Error:
-		e := err.(*Error)
-		http.Error(w, e.Error(), e.status)
-	case *json.SyntaxError:
+	if errors.Is(err, &json.SyntaxError{}) {
 		http.Error(w, "syntax error in json payload", http.StatusBadRequest)
-	case *json.UnmarshalTypeError:
-		http.Error(w, "type error in json payload", http.StatusBadRequest)
-	default:
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		panic(err)
+		return
 	}
+
+	if errors.Is(err, &json.UnmarshalTypeError{}) {
+		http.Error(w, "type error in json payload", http.StatusBadRequest)
+		return
+	}
+
+	e, ok := err.(*Error)
+	if ok {
+		http.Error(w, e.Error(), e.status)
+		return
+	}
+
+	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	panic(err)
 }
