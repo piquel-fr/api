@@ -19,5 +19,5 @@ CREATE TABLE "documentation" (
   "highlightStyle" VARCHAR(127) NOT NULL DEFAULT "tokyonight",
   "fullPage" BOOLEAN NOT NULL DEFAULT FALSE,
   "useTailwind" BOOLEAN NOT NULL DEFAULT FALSE,
-  "root" VARCHAR(127) NOT NULL,
+  "root" VARCHAR(127) NOT NULL
 );
