@@ -123,7 +123,18 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("you are allowed to update a documentation instance"))
+	params := repository.UpdateDocumentationParams{}
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params.ID = docsConfig.ID
+	err = database.Queries.UpdateDocumentation(r.Context(), params)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
 }
 
 func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
