@@ -79,9 +79,6 @@ var Policy = &PolicyConfiguration{
 							},
 						},
 					},
-					{Preset: "updateOwn"},
-					{Preset: "transferOwn"},
-					{Preset: "deleteOwn"},
 					{
 						Action: "create",
 						Conditions: Conditions{
@@ -102,6 +99,9 @@ var Policy = &PolicyConfiguration{
 							},
 						},
 					},
+					{Preset: "updateOwn"},
+					{Preset: "transferOwn"},
+					{Preset: "deleteOwn"},
 				},
 			},
 		},

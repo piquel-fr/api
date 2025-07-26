@@ -92,8 +92,93 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
+
+	w.Write([]byte("you are allowed to create a documentation instance"))
 }
 
-func HandleUpdateDocs(w http.ResponseWriter, r *http.Request)   {}
-func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {}
-func HandleDeleteDocs(w http.ResponseWriter, r *http.Request)   {}
+func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := mux.Vars(r)["documentation"]
+	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+	docsConfig := models.Documentation(config)
+
+	user, err := users.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	authRequest := &auth.Request{
+		User:      user,
+		Ressource: &docsConfig,
+		Actions:   []string{"update"},
+		Context:   r.Context(),
+	}
+
+	if err = auth.Authorize(authRequest); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Write([]byte("you are allowed to update a documentation instance"))
+}
+
+func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := mux.Vars(r)["documentation"]
+	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+	docsConfig := models.Documentation(config)
+
+	user, err := users.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	authRequest := &auth.Request{
+		User:      user,
+		Ressource: &docsConfig,
+		Actions:   []string{"transfer"},
+		Context:   r.Context(),
+	}
+
+	if err = auth.Authorize(authRequest); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Write([]byte("you are allowed to transfer a documentation instance"))
+}
+
+func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := mux.Vars(r)["documentation"]
+	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+	docsConfig := models.Documentation(config)
+
+	user, err := users.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	authRequest := &auth.Request{
+		User:      user,
+		Ressource: &docsConfig,
+		Actions:   []string{"delete"},
+		Context:   r.Context(),
+	}
+
+	if err = auth.Authorize(authRequest); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Write([]byte("you are allowed to delete a documentation instance"))
+}
