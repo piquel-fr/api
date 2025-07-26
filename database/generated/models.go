@@ -8,6 +8,18 @@ import (
 	"time"
 )
 
+type Documentation struct {
+	ID             int32  `json:"id"`
+	OwnerId        int32  `json:"ownerId"`
+	RepoOwner      string `json:"repoOwner"`
+	RepoName       string `json:"repoName"`
+	RepoRef        string `json:"repoRef"`
+	HighlightStyle string `json:"highlightStyle"`
+	FullPage       bool   `json:"fullPage"`
+	UseTailwind    bool   `json:"useTailwind"`
+	Root           string `json:"root"`
+}
+
 type User struct {
 	ID        int32     `json:"id"`
 	Username  string    `json:"username"`

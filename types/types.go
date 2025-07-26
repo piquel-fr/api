@@ -44,21 +44,12 @@ func UserSessionFromGothUser(user *goth.User) *UserSession {
 	}
 }
 
-type UserDocsConfig struct {
-	OwnerUserId           int32
-	HighlightStyleName    string
-	FullPage, UseTailwind bool
-	Root                  string
+type Documentation repository.Documentation
 
-	RepoOwner string
-	RepoName  string
-	RepoRef   string
-}
-
-func (config *UserDocsConfig) GetResourceName() string {
+func (docs *Documentation) GetResourceName() string {
 	return "documentation"
 }
 
-func (config *UserDocsConfig) GetOwner() int32 {
-	return config.OwnerUserId
+func (docs *Documentation) GetOwner() int32 {
+	return docs.OwnerId
 }
