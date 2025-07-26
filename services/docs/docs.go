@@ -10,23 +10,13 @@ func InitDocumentation() error {
 	return render.InitRenderer()
 }
 
-func GetDocumentaionPage(route string) ([]byte, error) {
-	config := models.Documentation{
-		HighlightStyle: "tokyonight",
-		FullPage:       false,
-		UseTailwind:    true,
-		Root:           "docs",
-		RepoOwner:      "piquel-fr",
-		RepoName:       "docs-test",
-		RepoRef:        "main",
-	}
-
+func GetDocumentaionPage(route string, config *models.Documentation) ([]byte, error) {
 	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, route+".md")
 	if err != nil {
 		return nil, err
 	}
 
-	html, err := render.RenderPage(file, &config)
+	html, err := render.RenderPage(file, config)
 	if err != nil {
 		return nil, err
 	}
