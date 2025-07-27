@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -258,7 +260,51 @@ func HandleListDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	configs, err := database.Queries.GetUserDocumentations(r.Context(), requestedUser.ID)
+	if r.URL.Query().Has("count") {
+		count, err := database.Queries.CountUserDocsInstances(r.Context(), requestedUser.ID)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(strconv.Itoa(int(count))))
+		return
+	}
+
+	limitStr := r.URL.Query().Get("limit")
+	if limitStr == "" {
+		limitStr = "10"
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("invalid number %s specified for limit", limitStr), http.StatusBadRequest)
+		return
+	}
+
+	if limit > 200 {
+		limit = 200
+	}
+
+	offsetStr := r.URL.Query().Get("offset")
+	if offsetStr == "" {
+		offsetStr = "0"
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("invalid number %s specified for offset", limitStr), http.StatusBadRequest)
+		return
+	}
+
+	params := repository.ListUserDocsInstancesParams{
+		OwnerId: requestedUser.ID,
+		Limit:   int32(limit),
+		Offset:  int32(offset),
+	}
+
+	configs, err := database.Queries.ListUserDocsInstances(r.Context(), params)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

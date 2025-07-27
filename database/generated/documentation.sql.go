@@ -50,12 +50,12 @@ func (q *Queries) AddDocumentation(ctx context.Context, arg AddDocumentationPara
 	return id, err
 }
 
-const countUserDocumentations = `-- name: CountUserDocumentations :one
+const countUserDocsInstances = `-- name: CountUserDocsInstances :one
 SELECT COUNT(*) FROM "documentation" WHERE "ownerId" = $1
 `
 
-func (q *Queries) CountUserDocumentations(ctx context.Context, ownerid int32) (int64, error) {
-	row := q.db.QueryRow(ctx, countUserDocumentations, ownerid)
+func (q *Queries) CountUserDocsInstances(ctx context.Context, ownerid int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserDocsInstances, ownerid)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -109,12 +109,18 @@ func (q *Queries) GetDocumentationByName(ctx context.Context, name string) (Docu
 	return i, err
 }
 
-const getUserDocumentations = `-- name: GetUserDocumentations :many
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "documentation" WHERE "ownerId" = $1
+const listUserDocsInstances = `-- name: ListUserDocsInstances :many
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "documentation" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) GetUserDocumentations(ctx context.Context, ownerid int32) ([]Documentation, error) {
-	rows, err := q.db.Query(ctx, getUserDocumentations, ownerid)
+type ListUserDocsInstancesParams struct {
+	OwnerId int32 `json:"ownerId"`
+	Limit   int32 `json:"limit"`
+	Offset  int32 `json:"offset"`
+}
+
+func (q *Queries) ListUserDocsInstances(ctx context.Context, arg ListUserDocsInstancesParams) ([]Documentation, error) {
+	rows, err := q.db.Query(ctx, listUserDocsInstances, arg.OwnerId, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

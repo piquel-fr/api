@@ -88,7 +88,7 @@ var Policy = &PolicyConfiguration{
 						Action: "create",
 						Conditions: Conditions{
 							func(request *Request) error {
-								count, err := database.Queries.CountUserDocumentations(request.Context, request.User.ID)
+								count, err := database.Queries.CountUserDocsInstances(request.Context, request.User.ID)
 								if err != nil {
 									return err
 								}

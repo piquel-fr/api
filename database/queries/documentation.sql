@@ -28,10 +28,10 @@ SELECT * FROM "documentation" WHERE "name" = $1;
 -- name: GetDocumentationById :one
 SELECT * FROM "documentation" WHERE "id" = $1;
 
--- name: GetUserDocumentations :many
-SELECT * FROM "documentation" WHERE "ownerId" = $1;
+-- name: ListUserDocsInstances :many
+SELECT * FROM "documentation" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3;
 
--- name: CountUserDocumentations :one
+-- name: CountUserDocsInstances :one
 SELECT COUNT(*) FROM "documentation" WHERE "ownerId" = $1;
 
 -- name: RemoveDocumentation :exec
