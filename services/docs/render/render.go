@@ -89,6 +89,6 @@ func fixupLink(link *ast.Link, entering bool, config *models.Documentation) {
 	if bytes.HasPrefix(link.Destination, []byte("http")) {
 		link.AdditionalAttributes = append(link.AdditionalAttributes, "target=\"_blank\"")
 	} else {
-		link.Destination = slices.Concat([]byte(config.Root), utils.FormatLocalPath(link.Destination))
+		link.Destination = slices.Concat([]byte(config.PathPrefix), utils.FormatLocalPath(link.Destination))
 	}
 }
