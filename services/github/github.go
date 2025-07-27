@@ -7,12 +7,13 @@ import (
 
 	"github.com/google/go-github/v74/github"
 	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/services/config"
 )
 
 var Client *github.Client
 
 func InitGithubWrapper() {
-	Client = github.NewClient(nil)
+	Client = github.NewClient(nil).WithAuthToken(config.Envs.GithubApiToken)
 }
 
 func GetRepositoryFile(owner, repo, ref, route string) ([]byte, error) {

@@ -12,6 +12,7 @@ type EnvsConfig struct {
 	GoogleClientSecret string
 	GithubClientID     string
 	GithubClientSecret string
+	GithubApiToken     string
 }
 
 type Configuration struct {

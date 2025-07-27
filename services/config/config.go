@@ -30,6 +30,7 @@ func LoadConfig() {
 		GoogleClientSecret: getEnv("AUTH_GOOGLE_CLIENT_SECRET"),
 		GithubClientID:     getEnv("AUTH_GITHUB_CLIENT_ID"),
 		GithubClientSecret: getEnv("AUTH_GITHUB_CLIENT_SECRET"),
+		GithubApiToken:     getEnv("GITHUB_API_TOKEN"),
 	}
 
 	log.Printf("[Config] Loaded environment configuration!")
