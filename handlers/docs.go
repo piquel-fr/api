@@ -32,22 +32,24 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.Documentation(config)
 
-	user, err := users.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
+	if !docsConfig.Public {
+		user, err := users.GetUserFromRequest(r)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
 
-	authRequest := &auth.Request{
-		User:      user,
-		Ressource: &docsConfig,
-		Actions:   []string{"view"},
-		Context:   r.Context(),
-	}
+		authRequest := &auth.Request{
+			User:      user,
+			Ressource: &docsConfig,
+			Actions:   []string{"view"},
+			Context:   r.Context(),
+		}
 
-	if err = auth.Authorize(authRequest); err != nil {
-		errors.HandleError(w, r, err)
-		return
+		if err = auth.Authorize(authRequest); err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
 	}
 
 	html, err := docs.GetDocumentaionPage(page, &docsConfig)
