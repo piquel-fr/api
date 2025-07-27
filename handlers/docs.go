@@ -52,6 +52,18 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if r.URL.Query().Has("config") {
+		data, err := json.Marshal(docsConfig)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+		return
+	}
+
 	html, err := docs.GetDocumentaionPage(page, &docsConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
