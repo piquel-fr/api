@@ -70,21 +70,15 @@ func HandleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	params := repository.UpdateUserParams{}
-	if r.Header.Get("Content-Type") == "application/json" {
-		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-	} else if r.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
-		if err := r.ParseForm(); err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "please submit your creation request with the required json payload", http.StatusBadRequest)
+		return
+	}
 
-		params.Name = r.FormValue("name")
-		params.Username = r.FormValue("username")
-		params.Image = r.FormValue("image")
+	params := repository.UpdateUserParams{}
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		errors.HandleError(w, r, err)
+		return
 	}
 
 	params.ID = profile.ID
