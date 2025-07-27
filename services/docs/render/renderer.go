@@ -35,15 +35,15 @@ func InitRenderer() error {
 	return nil
 }
 
-func RenderPage(data []byte, config *models.Documentation) ([]byte, error) {
-	custom, err := renderCustom(data, config)
+func RenderPage(md []byte, config *models.Documentation) ([]byte, error) {
+	md, err := renderCustom(md, config)
 	if err != nil {
 		return nil, err
 	}
 
-	doc := parseMarkdown(custom)
-	doc = fixupAST(doc, config)
-	html := renderHTML(doc, config)
+	ast := parseMarkdown(md)
+	ast = fixupAST(ast, config)
+	html := renderHTML(ast, config)
 	return addStyles(html, config), nil
 }
 
