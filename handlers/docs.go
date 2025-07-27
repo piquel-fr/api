@@ -64,7 +64,7 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html, err := docs.GetDocumentaionPage(page, &docsConfig)
+	html, err := docs.GetDocumentationPage(page, &docsConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

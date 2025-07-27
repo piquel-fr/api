@@ -1,6 +1,9 @@
 package docs
 
 import (
+	"strings"
+
+	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/docs/render"
 	gh "github.com/piquel-fr/api/services/github"
@@ -10,7 +13,11 @@ func InitDocumentation() error {
 	return render.InitRenderer()
 }
 
-func GetDocumentaionPage(route string, config *models.Documentation) ([]byte, error) {
+func GetDocumentationPage(route string, config *models.Documentation) ([]byte, error) {
+	if strings.HasPrefix(strings.Trim(route, "/"), ".") {
+		return nil, errors.ErrorNotFound
+	}
+
 	if route == "/" {
 		route = config.Root
 	}
