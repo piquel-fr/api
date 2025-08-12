@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -26,19 +25,22 @@ func CORSMiddleware(router *mux.Router) mux.MiddlewareFunc {
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 			if r.Method == http.MethodOptions {
-				var match mux.RouteMatch
-				if !router.Match(r, &match) {
-					http.NotFound(w, r)
-					return
-				}
+				/*
+					var match mux.RouteMatch
+					if !router.Match(r, &match) {
+						http.NotFound(w, r)
+						return
+					}
 
-				allMethods, err := match.Route.GetMethods()
-				if err != nil {
-					http.NotFound(w, r)
-					panic(err)
-				}
+					allMethods, err := match.Route.GetMethods()
+					if err != nil {
+						http.NotFound(w, r)
+						panic(err)
+					}
 
-				w.Header().Set("Access-Control-Allow-Methods", strings.Join(allMethods, ","))
+					w.Header().Set("Access-Control-Allow-Methods", strings.Join(allMethods, ","))
+				*/
+				w.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
 				w.WriteHeader(http.StatusOK)
 				return
 			}

@@ -44,14 +44,12 @@ func main() {
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}/callback", handlers.HandleAuthCallback).Methods(http.MethodGet, http.MethodOptions)
 
-	// extra methods are for CORS middleware. Will be fixed when moving to net/http
-	router.HandleFunc("/docs", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions, http.MethodPost) // GET
-	router.HandleFunc("/docs", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)                  // POST
-	// extra methods are for CORS middleware. Will be fixed when moving to net/http
-	router.HandleFunc("/docs/{documentation}", handlers.HandleGetDocs).Methods(http.MethodGet, http.MethodOptions, http.MethodPut, http.MethodDelete) // GET
-	router.HandleFunc("/docs/{documentation}", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)                                 // PUT
-	router.HandleFunc("/docs/{documentation}", handlers.HandleDeleteDocs).Methods(http.MethodDelete, http.MethodOptions)                              // DELETE
-	router.PathPrefix("/docs/{documentation}/page").HandlerFunc(handlers.HandleGetDocsPage).Methods(http.MethodGet, http.MethodOptions)               // GET
+	router.HandleFunc("/docs", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions)                                     // GET
+	router.HandleFunc("/docs", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)                                     // POST
+	router.HandleFunc("/docs/{documentation}", handlers.HandleGetDocs).Methods(http.MethodGet)                                          // GET
+	router.HandleFunc("/docs/{documentation}", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)                   // PUT
+	router.HandleFunc("/docs/{documentation}", handlers.HandleDeleteDocs).Methods(http.MethodDelete, http.MethodOptions)                // DELETE
+	router.PathPrefix("/docs/{documentation}/page").HandlerFunc(handlers.HandleGetDocsPage).Methods(http.MethodGet, http.MethodOptions) // GET
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
 
