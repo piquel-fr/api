@@ -16,5 +16,5 @@ type EnvsConfig struct {
 }
 
 type Configuration struct {
-	MaxDocumentationCount int64
+	MaxDocsInstanceCount int64
 }

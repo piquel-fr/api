@@ -27,7 +27,7 @@ func main() {
 	database.InitDatabase()
 	defer database.DeinitDatabase()
 
-	if err := docs.InitDocumentation(); err != nil {
+	if err := docs.InitDocsInstance(); err != nil {
 		panic(err)
 	}
 
@@ -51,7 +51,6 @@ func main() {
 	router.HandleFunc("/docs/list", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/docs/list/{username}", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/update", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/docs/{documentation}/transfer/{username}", handlers.HandleTransferDocs).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/docs/{documentation}/delete", handlers.HandleDeleteDocs).Methods(http.MethodPut, http.MethodOptions)
 	router.PathPrefix("/docs/{documentation}").HandlerFunc(handlers.HandleDocs).Methods(http.MethodGet, http.MethodOptions)
 

@@ -8,7 +8,7 @@ CREATE TABLE "users" (
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "documentation" (
+CREATE TABLE "docs_instances" (
     "id" SERIAL PRIMARY KEY NOT NULL,
     "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,
     "name" TEXT NOT NULL UNIQUE,

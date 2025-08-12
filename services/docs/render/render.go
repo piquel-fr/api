@@ -28,7 +28,7 @@ func parseMarkdown(md []byte) ast.Node {
 	return p.Parse(md)
 }
 
-func renderHTML(doc ast.Node, config *models.Documentation) []byte {
+func renderHTML(doc ast.Node, config *models.DocsInstance) []byte {
 	htmlFlags := html.CommonFlags
 
 	if config.FullPage {
@@ -44,7 +44,7 @@ func renderHTML(doc ast.Node, config *models.Documentation) []byte {
 	return markdown.Render(doc, renderer)
 }
 
-func renderHook(config *models.Documentation) html.RenderNodeFunc {
+func renderHook(config *models.DocsInstance) html.RenderNodeFunc {
 	return func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 		switch node := node.(type) {
 		case *ast.CodeBlock:
@@ -55,7 +55,7 @@ func renderHook(config *models.Documentation) html.RenderNodeFunc {
 	}
 }
 
-func addStyles(html []byte, config *models.Documentation) []byte {
+func addStyles(html []byte, config *models.DocsInstance) []byte {
 	var styles []byte
 
 	if config.UseTailwind {
@@ -69,7 +69,7 @@ func addStyles(html []byte, config *models.Documentation) []byte {
 	return slices.Concat(html, []byte("<style>\n"), styles, []byte("</style>\n"))
 }
 
-func fixupAST(doc ast.Node, config *models.Documentation) ast.Node {
+func fixupAST(doc ast.Node, config *models.DocsInstance) ast.Node {
 	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
 		switch node := node.(type) {
 		case *ast.Link:
@@ -81,7 +81,7 @@ func fixupAST(doc ast.Node, config *models.Documentation) ast.Node {
 	return doc
 }
 
-func fixupLink(link *ast.Link, entering bool, config *models.Documentation) {
+func fixupLink(link *ast.Link, entering bool, config *models.DocsInstance) {
 	if !entering {
 		return
 	}

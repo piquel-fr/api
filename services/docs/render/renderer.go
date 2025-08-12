@@ -35,7 +35,7 @@ func InitRenderer() error {
 	return nil
 }
 
-func RenderPage(md []byte, config *models.Documentation) ([]byte, error) {
+func RenderPage(md []byte, config *models.DocsInstance) ([]byte, error) {
 	md, err := renderCustom(md, config)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func RenderPage(md []byte, config *models.Documentation) ([]byte, error) {
 	return addStyles(html, config), nil
 }
 
-func loadInclude(path string, config *models.Documentation) ([]byte, error) {
+func loadInclude(path string, config *models.DocsInstance) ([]byte, error) {
 	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, ".common/includes/"+path)
 	return file, err
 }

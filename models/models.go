@@ -44,12 +44,12 @@ func UserSessionFromGothUser(user *goth.User) *UserSession {
 	}
 }
 
-type Documentation repository.Documentation
+type DocsInstance repository.DocsInstance
 
-func (docs *Documentation) GetResourceName() string {
+func (docs *DocsInstance) GetResourceName() string {
 	return "documentation"
 }
 
-func (docs *Documentation) GetOwner() int32 {
+func (docs *DocsInstance) GetOwner() int32 {
 	return docs.OwnerId
 }

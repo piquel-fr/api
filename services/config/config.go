@@ -10,7 +10,7 @@ import (
 
 var Envs models.EnvsConfig
 var Configuration = models.Configuration{
-	MaxDocumentationCount: 3,
+	MaxDocsInstanceCount: 3,
 }
 
 func LoadConfig() {

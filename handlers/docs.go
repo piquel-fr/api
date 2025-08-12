@@ -25,12 +25,12 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 	page = strings.Replace(page, docsName, "", 1)
 	page = utils.FormatLocalPathString(page)
 
-	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.Documentation(config)
+	docsConfig := models.DocsInstance(config)
 
 	if !docsConfig.Public {
 		user, err := users.GetUserFromRequest(r)
@@ -64,7 +64,7 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html, err := docs.GetDocumentationPage(page, &docsConfig)
+	html, err := docs.GetDocsInstancePage(page, &docsConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -83,7 +83,7 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 
 	authRequest := &auth.Request{
 		User:      user,
-		Ressource: &models.Documentation{},
+		Ressource: &models.DocsInstance{},
 		Actions:   []string{"create"},
 		Context:   r.Context(),
 	}
@@ -98,14 +98,14 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := repository.AddDocumentationParams{}
+	params := repository.AddDocsInstanceParams{}
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	params.OwnerId = user.ID
-	_, err = database.Queries.AddDocumentation(r.Context(), params)
+	_, err = database.Queries.AddDocsInstance(r.Context(), params)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -114,12 +114,12 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 
 func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	docsName := mux.Vars(r)["documentation"]
-	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.Documentation(config)
+	docsConfig := models.DocsInstance(config)
 
 	user, err := users.GetUserFromRequest(r)
 	if err != nil {
@@ -139,61 +139,14 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := repository.UpdateDocumentationParams{}
+	params := repository.UpdateDocsInstanceParams{}
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	params.ID = docsConfig.ID
-	err = database.Queries.UpdateDocumentation(r.Context(), params)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-}
-
-func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
-	docsName := mux.Vars(r)["documentation"]
-	destination := mux.Vars(r)["username"]
-
-	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-	docsConfig := models.Documentation(config)
-
-	user, err := users.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	authRequest := &auth.Request{
-		User:      user,
-		Ressource: &docsConfig,
-		Actions:   []string{"transfer"},
-		Context:   r.Context(),
-	}
-
-	if err = auth.Authorize(authRequest); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	destinationUser, err := database.Queries.GetUserByUsername(r.Context(), destination)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	params := repository.TransferDocumentationParams{
-		ID:      docsConfig.ID,
-		OwnerId: destinationUser.ID,
-	}
-
-	err = database.Queries.TransferDocumentation(r.Context(), params)
+	err = database.Queries.UpdateDocsInstance(r.Context(), params)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -202,12 +155,12 @@ func HandleTransferDocs(w http.ResponseWriter, r *http.Request) {
 
 func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	docsName := mux.Vars(r)["documentation"]
-	config, err := database.Queries.GetDocumentationByName(r.Context(), docsName)
+	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.Documentation(config)
+	docsConfig := models.DocsInstance(config)
 
 	user, err := users.GetUserFromRequest(r)
 	if err != nil {
@@ -227,7 +180,7 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.Queries.RemoveDocumentation(r.Context(), docsConfig.ID)
+	err = database.Queries.RemoveDocsInstance(r.Context(), docsConfig.ID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -264,7 +217,7 @@ func HandleListDocs(w http.ResponseWriter, r *http.Request) {
 
 	authRequest := &auth.Request{
 		User:      user,
-		Ressource: &models.Documentation{OwnerId: requestedUser.ID},
+		Ressource: &models.DocsInstance{OwnerId: requestedUser.ID},
 		Actions:   []string{"list"},
 		Context:   r.Context(),
 	}

@@ -9,11 +9,11 @@ import (
 	gh "github.com/piquel-fr/api/services/github"
 )
 
-func InitDocumentation() error {
+func InitDocsInstance() error {
 	return render.InitRenderer()
 }
 
-func GetDocumentationPage(route string, config *models.Documentation) ([]byte, error) {
+func GetDocsInstancePage(route string, config *models.DocsInstance) ([]byte, error) {
 	if strings.HasPrefix(strings.Trim(route, "/"), ".") {
 		return nil, errors.ErrorNotFound
 	}

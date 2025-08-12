@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Documentation struct {
+type DocsInstance struct {
 	ID             int32  `json:"id"`
 	OwnerId        int32  `json:"ownerId"`
 	Name           string `json:"name"`

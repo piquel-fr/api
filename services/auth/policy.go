@@ -69,7 +69,7 @@ var Policy = &PolicyConfiguration{
 						Action: "view",
 						Conditions: Conditions{
 							func(request *Request) error {
-								docs, ok := request.Ressource.(*models.Documentation)
+								docs, ok := request.Ressource.(*models.DocsInstance)
 								if !ok {
 									return newRequestMalformedError(request)
 								}
@@ -93,9 +93,9 @@ var Policy = &PolicyConfiguration{
 									return err
 								}
 
-								if count >= config.Configuration.MaxDocumentationCount {
+								if count >= config.Configuration.MaxDocsInstanceCount {
 									return errors.NewError(
-										fmt.Sprintf("you already have %d/%d documentation instances", count, config.Configuration.MaxDocumentationCount),
+										fmt.Sprintf("you already have %d/%d documentation instances", count, config.Configuration.MaxDocsInstanceCount),
 										http.StatusForbidden,
 									)
 								}
