@@ -44,6 +44,7 @@ func main() {
 		Addr: address,
 		Handler: middleware.AddMiddleware(router,
 			middleware.CORSMiddleware,
+			middleware.AuthMiddleware,
 		),
 	}
 
