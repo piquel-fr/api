@@ -1,8 +1,12 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
+
+	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/services/users"
 )
 
 type Middleware func(http.Handler) http.Handler
@@ -36,12 +40,29 @@ func CORSMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-		if r.Method == http.MethodOptions {
-			w.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
-			w.WriteHeader(http.StatusOK)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := users.GetUserFromRequest(r)
+		if err != nil {
+			errors.HandleError(w, r, err)
 			return
 		}
 
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user", user)))
+	})
+}
+
+func RequireAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value("user")
+		if user == nil {
+			http.Error(w, "please login to access this resource", http.StatusUnauthorized)
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
