@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
@@ -59,8 +60,10 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		user, err := database.Queries.GetUserById(r.Context(), userId)
 		if err != nil {
-			errors.HandleError(w, r, err)
-			return
+			if !goErrors.Is(err, pgx.ErrNoRows) {
+				errors.HandleError(w, r, err)
+				return
+			}
 		}
 
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user", &user)))
