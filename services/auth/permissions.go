@@ -1,8 +1,9 @@
 package auth
 
 import (
+	"slices"
+
 	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/utils"
 )
 
 func Authorize(request *Request) error {
@@ -66,7 +67,7 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 					Context:   request.Context,
 				}
 
-				if utils.StringSliceContains(checkedRoles, parent) {
+				if slices.Contains(checkedRoles, parent) {
 					return false, newRoleInheritanceCycleError(checkedRoles, parent)
 				}
 
