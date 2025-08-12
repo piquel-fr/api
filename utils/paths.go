@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"unicode"
 
 	"github.com/piquel-fr/api/errors"
 )
@@ -34,10 +33,4 @@ func FormatLocalPathString(path string) string {
 
 func FormatLocalPath(path []byte) []byte {
 	return fmt.Appendf(nil, "/%s", bytes.Trim(path, "/"))
-}
-
-func HasOnlyLettersAndNumbers(s string) bool {
-	return !strings.ContainsFunc(s, func(r rune) bool {
-		return !unicode.IsNumber(r) && !unicode.IsLetter(r)
-	})
 }
