@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/markbates/goth"
@@ -73,14 +72,4 @@ func GetProfileFromUserId(userId int32) (*models.UserProfile, error) {
 	profile.Color = role.Color
 
 	return profile, nil
-}
-
-func GetUserFromRequest(r *http.Request) (*repository.User, error) {
-	userId, err := GetUserId(r)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := database.Queries.GetUserById(r.Context(), userId)
-	return &user, err
 }

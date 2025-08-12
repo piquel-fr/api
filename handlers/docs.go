@@ -37,11 +37,7 @@ func CreateDocsHandler() http.Handler {
 }
 
 func handleListDocs(w http.ResponseWriter, r *http.Request) {
-	requester, err := auth.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
+	requester := middleware.GetUserFromRequest(r)
 
 	var instances []repository.DocsInstance
 
@@ -175,11 +171,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleNewDocs(w http.ResponseWriter, r *http.Request) {
-	user, err := auth.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
+	user := middleware.GetUserFromRequest(r)
 
 	authRequest := &auth.Request{
 		User:      user,
@@ -188,7 +180,7 @@ func handleNewDocs(w http.ResponseWriter, r *http.Request) {
 		Context:   r.Context(),
 	}
 
-	if err = auth.Authorize(authRequest); err != nil {
+	if err := auth.Authorize(authRequest); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -205,13 +197,13 @@ func handleNewDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	params.Root = utils.FormatLocalPathString(params.Root)
 
-	if err = validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
+	if err := validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	params.OwnerId = user.ID
-	_, err = database.Queries.AddDocsInstance(r.Context(), params)
+	_, err := database.Queries.AddDocsInstance(r.Context(), params)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -227,11 +219,7 @@ func handleGetDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := auth.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
+	user := middleware.GetUserFromRequest(r)
 
 	authRequest := &auth.Request{
 		User:      user,
@@ -264,11 +252,7 @@ func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := auth.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
+	user := middleware.GetUserFromRequest(r)
 
 	authRequest := &auth.Request{
 		User:      user,
@@ -338,11 +322,7 @@ func handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := auth.GetUserFromRequest(r)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
+	user := middleware.GetUserFromRequest(r)
 
 	authRequest := &auth.Request{
 		User:      user,
@@ -378,11 +358,7 @@ func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 	docsConfig := models.DocsInstance(config)
 
 	if !docsConfig.Public {
-		user, err := auth.GetUserFromRequest(r)
-		if err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
+		user := middleware.GetUserFromRequest(r)
 
 		authRequest := &auth.Request{
 			User:      user,
