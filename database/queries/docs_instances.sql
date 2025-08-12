@@ -1,9 +1,8 @@
 -- name: AddDocsInstance :one
 INSERT INTO "docs_instances" (
-    "ownerId", "name", "public", "repoOwner", "repoName", "repoRef",
-    "root", "pathPrefix", "highlightStyle", "fullPage", "useTailwind"
+    "ownerId", "name", "public", "repoOwner", "repoName", "repoRef", "root"
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING "id";
+VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id";
 
 -- name: UpdateDocsInstance :exec
 UPDATE "docs_instances" SET
@@ -12,11 +11,7 @@ UPDATE "docs_instances" SET
     "repoOwner" = $4,
     "repoName" = $5,
     "repoRef" = $6,
-    "root" = $7,
-    "pathPrefix" = $8,
-    "highlightStyle" = $9,
-    "fullPage" = $10,
-    "useTailwind" = $11
+    "root" = $7
 WHERE "id" = $1;
 
 -- name: GetDocsInstanceByName :one
@@ -24,6 +19,9 @@ SELECT * FROM "docs_instances" WHERE "name" = $1;
 
 -- name: GetDocsInstanceById :one
 SELECT * FROM "docs_instances" WHERE "id" = $1;
+
+-- name: ListDocsInstances :many
+SELECT * FROM "docs_instances" LIMIT $1 OFFSET $2;
 
 -- name: ListUserDocsInstances :many
 SELECT * FROM "docs_instances" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3;

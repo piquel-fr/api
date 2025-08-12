@@ -11,24 +11,19 @@ import (
 
 const addDocsInstance = `-- name: AddDocsInstance :one
 INSERT INTO "docs_instances" (
-    "ownerId", "name", "public", "repoOwner", "repoName", "repoRef",
-    "root", "pathPrefix", "highlightStyle", "fullPage", "useTailwind"
+    "ownerId", "name", "public", "repoOwner", "repoName", "repoRef", "root"
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING "id"
+VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING "id"
 `
 
 type AddDocsInstanceParams struct {
-	OwnerId        int32  `json:"ownerId"`
-	Name           string `json:"name"`
-	Public         bool   `json:"public"`
-	RepoOwner      string `json:"repoOwner"`
-	RepoName       string `json:"repoName"`
-	RepoRef        string `json:"repoRef"`
-	Root           string `json:"root"`
-	PathPrefix     string `json:"pathPrefix"`
-	HighlightStyle string `json:"highlightStyle"`
-	FullPage       bool   `json:"fullPage"`
-	UseTailwind    bool   `json:"useTailwind"`
+	OwnerId   int32  `json:"ownerId"`
+	Name      string `json:"name"`
+	Public    bool   `json:"public"`
+	RepoOwner string `json:"repoOwner"`
+	RepoName  string `json:"repoName"`
+	RepoRef   string `json:"repoRef"`
+	Root      string `json:"root"`
 }
 
 func (q *Queries) AddDocsInstance(ctx context.Context, arg AddDocsInstanceParams) (int32, error) {
@@ -40,10 +35,6 @@ func (q *Queries) AddDocsInstance(ctx context.Context, arg AddDocsInstanceParams
 		arg.RepoName,
 		arg.RepoRef,
 		arg.Root,
-		arg.PathPrefix,
-		arg.HighlightStyle,
-		arg.FullPage,
-		arg.UseTailwind,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -62,7 +53,7 @@ func (q *Queries) CountUserDocsInstances(ctx context.Context, ownerid int32) (in
 }
 
 const getDocsInstanceById = `-- name: GetDocsInstanceById :one
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "docs_instances" WHERE "id" = $1
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root FROM "docs_instances" WHERE "id" = $1
 `
 
 func (q *Queries) GetDocsInstanceById(ctx context.Context, id int32) (DocsInstance, error) {
@@ -77,16 +68,12 @@ func (q *Queries) GetDocsInstanceById(ctx context.Context, id int32) (DocsInstan
 		&i.RepoName,
 		&i.RepoRef,
 		&i.Root,
-		&i.PathPrefix,
-		&i.HighlightStyle,
-		&i.FullPage,
-		&i.UseTailwind,
 	)
 	return i, err
 }
 
 const getDocsInstanceByName = `-- name: GetDocsInstanceByName :one
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "docs_instances" WHERE "name" = $1
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root FROM "docs_instances" WHERE "name" = $1
 `
 
 func (q *Queries) GetDocsInstanceByName(ctx context.Context, name string) (DocsInstance, error) {
@@ -101,16 +88,50 @@ func (q *Queries) GetDocsInstanceByName(ctx context.Context, name string) (DocsI
 		&i.RepoName,
 		&i.RepoRef,
 		&i.Root,
-		&i.PathPrefix,
-		&i.HighlightStyle,
-		&i.FullPage,
-		&i.UseTailwind,
 	)
 	return i, err
 }
 
+const listDocsInstances = `-- name: ListDocsInstances :many
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root FROM "docs_instances" LIMIT $1 OFFSET $2
+`
+
+type ListDocsInstancesParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListDocsInstances(ctx context.Context, arg ListDocsInstancesParams) ([]DocsInstance, error) {
+	rows, err := q.db.Query(ctx, listDocsInstances, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DocsInstance
+	for rows.Next() {
+		var i DocsInstance
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerId,
+			&i.Name,
+			&i.Public,
+			&i.RepoOwner,
+			&i.RepoName,
+			&i.RepoRef,
+			&i.Root,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserDocsInstances = `-- name: ListUserDocsInstances :many
-SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root, "pathPrefix", "highlightStyle", "fullPage", "useTailwind" FROM "docs_instances" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3
+SELECT id, "ownerId", name, public, "repoOwner", "repoName", "repoRef", root FROM "docs_instances" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3
 `
 
 type ListUserDocsInstancesParams struct {
@@ -137,10 +158,6 @@ func (q *Queries) ListUserDocsInstances(ctx context.Context, arg ListUserDocsIns
 			&i.RepoName,
 			&i.RepoRef,
 			&i.Root,
-			&i.PathPrefix,
-			&i.HighlightStyle,
-			&i.FullPage,
-			&i.UseTailwind,
 		); err != nil {
 			return nil, err
 		}
@@ -168,26 +185,18 @@ UPDATE "docs_instances" SET
     "repoOwner" = $4,
     "repoName" = $5,
     "repoRef" = $6,
-    "root" = $7,
-    "pathPrefix" = $8,
-    "highlightStyle" = $9,
-    "fullPage" = $10,
-    "useTailwind" = $11
+    "root" = $7
 WHERE "id" = $1
 `
 
 type UpdateDocsInstanceParams struct {
-	ID             int32  `json:"id"`
-	Name           string `json:"name"`
-	Public         bool   `json:"public"`
-	RepoOwner      string `json:"repoOwner"`
-	RepoName       string `json:"repoName"`
-	RepoRef        string `json:"repoRef"`
-	Root           string `json:"root"`
-	PathPrefix     string `json:"pathPrefix"`
-	HighlightStyle string `json:"highlightStyle"`
-	FullPage       bool   `json:"fullPage"`
-	UseTailwind    bool   `json:"useTailwind"`
+	ID        int32  `json:"id"`
+	Name      string `json:"name"`
+	Public    bool   `json:"public"`
+	RepoOwner string `json:"repoOwner"`
+	RepoName  string `json:"repoName"`
+	RepoRef   string `json:"repoRef"`
+	Root      string `json:"root"`
 }
 
 func (q *Queries) UpdateDocsInstance(ctx context.Context, arg UpdateDocsInstanceParams) error {
@@ -199,10 +208,6 @@ func (q *Queries) UpdateDocsInstance(ctx context.Context, arg UpdateDocsInstance
 		arg.RepoName,
 		arg.RepoRef,
 		arg.Root,
-		arg.PathPrefix,
-		arg.HighlightStyle,
-		arg.FullPage,
-		arg.UseTailwind,
 	)
 	return err
 }

@@ -47,7 +47,7 @@ func UserSessionFromGothUser(user *goth.User) *UserSession {
 type DocsInstance repository.DocsInstance
 
 func (docs *DocsInstance) GetResourceName() string {
-	return "documentation"
+	return "docs_instance"
 }
 
 func (docs *DocsInstance) GetOwner() int32 {
