@@ -15,6 +15,7 @@ import (
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/docs/render"
+	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 )
@@ -186,6 +187,12 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
+	params.Root = utils.FormatLocalPathString(params.Root)
+
+	if err = validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
 
 	params.OwnerId = user.ID
 	_, err = database.Queries.AddDocsInstance(r.Context(), params)
@@ -265,6 +272,14 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	params.Root = utils.FormatLocalPathString(params.Root)
+	params.Name = strings.ToLower(params.Name)
+
+	if err = validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
 	params.ID = docsConfig.ID
 	err = database.Queries.UpdateDocsInstance(r.Context(), params)
 	if err != nil {
@@ -272,6 +287,30 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func validateDocsInstance(name, owner, repo, ref, root string) error {
+	// root cannot start with .
+	root = strings.Trim(root, "/")
+	if strings.HasPrefix(root, ".") {
+		return errors.NewError("root cannot start with \".\"", http.StatusBadRequest)
+	}
+
+	// repository must exist
+	if !gh.RepositoryExists(owner, repo) {
+		return errors.NewError(fmt.Sprintf("repository %s/%s does not exist", owner, repo), http.StatusBadRequest)
+	}
+
+	// root must exist
+	if _, err := gh.GetRepositoryFile(owner, repo, ref, root); err != nil {
+		return errors.NewError(fmt.Sprintf("file %s does not exist %s/%s:%s", root, owner, repo, ref), http.StatusBadRequest)
+	}
+
+	// name cant have special characters
+	if !utils.HasOnlyLettersAndNumbers(name) {
+		return errors.NewError(fmt.Sprintf("name \"%s\" should only contain numbers or letter", name), http.StatusBadRequest)
+	}
+	return nil
 }
 
 func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
