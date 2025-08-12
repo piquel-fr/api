@@ -1,15 +1,6 @@
 package models
 
-import (
-	"encoding/gob"
-	"time"
-
-	repository "github.com/piquel-fr/api/database/generated"
-)
-
-func Init() {
-	gob.Register(UserSession{})
-}
+import repository "github.com/piquel-fr/api/database/generated"
 
 type UserProfile struct {
 	*repository.User
@@ -23,13 +14,6 @@ func (profile *UserProfile) GetResourceName() string {
 
 func (profile *UserProfile) GetOwner() int32 {
 	return profile.ID
-}
-
-type UserSession struct {
-	AccessToken           string    `json:"access_token"`
-	ExpiresAt             time.Time `json:"expires_at"`
-	Email, Name, Username string
-	Image, Role           string
 }
 
 type DocsInstance repository.DocsInstance

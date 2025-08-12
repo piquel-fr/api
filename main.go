@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/piquel-fr/api/handlers"
-	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/database"
@@ -26,8 +25,6 @@ func main() {
 	defer database.DeinitDatabase()
 	docs.InitDocsService()
 	auth.InitAuthService()
-
-	models.Init()
 
 	// Initialize the router
 	router := http.NewServeMux()
