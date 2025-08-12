@@ -16,7 +16,6 @@ import (
 	"github.com/piquel-fr/api/services/docs/render"
 	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
-	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 )
 
@@ -38,7 +37,7 @@ func CreateDocsHandler() http.Handler {
 }
 
 func handleListDocs(w http.ResponseWriter, r *http.Request) {
-	requester, err := users.GetUserFromRequest(r)
+	requester, err := auth.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -73,7 +72,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username := r.URL.Query().Get("user"); username != "" {
-		profile, err := users.GetProfileFromUsername(username)
+		profile, err := auth.GetProfileFromUsername(username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -176,7 +175,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleNewDocs(w http.ResponseWriter, r *http.Request) {
-	user, err := users.GetUserFromRequest(r)
+	user, err := auth.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -228,7 +227,7 @@ func handleGetDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := users.GetUserFromRequest(r)
+	user, err := auth.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -265,7 +264,7 @@ func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := users.GetUserFromRequest(r)
+	user, err := auth.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -339,7 +338,7 @@ func handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := users.GetUserFromRequest(r)
+	user, err := auth.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -379,7 +378,7 @@ func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 	docsConfig := models.DocsInstance(config)
 
 	if !docsConfig.Public {
-		user, err := users.GetUserFromRequest(r)
+		user, err := auth.GetUserFromRequest(r)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return

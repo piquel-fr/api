@@ -9,7 +9,6 @@ import (
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/middleware"
-	"github.com/piquel-fr/api/services/users"
 )
 
 func CreateProfileHandler() http.Handler {
@@ -37,7 +36,7 @@ func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
 			return
 		}
-		profile, err := users.GetProfileFromUserId(id)
+		profile, err := auth.GetProfileFromUserId(id)
 		if err != nil {
 			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
 			return
@@ -49,7 +48,7 @@ func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
-	profile, err := users.GetProfileFromUsername(username)
+	profile, err := auth.GetProfileFromUsername(username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -62,7 +61,7 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 func handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("user")
 
-	profile, err := users.GetProfileFromUsername(username)
+	profile, err := auth.GetProfileFromUsername(username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

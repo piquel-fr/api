@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/services/users"
+	"github.com/piquel-fr/api/services/auth"
 )
 
 type Middleware func(http.Handler) http.Handler
@@ -46,7 +46,7 @@ func CORSMiddleware(next http.Handler) http.Handler {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := users.GetUserFromRequest(r)
+		user, err := auth.GetUserFromRequest(r)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return

@@ -10,7 +10,6 @@ import (
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/middleware"
-	"github.com/piquel-fr/api/services/users"
 )
 
 func CreateAuthHandler() http.Handler {
@@ -38,7 +37,7 @@ func handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = users.VerifyUser(r.Context(), &user)
+	_, err = auth.VerifyUser(r.Context(), &user)
 	if err != nil {
 		http.Error(w, "Error verifying user", http.StatusInternalServerError)
 		panic(err)
@@ -54,7 +53,7 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	userId, err := users.VerifyUser(r.Context(), &user)
+	userId, err := auth.VerifyUser(r.Context(), &user)
 	if err != nil {
 		http.Error(w, "Error verifying user", http.StatusInternalServerError)
 		panic(err)
