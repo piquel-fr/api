@@ -4,20 +4,32 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/services/users"
 )
 
-func HandleGetProfile(w http.ResponseWriter, r *http.Request) {
-	username := mux.Vars(r)["profile"]
-	writeProfile(w, r, username)
+func CreateProfileHandler() http.Handler {
+	handler := http.NewServeMux()
+
+	handler.HandleFunc("GET /", handleGetProfileQuery)
+	handler.HandleFunc("GET /{user}", handleGetProfile)
+	handler.HandleFunc("PUT /{user}", handleUpdateProfile)
+
+	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET"))
+	handler.Handle("OPTIONS /{user}", middleware.CreateOptionsHandler("GET", "PUT"))
+
+	return handler
 }
 
-func HandleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
+func handleGetProfile(w http.ResponseWriter, r *http.Request) {
+	writeProfile(w, r, r.PathValue("user"))
+}
+
+func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	if username == "" {
 		id, err := auth.GetUserId(r)
@@ -47,8 +59,8 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 	json.NewEncoder(w).Encode(profile)
 }
 
-func HandleUpdateProfile(w http.ResponseWriter, r *http.Request) {
-	username := mux.Vars(r)["profile"]
+func handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("user")
 
 	profile, err := users.GetProfileFromUsername(username)
 	if err != nil {

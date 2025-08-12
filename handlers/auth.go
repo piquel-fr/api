@@ -5,16 +5,31 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/markbates/goth/gothic"
+	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/services/users"
-	"github.com/piquel-fr/api/models"
-	"github.com/markbates/goth/gothic"
 )
+
+func CreateAuthHandler() http.Handler {
+	handler := http.NewServeMux()
+
+	handler.HandleFunc("GET /logout", handleLogout)
+	handler.HandleFunc("GET /{provider}", handleProviderLogin)
+	handler.HandleFunc("GET /{provider}/{callback}", handleAuthCallback)
+
+	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("GET"))
+	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
+	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
+
+	return handler
+}
 
 const RedirectSession = "redirect_to"
 
-func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
+func handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	saveRedirectURL(w, r)
 
 	user, err := gothic.CompleteUserAuth(w, r)
@@ -32,7 +47,7 @@ func HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	redirectUser(w, r)
 }
 
-func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
+func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		http.Error(w, "Error authencticating", http.StatusInternalServerError)
@@ -54,7 +69,7 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	redirectUser(w, r)
 }
 
-func HandleLogout(w http.ResponseWriter, r *http.Request) {
+func handleLogout(w http.ResponseWriter, r *http.Request) {
 	err := gothic.Logout(w, r)
 	if err != nil {
 		http.Error(w, "Error authencticating", http.StatusInternalServerError)
