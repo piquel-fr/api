@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
@@ -31,29 +30,24 @@ func main() {
 	models.Init()
 
 	// Initialize the router
-	router := mux.NewRouter()
-	middleware.Setup(router)
+	router := http.NewServeMux()
 
 	log.Printf("[Router] Initialized router!\n")
 
-	router.HandleFunc("/profile", handlers.HandleGetProfileQuery).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/profile/{profile}", handlers.HandleGetProfile).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/profile/{profile}", handlers.HandleUpdateProfile).Methods(http.MethodPut, http.MethodOptions)
-
-	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/auth/{provider}/callback", handlers.HandleAuthCallback).Methods(http.MethodGet, http.MethodOptions)
-
-	router.HandleFunc("/docs", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions)                                     // GET
-	router.HandleFunc("/docs", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)                                     // POST
-	router.HandleFunc("/docs/{documentation}", handlers.HandleGetDocs).Methods(http.MethodGet)                                          // GET
-	router.HandleFunc("/docs/{documentation}", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)                   // PUT
-	router.HandleFunc("/docs/{documentation}", handlers.HandleDeleteDocs).Methods(http.MethodDelete, http.MethodOptions)                // DELETE
-	router.PathPrefix("/docs/{documentation}/page").HandlerFunc(handlers.HandleGetDocsPage).Methods(http.MethodGet, http.MethodOptions) // GET
+	router.Handle("/profile/", http.StripPrefix("/profile", handlers.CreateProfileHandler()))
+	router.Handle("/auth/", http.StripPrefix("/auth", handlers.CreateAuthHandler()))
+	router.Handle("/docs/", http.StripPrefix("/docs", handlers.CreateDocsHandler()))
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
 
+	server := http.Server{
+		Addr: address,
+		Handler: middleware.AddMiddleware(router,
+			middleware.CORSMiddleware,
+		),
+	}
+
 	log.Printf("[Router] Starting router...\n")
 	log.Printf("[Router] Listening on %s!\n", address)
-	log.Fatalf("%s", http.ListenAndServe(address, router).Error())
+	log.Fatalf("%s", server.ListenAndServe().Error())
 }

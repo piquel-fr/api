@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gorilla/mux"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
@@ -16,11 +15,29 @@ import (
 	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/docs/render"
 	gh "github.com/piquel-fr/api/services/github"
+	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 )
 
-func HandleListDocs(w http.ResponseWriter, r *http.Request) {
+func CreateDocsHandler() http.Handler {
+	handler := http.NewServeMux()
+
+	handler.HandleFunc("GET /", handleListDocs)
+	handler.HandleFunc("POST /", handleNewDocs)
+	handler.HandleFunc("GET /{documentation}", handleGetDocs)
+	handler.HandleFunc("PUT /{documentation}", handleUpdateDocs)
+	handler.HandleFunc("DELETE /{documentation}", handleDeleteDocs)
+	handler.HandleFunc("GET /{documentation}/page/", handleGetDocsPage)
+
+	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET", "POST"))
+	handler.Handle("OPTIONS /{documentation}", middleware.CreateOptionsHandler("GET", "PUT", "DELETE"))
+	handler.Handle("OPTIONS /{documentation}/page/", middleware.CreateOptionsHandler("GET"))
+
+	return handler
+}
+
+func handleListDocs(w http.ResponseWriter, r *http.Request) {
 	requester, err := users.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -158,7 +175,7 @@ func HandleListDocs(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
+func handleNewDocs(w http.ResponseWriter, r *http.Request) {
 	user, err := users.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -202,8 +219,8 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetDocs(w http.ResponseWriter, r *http.Request) {
-	docsName := mux.Vars(r)["documentation"]
+func handleGetDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := r.PathValue("documentation")
 	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -239,8 +256,8 @@ func HandleGetDocs(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
-	docsName := mux.Vars(r)["documentation"]
+func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := r.PathValue("documentation")
 	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -313,8 +330,8 @@ func validateDocsInstance(name, owner, repo, ref, root string) error {
 	return nil
 }
 
-func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
-	docsName := mux.Vars(r)["documentation"]
+func handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := r.PathValue("documentation")
 	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -347,10 +364,9 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetDocsPage(w http.ResponseWriter, r *http.Request) {
-	docsName := mux.Vars(r)["documentation"]
+func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
+	docsName := r.PathValue("documentation")
 	page := r.URL.Path
-	page = strings.Replace(page, "docs", "", 1)
 	page = strings.Replace(page, docsName, "", 1)
 	page = strings.Replace(page, "page", "", 1)
 	page = utils.FormatLocalPathString(page)
