@@ -27,14 +27,6 @@ var Policy = &PolicyConfiguration{
 			Action:     "delete",
 			Conditions: Conditions{own},
 		},
-		"transferOwn": {
-			Action:     "transfer",
-			Conditions: Conditions{own},
-		},
-		"listOwn": {
-			Action:     "list",
-			Conditions: Conditions{own},
-		},
 	},
 	Roles: Roles{
 		"admin": {
@@ -49,9 +41,7 @@ var Policy = &PolicyConfiguration{
 					{Action: "view"},
 					{Action: "create"},
 					{Action: "update"},
-					{Action: "transfer"},
 					{Action: "delete"},
-					{Action: "list"},
 				},
 			},
 			Parents: []string{"default", "developer"},
@@ -64,7 +54,7 @@ var Policy = &PolicyConfiguration{
 					{Preset: "updateOwn"},
 					{Preset: "deleteOwn"},
 				},
-				"documentation": {
+				"docs_instance": {
 					{
 						Action: "view",
 						Conditions: Conditions{
@@ -76,7 +66,9 @@ var Policy = &PolicyConfiguration{
 
 								if docs.Public {
 									return nil
-								} else if docs.GetOwner() == request.User.ID {
+								}
+
+								if docs.GetOwner() == request.User.ID {
 									return nil
 								}
 
@@ -105,9 +97,7 @@ var Policy = &PolicyConfiguration{
 						},
 					},
 					{Preset: "updateOwn"},
-					{Preset: "transferOwn"},
 					{Preset: "deleteOwn"},
-					{Preset: "listOwn"},
 				},
 			},
 		},

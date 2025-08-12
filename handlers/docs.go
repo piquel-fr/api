@@ -14,46 +14,90 @@ import (
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/docs"
+	"github.com/piquel-fr/api/services/docs/render"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 )
 
-func HandleDocs(w http.ResponseWriter, r *http.Request) {
-	docsName := mux.Vars(r)["documentation"]
-	page := r.URL.Path
-	page = strings.Replace(page, "docs", "", 1)
-	page = strings.Replace(page, docsName, "", 1)
-	page = utils.FormatLocalPathString(page)
-
-	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
+func HandleListDocs(w http.ResponseWriter, r *http.Request) {
+	requester, err := users.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.DocsInstance(config)
 
-	if !docsConfig.Public {
-		user, err := users.GetUserFromRequest(r)
+	var instances []repository.DocsInstance
+
+	limitStr := r.URL.Query().Get("limit")
+	if limitStr == "" {
+		limitStr = "10"
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("invalid number %s specified for limit", limitStr), http.StatusBadRequest)
+		return
+	}
+
+	if limit > 200 {
+		limit = 200
+	}
+
+	offsetStr := r.URL.Query().Get("offset")
+	if offsetStr == "" {
+		offsetStr = "0"
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("invalid number %s specified for offset", limitStr), http.StatusBadRequest)
+		return
+	}
+
+	if username := r.URL.Query().Get("user"); username != "" {
+		profile, err := users.GetProfileFromUsername(username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
 
-		authRequest := &auth.Request{
-			User:      user,
-			Ressource: &docsConfig,
-			Actions:   []string{"view"},
-			Context:   r.Context(),
+		params := repository.ListUserDocsInstancesParams{
+			OwnerId: profile.ID,
+			Limit:   int32(limit),
+			Offset:  int32(offset),
 		}
 
-		if err = auth.Authorize(authRequest); err != nil {
+		instances, err = database.Queries.ListUserDocsInstances(r.Context(), params)
+		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
-	}
+	} else if r.URL.Query().Has("own") {
+		if r.URL.Query().Has("count") {
+			count, err := database.Queries.CountUserDocsInstances(r.Context(), requester.ID)
+			if err != nil {
+				errors.HandleError(w, r, err)
+				return
+			}
 
-	if r.URL.Query().Has("config") {
-		data, err := json.Marshal(docsConfig)
+			w.Header().Set("Content-Type", "text/plain")
+			w.Write([]byte(strconv.Itoa(int(count))))
+			return
+		}
+
+		params := repository.ListUserDocsInstancesParams{
+			OwnerId: requester.ID,
+			Limit:   int32(limit),
+			Offset:  int32(offset),
+		}
+
+		configs, err := database.Queries.ListUserDocsInstances(r.Context(), params)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		data, err := json.Marshal(configs)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -62,16 +106,55 @@ func HandleDocs(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 		return
+	} else {
+		params := repository.ListDocsInstancesParams{
+			Limit:  int32(limit),
+			Offset: int32(offset),
+		}
+
+		instances, err = database.Queries.ListDocsInstances(r.Context(), params)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
 	}
 
-	html, err := docs.GetDocsInstancePage(page, &docsConfig)
+	var returnedInstances []repository.DocsInstance
+	for _, instance := range instances {
+		if instance.Public {
+			returnedInstances = append(returnedInstances, instance)
+			continue
+		}
+
+		docsInstance := models.DocsInstance(instance)
+		authRequest := &auth.Request{
+			User:      requester,
+			Ressource: &docsInstance,
+			Actions:   []string{"view"},
+			Context:   r.Context(),
+		}
+
+		if err = auth.Authorize(authRequest); err != nil {
+			continue
+		}
+
+		returnedInstances = append(returnedInstances, instance)
+	}
+
+	if r.URL.Query().Has("count") {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(strconv.Itoa(len(returnedInstances))))
+		return
+	}
+
+	data, err := json.Marshal(returnedInstances)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write(html)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +193,43 @@ func HandleNewDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
+}
+
+func HandleGetDocs(w http.ResponseWriter, r *http.Request) {
+	docsName := mux.Vars(r)["documentation"]
+	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	docsConfig := models.DocsInstance(config)
+
+	user, err := users.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	authRequest := &auth.Request{
+		User:      user,
+		Ressource: &docsConfig,
+		Actions:   []string{"view"},
+		Context:   r.Context(),
+	}
+
+	if err = auth.Authorize(authRequest); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	data, err := json.Marshal(docsConfig)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
@@ -151,6 +271,7 @@ func HandleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
@@ -187,102 +308,55 @@ func HandleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleListDocs(w http.ResponseWriter, r *http.Request) {
-	username, ok := mux.Vars(r)["username"]
-	if !ok {
-		id, err := auth.GetUserId(r)
-		if err != nil {
-			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
-			return
-		}
-		profile, err := users.GetProfileFromUserId(id)
-		if err != nil {
-			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
-			return
-		}
-		username = profile.Username
-	}
+func HandleGetDocsPage(w http.ResponseWriter, r *http.Request) {
+	docsName := mux.Vars(r)["documentation"]
+	page := r.URL.Path
+	page = strings.Replace(page, "docs", "", 1)
+	page = strings.Replace(page, docsName, "", 1)
+	page = strings.Replace(page, "page", "", 1)
+	page = utils.FormatLocalPathString(page)
 
-	user, err := users.GetUserFromRequest(r)
+	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
+	docsConfig := models.DocsInstance(config)
 
-	requestedUser, err := database.Queries.GetUserByUsername(r.Context(), username)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	authRequest := &auth.Request{
-		User:      user,
-		Ressource: &models.DocsInstance{OwnerId: requestedUser.ID},
-		Actions:   []string{"list"},
-		Context:   r.Context(),
-	}
-
-	if err = auth.Authorize(authRequest); err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	if r.URL.Query().Has("count") {
-		count, err := database.Queries.CountUserDocsInstances(r.Context(), requestedUser.ID)
+	if !docsConfig.Public {
+		user, err := users.GetUserFromRequest(r)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte(strconv.Itoa(int(count))))
-		return
+		authRequest := &auth.Request{
+			User:      user,
+			Ressource: &docsConfig,
+			Actions:   []string{"view"},
+			Context:   r.Context(),
+		}
+
+		if err = auth.Authorize(authRequest); err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
 	}
 
-	limitStr := r.URL.Query().Get("limit")
-	if limitStr == "" {
-		limitStr = "10"
+	pathPrefix := r.URL.Query().Get("pathPrefix")
+	utils.FormatLocalPathString(pathPrefix)
+
+	renderConfig := render.RenderConfig{
+		Instance:   &docsConfig,
+		PathPrefix: pathPrefix,
 	}
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid number %s specified for limit", limitStr), http.StatusBadRequest)
-		return
-	}
-
-	if limit > 200 {
-		limit = 200
-	}
-
-	offsetStr := r.URL.Query().Get("offset")
-	if offsetStr == "" {
-		offsetStr = "0"
-	}
-
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("invalid number %s specified for offset", limitStr), http.StatusBadRequest)
-		return
-	}
-
-	params := repository.ListUserDocsInstancesParams{
-		OwnerId: requestedUser.ID,
-		Limit:   int32(limit),
-		Offset:  int32(offset),
-	}
-
-	configs, err := database.Queries.ListUserDocsInstances(r.Context(), params)
+	html, err := docs.GetDocsInstancePage(page, &renderConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	data, err := json.Marshal(configs)
-	if err != nil {
-		errors.HandleError(w, r, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
+	w.Header().Set("Content-Type", "text/html")
+	w.Write(html)
 }

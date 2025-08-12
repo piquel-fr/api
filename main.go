@@ -41,18 +41,20 @@ func main() {
 
 	router.HandleFunc("/profile", handlers.HandleGetProfileQuery).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/profile/{profile}", handlers.HandleGetProfile).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/profile/{profile}/update", handlers.HandleUpdateProfile).Methods(http.MethodPut, http.MethodOptions)
+	router.HandleFunc("/profile/{profile}", handlers.HandleUpdateProfile).Methods(http.MethodPut, http.MethodOptions)
 
 	router.HandleFunc("/auth/logout", handlers.HandleLogout).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}", handlers.HandleProviderLogin).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/auth/{provider}/callback", handlers.HandleAuthCallback).Methods(http.MethodGet, http.MethodOptions)
 
-	router.HandleFunc("/docs/new", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)
-	router.HandleFunc("/docs/list", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/docs/list/{username}", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/docs/{documentation}/update", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/docs/{documentation}/delete", handlers.HandleDeleteDocs).Methods(http.MethodPut, http.MethodOptions)
-	router.PathPrefix("/docs/{documentation}").HandlerFunc(handlers.HandleDocs).Methods(http.MethodGet, http.MethodOptions)
+	// extra methods are for CORS middleware. Will be fixed when moving to net/http
+	router.HandleFunc("/docs", handlers.HandleListDocs).Methods(http.MethodGet, http.MethodOptions, http.MethodPost) // GET
+	router.HandleFunc("/docs", handlers.HandleNewDocs).Methods(http.MethodPost, http.MethodOptions)                  // POST
+	// extra methods are for CORS middleware. Will be fixed when moving to net/http
+	router.HandleFunc("/docs/{documentation}", handlers.HandleGetDocs).Methods(http.MethodGet, http.MethodOptions, http.MethodPut, http.MethodDelete) // GET
+	router.HandleFunc("/docs/{documentation}", handlers.HandleUpdateDocs).Methods(http.MethodPut, http.MethodOptions)                                 // PUT
+	router.HandleFunc("/docs/{documentation}", handlers.HandleDeleteDocs).Methods(http.MethodDelete, http.MethodOptions)                              // DELETE
+	router.PathPrefix("/docs/{documentation}/page").HandlerFunc(handlers.HandleGetDocsPage).Methods(http.MethodGet, http.MethodOptions)               // GET
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
 
