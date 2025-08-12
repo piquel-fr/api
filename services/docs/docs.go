@@ -8,8 +8,8 @@ import (
 	gh "github.com/piquel-fr/api/services/github"
 )
 
-func InitDocsInstance() error {
-	return render.InitRenderer()
+func InitDocsService() {
+	render.InitRenderer()
 }
 
 func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {

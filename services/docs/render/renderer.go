@@ -14,24 +14,22 @@ var (
 	htmlFormatter *html.Formatter
 )
 
-func InitRenderer() error {
+func InitRenderer() {
 	var err error
 	singleline, err = regexp.Compile(`(?m)^{ *([a-z]+)(?: *\"(.*)\")? */}$`)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	multiline, err = regexp.Compile(`(?m)^{ *([a-z]+) *}\n?((?:.|\n)*?)\n?{/}$`)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	htmlFormatter = html.New()
 	if htmlFormatter == nil {
-		return fmt.Errorf("Error creating html formatter")
+		panic(fmt.Errorf("Error creating html formatter"))
 	}
-
-	return nil
 }
 
 func RenderPage(md []byte, config *RenderConfig) ([]byte, error) {

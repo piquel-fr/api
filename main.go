@@ -26,10 +26,7 @@ func main() {
 	auth.InitCookieStore()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
-
-	if err := docs.InitDocsInstance(); err != nil {
-		panic(err)
-	}
+	docs.InitDocsService()
 
 	models.Init()
 
