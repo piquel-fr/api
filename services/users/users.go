@@ -2,14 +2,15 @@ package users
 
 import (
 	"context"
+	"net/http"
 
-	repository "github.com/piquel-fr/api/database/generated"
-	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/database"
-	"github.com/piquel-fr/api/types"
-	"github.com/piquel-fr/api/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/markbates/goth"
+	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/utils"
 )
 
 func VerifyUser(context context.Context, inUser *goth.User) (int32, error) {
@@ -43,13 +44,13 @@ func registerUser(context context.Context, inUser *goth.User) (int32, error) {
 	return id, err
 }
 
-func GetProfileFromUsername(username string) (*types.UserProfile, error) {
+func GetProfileFromUsername(username string) (*models.UserProfile, error) {
 	user, err := database.Queries.GetUserByUsername(context.Background(), username)
 	if err != nil {
 		return nil, err
 	}
 
-	profile := &types.UserProfile{User: &user}
+	profile := &models.UserProfile{User: &user}
 
 	role := auth.Policy.Roles[profile.Role]
 
@@ -59,13 +60,13 @@ func GetProfileFromUsername(username string) (*types.UserProfile, error) {
 	return profile, nil
 }
 
-func GetProfileFromUserId(userId int32) (*types.UserProfile, error) {
+func GetProfileFromUserId(userId int32) (*models.UserProfile, error) {
 	user, err := database.Queries.GetUserById(context.Background(), userId)
 	if err != nil {
 		return nil, err
 	}
 
-	profile := &types.UserProfile{User: &user}
+	profile := &models.UserProfile{User: &user}
 
 	role := auth.Policy.Roles[profile.Role]
 
@@ -73,4 +74,14 @@ func GetProfileFromUserId(userId int32) (*types.UserProfile, error) {
 	profile.Color = role.Color
 
 	return profile, nil
+}
+
+func GetUserFromRequest(r *http.Request) (*repository.User, error) {
+	userId, err := auth.GetUserId(r)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := database.Queries.GetUserById(r.Context(), userId)
+	return &user, err
 }

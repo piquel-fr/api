@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"context"
+
 	repository "github.com/piquel-fr/api/database/generated"
 )
 
@@ -28,6 +30,7 @@ type Request struct {
 	User      *repository.User
 	Ressource Resource
 	Actions   []string
+	Context   context.Context
 }
 
 type Resource interface {

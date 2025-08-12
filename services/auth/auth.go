@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/piquel-fr/api/services/config"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/github"
 	"github.com/markbates/goth/providers/google"
+	"github.com/piquel-fr/api/services/config"
 )
 
 func InitAuthentication() {

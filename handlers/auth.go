@@ -8,7 +8,7 @@ import (
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/users"
-	"github.com/piquel-fr/api/types"
+	"github.com/piquel-fr/api/models"
 	"github.com/markbates/goth/gothic"
 )
 
@@ -45,7 +45,7 @@ func HandleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	err = auth.StoreUserSession(w, r, userId, types.UserSessionFromGothUser(&user))
+	err = auth.StoreUserSession(w, r, userId, models.UserSessionFromGothUser(&user))
 	if err != nil {
 		http.Error(w, "Error authencticating", http.StatusInternalServerError)
 		panic(err)

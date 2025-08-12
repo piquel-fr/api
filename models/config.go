@@ -1,4 +1,4 @@
-package config
+package models
 
 type EnvsConfig struct {
 	Domain             string
@@ -12,4 +12,9 @@ type EnvsConfig struct {
 	GoogleClientSecret string
 	GithubClientID     string
 	GithubClientSecret string
+	GithubApiToken     string
+}
+
+type Configuration struct {
+	MaxDocsInstanceCount int64
 }
