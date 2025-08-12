@@ -21,11 +21,11 @@ func main() {
 	// Intialize services
 	config.LoadConfig()
 	gh.InitGithubWrapper()
-	auth.InitAuthentication()
 	auth.InitCookieStore()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
 	docs.InitDocsService()
+	auth.InitAuthService()
 
 	models.Init()
 

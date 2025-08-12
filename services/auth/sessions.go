@@ -8,27 +8,26 @@ import (
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/models"
 	"github.com/gorilla/sessions"
-	"github.com/markbates/goth/gothic"
 )
 
 const SessionName = "user_session"
 
-func InitCookieStore() {
-	store := sessions.NewCookieStore([]byte(config.Envs.CookiesAuthSecret))
+var Store *sessions.CookieStore
 
-	store.MaxAge(178200)
-	store.Options.Path = "/"
-	store.Options.HttpOnly = false
-	store.Options.Secure = true
-	store.Options.Domain = config.Envs.Domain
+func InitCookieStore() {
+	Store = sessions.NewCookieStore([]byte(config.Envs.CookiesAuthSecret))
+
+	Store.MaxAge(178200)
+	Store.Options.Path = "/"
+	Store.Options.HttpOnly = false
+	Store.Options.Secure = true
+	Store.Options.Domain = config.Envs.Domain
 
 	log.Printf("[Cookies] Initialized cookie service!\n")
-
-	gothic.Store = store
 }
 
 func VerifyUserSession(r *http.Request) error {
-	session, err := gothic.Store.Get(r, SessionName)
+	session, err := Store.Get(r, SessionName)
 	if err != nil {
 		return err
 	}
@@ -41,7 +40,7 @@ func VerifyUserSession(r *http.Request) error {
 }
 
 func StoreUserSession(w http.ResponseWriter, r *http.Request, userId int32, userSession *models.UserSession) error {
-	session, err := gothic.Store.Get(r, SessionName)
+	session, err := Store.Get(r, SessionName)
 	if err != nil {
 		return err
 	}
@@ -53,7 +52,7 @@ func StoreUserSession(w http.ResponseWriter, r *http.Request, userId int32, user
 }
 
 func GetUserSession(r *http.Request) (*models.UserSession, error) {
-	session, err := gothic.Store.Get(r, SessionName)
+	session, err := Store.Get(r, SessionName)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +65,7 @@ func GetUserSession(r *http.Request) (*models.UserSession, error) {
 }
 
 func GetUserId(r *http.Request) (int32, error) {
-	session, err := gothic.Store.Get(r, SessionName)
+	session, err := Store.Get(r, SessionName)
 	if err != nil {
 		return 0, err
 	}
@@ -79,7 +78,7 @@ func GetUserId(r *http.Request) (int32, error) {
 }
 
 func RemoveUserSession(w http.ResponseWriter, r *http.Request) error {
-	session, err := gothic.Store.Get(r, SessionName)
+	session, err := Store.Get(r, SessionName)
 	if err != nil {
 		return err
 	}

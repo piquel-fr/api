@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/markbates/goth/gothic"
+	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/middleware"
+	"github.com/piquel-fr/api/utils"
 )
 
 func CreateAuthHandler() http.Handler {
@@ -30,27 +31,42 @@ const RedirectSession = "redirect_to"
 
 func handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	saveRedirectURL(w, r)
-
-	user, err := gothic.CompleteUserAuth(w, r)
-	if err != nil {
-		gothic.BeginAuthHandler(w, r)
+	providerName := r.PathValue("provider")
+	provider, ok := auth.Providers[providerName]
+	if !ok {
+		http.Error(w, fmt.Sprintf("provider %s is not valid", providerName), http.StatusBadRequest)
 		return
 	}
 
-	_, err = auth.VerifyUser(r.Context(), &user)
+	state := utils.RandString(64)
+	session, err := auth.Store.Get(r, "oauth_session")
 	if err != nil {
-		http.Error(w, "Error verifying user", http.StatusInternalServerError)
 		panic(err)
 	}
 
-	redirectUser(w, r)
+	session.Values[providerName] = state
+	http.Redirect(w, r, provider.Config.AuthCodeURL(state, provider.AuthCodeOptions), http.StatusTemporaryRedirect)
 }
 
 func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
-	user, err := gothic.CompleteUserAuth(w, r)
+	providerName := r.PathValue("provider")
+	provider, ok := auth.Providers[providerName]
+	if !ok {
+		http.Error(w, fmt.Sprintf("provider %s is not valid", providerName), http.StatusBadRequest)
+		return
+	}
+
+	token, err := provider.Config.Exchange(r.Context(), r.URL.Query().Get("code"))
+
+	user := models.UserSession{
+		AccessToken: token.AccessToken,
+		ExpiresAt:   token.Expiry,
+	}
+
+	err = provider.FetchUser(provider, &user)
 	if err != nil {
-		http.Error(w, "Error authencticating", http.StatusInternalServerError)
-		panic(err)
+		errors.HandleError(w, r, err)
+		return
 	}
 
 	userId, err := auth.VerifyUser(r.Context(), &user)
@@ -59,7 +75,7 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	err = auth.StoreUserSession(w, r, userId, models.UserSessionFromGothUser(&user))
+	err = auth.StoreUserSession(w, r, userId, &user)
 	if err != nil {
 		http.Error(w, "Error authencticating", http.StatusInternalServerError)
 		panic(err)
@@ -69,13 +85,7 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogout(w http.ResponseWriter, r *http.Request) {
-	err := gothic.Logout(w, r)
-	if err != nil {
-		http.Error(w, "Error authencticating", http.StatusInternalServerError)
-		panic(err)
-	}
-
-	err = auth.RemoveUserSession(w, r)
+	err := auth.RemoveUserSession(w, r)
 	if err != nil {
 		http.Error(w, "Error removing cookies", http.StatusInternalServerError)
 		panic(err)
@@ -93,7 +103,7 @@ func getRedirectURL(r *http.Request) string {
 func saveRedirectURL(w http.ResponseWriter, r *http.Request) {
 	redirectURL := getRedirectURL(r)
 
-	session, err := gothic.Store.Get(r, RedirectSession)
+	session, err := auth.Store.Get(r, RedirectSession)
 	if err != nil {
 		panic(err)
 	}
@@ -107,7 +117,7 @@ func saveRedirectURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func redirectUser(w http.ResponseWriter, r *http.Request) {
-	session, err := gothic.Store.Get(r, RedirectSession)
+	session, err := auth.Store.Get(r, RedirectSession)
 	if err != nil {
 		panic(err)
 	}
