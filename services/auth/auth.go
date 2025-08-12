@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/config"
@@ -39,6 +40,7 @@ func InitAuthService() {
 				Endpoint:     endpoints.GitHub,
 			},
 			FetchUser: func(provider Provider, user *models.UserSession) error {
+				jwt.New(jwt.SigningMethodES256)
 				const profileURL = "https://api.github.com/user"
 
 				req, err := http.NewRequest("GET", profileURL, nil)
