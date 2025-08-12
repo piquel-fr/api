@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-
-	"github.com/piquel-fr/api/models"
 )
 
-func renderCustom(md []byte, config *models.DocsInstance) ([]byte, error) {
+func renderCustom(md []byte, config *RenderConfig) ([]byte, error) {
 	var err error
 	md, err = renderSingleline(md, config)
 	if err != nil {
@@ -22,7 +20,7 @@ func renderCustom(md []byte, config *models.DocsInstance) ([]byte, error) {
 	return md, nil
 }
 
-func renderSingleline(md []byte, config *models.DocsInstance) ([]byte, error) {
+func renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
 	match := singleline.FindSubmatch(md)
 	if match == nil {
 		return md, nil
@@ -46,7 +44,7 @@ func renderSingleline(md []byte, config *models.DocsInstance) ([]byte, error) {
 	return renderSingleline(md, config)
 }
 
-func renderMultiline(md []byte, config *models.DocsInstance) ([]byte, error) {
+func renderMultiline(md []byte, config *RenderConfig) ([]byte, error) {
 	match := multiline.FindSubmatch(md)
 	if match == nil {
 		return md, nil

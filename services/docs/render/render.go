@@ -5,6 +5,9 @@ import (
 	"io"
 	"slices"
 
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
@@ -13,14 +16,10 @@ import (
 	"github.com/piquel-fr/api/utils"
 )
 
-const tailwindBase = `
-    h1 { font-size: 2em; }
-    h2 { font-size: 1.5em; }
-    h3 { font-size: 1.17em; }
-    h4 { font-size: 1em; }
-    h5 { font-size: 0.83em; }
-    h6 { font-size: 0.67em; }
-`
+type RenderConfig struct {
+	Instance   *models.DocsInstance
+	PathPrefix string
+}
 
 func parseMarkdown(md []byte) ast.Node {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
@@ -28,48 +27,26 @@ func parseMarkdown(md []byte) ast.Node {
 	return p.Parse(md)
 }
 
-func renderHTML(doc ast.Node, config *models.DocsInstance) []byte {
-	htmlFlags := html.CommonFlags
-
-	if config.FullPage {
-		htmlFlags = htmlFlags | html.CompletePage
-	}
-
+func renderHTML(doc ast.Node) []byte {
 	options := html.RendererOptions{
-		Flags:          htmlFlags,
-		RenderNodeHook: renderHook(config),
+		Flags:          html.CommonFlags,
+		RenderNodeHook: renderHook,
 	}
 	renderer := html.NewRenderer(options)
 
 	return markdown.Render(doc, renderer)
 }
 
-func renderHook(config *models.DocsInstance) html.RenderNodeFunc {
-	return func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
-		switch node := node.(type) {
-		case *ast.CodeBlock:
-			renderCodeBlock(w, node, entering, config)
-			return ast.GoToNext, true
-		}
-		return ast.GoToNext, false
+func renderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+	switch node := node.(type) {
+	case *ast.CodeBlock:
+		renderCodeBlock(w, node)
+		return ast.GoToNext, true
 	}
+	return ast.GoToNext, false
 }
 
-func addStyles(html []byte, config *models.DocsInstance) []byte {
-	var styles []byte
-
-	if config.UseTailwind {
-		styles = append(styles, []byte(tailwindBase)...)
-	}
-
-	if styles == nil {
-		return html
-	}
-
-	return slices.Concat(html, []byte("<style>\n"), styles, []byte("</style>\n"))
-}
-
-func fixupAST(doc ast.Node, config *models.DocsInstance) ast.Node {
+func fixupAST(doc ast.Node, config *RenderConfig) ast.Node {
 	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
 		switch node := node.(type) {
 		case *ast.Link:
@@ -81,7 +58,7 @@ func fixupAST(doc ast.Node, config *models.DocsInstance) ast.Node {
 	return doc
 }
 
-func fixupLink(link *ast.Link, entering bool, config *models.DocsInstance) {
+func fixupLink(link *ast.Link, entering bool, config *RenderConfig) {
 	if !entering {
 		return
 	}
@@ -91,4 +68,26 @@ func fixupLink(link *ast.Link, entering bool, config *models.DocsInstance) {
 	} else {
 		link.Destination = slices.Concat([]byte(config.PathPrefix), utils.FormatLocalPath(link.Destination))
 	}
+}
+
+var highlightStyle = styles.Get("tokyonight")
+
+func renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock) error {
+	lang := string(codeBlock.Info)
+	source := string(codeBlock.Literal)
+	l := lexers.Get(lang)
+	if l == nil {
+		l = lexers.Analyse(source)
+	}
+	if l == nil {
+		l = lexers.Fallback
+	}
+	l = chroma.Coalesce(l)
+
+	iterator, err := l.Tokenise(nil, source)
+	if err != nil {
+		return err
+	}
+
+	return htmlFormatter.Format(w, highlightStyle, iterator)
 }

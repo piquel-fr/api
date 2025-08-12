@@ -5,7 +5,6 @@ import (
 	"regexp"
 
 	"github.com/alecthomas/chroma/v2/formatters/html"
-	"github.com/piquel-fr/api/models"
 	gh "github.com/piquel-fr/api/services/github"
 )
 
@@ -35,7 +34,7 @@ func InitRenderer() error {
 	return nil
 }
 
-func RenderPage(md []byte, config *models.DocsInstance) ([]byte, error) {
+func RenderPage(md []byte, config *RenderConfig) ([]byte, error) {
 	md, err := renderCustom(md, config)
 	if err != nil {
 		return nil, err
@@ -43,11 +42,12 @@ func RenderPage(md []byte, config *models.DocsInstance) ([]byte, error) {
 
 	ast := parseMarkdown(md)
 	ast = fixupAST(ast, config)
-	html := renderHTML(ast, config)
-	return addStyles(html, config), nil
+	return renderHTML(ast), nil
 }
 
-func loadInclude(path string, config *models.DocsInstance) ([]byte, error) {
-	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, ".common/includes/"+path)
+func loadInclude(path string, config *RenderConfig) ([]byte, error) {
+	file, err := gh.GetRepositoryFile(
+		config.Instance.RepoOwner, config.Instance.RepoName,
+		config.Instance.RepoRef, ".common/includes/"+path)
 	return file, err
 }

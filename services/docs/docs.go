@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/docs/render"
 	gh "github.com/piquel-fr/api/services/github"
 )
@@ -13,16 +12,19 @@ func InitDocsInstance() error {
 	return render.InitRenderer()
 }
 
-func GetDocsInstancePage(route string, config *models.DocsInstance) ([]byte, error) {
+func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {
 	if strings.HasPrefix(strings.Trim(route, "/"), ".") {
 		return nil, errors.ErrorNotFound
 	}
 
 	if route == "/" {
-		route = config.Root
+		route = config.Instance.Root
 	}
 
-	file, err := gh.GetRepositoryFile(config.RepoOwner, config.RepoName, config.RepoRef, route)
+	file, err := gh.GetRepositoryFile(
+		config.Instance.RepoOwner, config.Instance.RepoName,
+		config.Instance.RepoRef, route,
+	)
 	if err != nil {
 		return nil, err
 	}
