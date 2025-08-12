@@ -32,24 +32,20 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		panic("nil error being handled")
 	}
 
-	e, ok := err.(*Error)
-	if ok {
-		http.Error(w, e.Error(), e.status)
+	switch err := err.(type) {
+	case *Error:
+		http.Error(w, err.Error(), err.status)
+		return
+	case *json.SyntaxError:
+		http.Error(w, "syntax error in json payload", http.StatusBadRequest)
+		return
+	case *json.UnmarshalTypeError:
+		http.Error(w, "type error in json payload", http.StatusBadRequest)
 		return
 	}
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		http.NotFound(w, r)
-		return
-	}
-
-	if errors.Is(err, &json.SyntaxError{}) {
-		http.Error(w, "syntax error in json payload", http.StatusBadRequest)
-		return
-	}
-
-	if errors.Is(err, &json.UnmarshalTypeError{}) {
-		http.Error(w, "type error in json payload", http.StatusBadRequest)
 		return
 	}
 
