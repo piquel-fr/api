@@ -306,19 +306,18 @@ func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 
 func validateDocsInstance(name, owner, repo, ref, root string) error {
 	// root cannot start with .
-	root = strings.Trim(root, "/")
-	if strings.HasPrefix(root, ".") {
+	if strings.HasPrefix(strings.Trim(root, "/"), ".") {
 		return errors.NewError("root cannot start with \".\"", http.StatusBadRequest)
 	}
 
 	// repository must exist
 	if !gh.RepositoryExists(owner, repo) {
-		return errors.NewError(fmt.Sprintf("repository %s/%s does not exist", owner, repo), http.StatusBadRequest)
+		return errors.NewError(fmt.Sprintf("repository \"%s/%s\" does not exist", owner, repo), http.StatusBadRequest)
 	}
 
 	// root must exist
 	if _, err := gh.GetRepositoryFile(owner, repo, ref, root); err != nil {
-		return errors.NewError(fmt.Sprintf("file %s does not exist %s/%s:%s", root, owner, repo, ref), http.StatusBadRequest)
+		return errors.NewError(fmt.Sprintf("file %s does not exist in %s/%s:%s", root, owner, repo, ref), http.StatusBadRequest)
 	}
 
 	// name cant have special characters
