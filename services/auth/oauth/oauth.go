@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"net/http"
 
@@ -28,6 +29,7 @@ type UserSession struct {
 var providers map[string]Provider
 
 func InitOAuth() {
+	gob.Register(UserSession{})
 	providers = map[string]Provider{
 		"github": &github{
 			name: "github",
