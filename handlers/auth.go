@@ -69,7 +69,11 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	redirectUser(w, r, r.URL.Query().Get("state"))
+	http.Redirect(w, r, formatRedirectURL(r.URL.Query().Get("state")), http.StatusTemporaryRedirect)
+}
+
+func formatRedirectURL(redirectTo string) string {
+	return fmt.Sprintf("%s/%s", config.Envs.RedirectTo, strings.Trim(redirectTo, "/"))
 }
 
 // will be removed when moving to Bearer (should be done in frontend)
@@ -80,10 +84,5 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	http.Redirect(w, r, r.URL.Query().Get("redirectTo"), http.StatusTemporaryRedirect)
-}
-
-func redirectUser(w http.ResponseWriter, r *http.Request, redirectTo string) {
-	redirectTo = fmt.Sprintf("%s/%s", config.Envs.RedirectTo, strings.Trim(redirectTo, "/"))
-	http.Redirect(w, r, redirectTo, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, formatRedirectURL(r.URL.Query().Get("redirectTo")), http.StatusTemporaryRedirect)
 }
