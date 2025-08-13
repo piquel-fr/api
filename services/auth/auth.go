@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/services/config"
 )
@@ -14,8 +13,6 @@ import (
 func InitAuthService() {
 	oauth.InitOAuth()
 }
-
-var badAuthHeaderError = errors.NewError("authorization header is not valid", http.StatusUnauthorized)
 
 func GenerateTokenString(userId int32) (string, error) {
 	idString := strconv.Itoa(int(userId))
@@ -28,16 +25,19 @@ func GenerateTokenString(userId int32) (string, error) {
 }
 
 func GetToken(r *http.Request) (*jwt.Token, error) {
+	tokenString := ""
+
 	authHeader := r.Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 {
-		return nil, badAuthHeaderError
-	}
-	if parts[0] != "Bearer" {
-		return nil, badAuthHeaderError
+	if len(parts) == 2 && parts[0] == "Bearer" {
+		tokenString = parts[1]
 	}
 
-	tokenString := parts[1]
+	if tokenString == "" {
+		cookie := r.Header.Get("Cookie")
+		tokenString = strings.TrimPrefix(cookie, "jwt=")
+	}
+
 	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		return config.Envs.JWTSigningSecret, nil
 	})
