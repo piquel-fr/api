@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
 )
@@ -18,7 +17,6 @@ func CreateStack(middlewares ...Middleware) Middleware {
 			middleware := middlewares[i]
 			next = middleware(next)
 		}
-
 		return next
 	}
 }
@@ -53,10 +51,6 @@ func RequireAuthMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func GetUserFromRequest(r *http.Request) *repository.User {
-	return r.Context().Value("user").(*repository.User)
 }
 
 func CreateOptionsHandler(methods ...string) http.Handler {

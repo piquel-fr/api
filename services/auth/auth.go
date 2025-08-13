@@ -6,8 +6,10 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/services/database"
 )
 
 func InitAuthService() {
@@ -60,4 +62,14 @@ func GetUserId(r *http.Request) (int32, error) {
 	}
 
 	return int32(id), nil
+}
+
+func GetUserFromRequest(r *http.Request) (*repository.User, error) {
+	userId, err := GetUserId(r)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := database.Queries.GetUserById(r.Context(), userId)
+	return &user, err
 }
