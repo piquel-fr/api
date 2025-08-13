@@ -11,7 +11,7 @@ import (
 
 const addUser = `-- name: AddUser :one
 INSERT INTO "users" ("username", "name", "image", "email", "role")
-VALUES ($1, $2, $3, $4, $5) RETURNING "id"
+VALUES ($1, $2, $3, $4, $5) RETURNING id, username, name, image, email, role, "createdAt"
 `
 
 type AddUserParams struct {
@@ -22,7 +22,7 @@ type AddUserParams struct {
 	Role     string `json:"role"`
 }
 
-func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (int32, error) {
+func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, addUser,
 		arg.Username,
 		arg.Name,
@@ -30,9 +30,17 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (int32, error)
 		arg.Email,
 		arg.Role,
 	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.Image,
+		&i.Email,
+		&i.Role,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one

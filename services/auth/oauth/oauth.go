@@ -64,11 +64,5 @@ func GetProvider(name string) (Provider, error) {
 }
 
 func buildCallbackURL(provider string) string {
-	var url string
-	if config.Envs.SSL == "true" {
-		url = fmt.Sprintf("https://%s/auth/%s/callback", config.Envs.Host, provider)
-	} else {
-		url = fmt.Sprintf("http://%s:%s/auth/%s/callback", config.Envs.Host, config.Envs.Port, provider)
-	}
-	return url
+	return fmt.Sprintf("%s/auth/%s/callback", config.Envs.Url, provider)
 }

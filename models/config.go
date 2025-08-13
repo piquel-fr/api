@@ -1,20 +1,22 @@
 package models
 
+import "github.com/golang-jwt/jwt/v5"
+
 type EnvsConfig struct {
 	Domain             string
-	RedirectTo         string
-	Host               string
+	AuthCallbackUrl    string
+	Url                string
 	Port               string
-	SSL                string
 	DBURL              string
-	CookiesAuthSecret  string
+	GithubApiToken     string
+	JWTSigningSecret   []byte
 	GoogleClientID     string
 	GoogleClientSecret string
 	GithubClientID     string
 	GithubClientSecret string
-	GithubApiToken     string
 }
 
 type Configuration struct {
 	MaxDocsInstanceCount int64
+	JWTSigningMethod     jwt.SigningMethod
 }

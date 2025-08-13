@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"github.com/piquel-fr/api/models"
 )
@@ -11,6 +12,7 @@ import (
 var Envs models.EnvsConfig
 var Configuration = models.Configuration{
 	MaxDocsInstanceCount: 3,
+	JWTSigningMethod:     jwt.SigningMethodHS256,
 }
 
 func LoadConfig() {
@@ -20,17 +22,16 @@ func LoadConfig() {
 	// Load config from environment
 	Envs = models.EnvsConfig{
 		Domain:             getEnv("DOMAIN"),
-		RedirectTo:         getEnv("REDIRECT_TO"),
-		Host:               getEnv("HOST"),
+		AuthCallbackUrl:    getEnv("AUTH_CALLBACK"),
+		Url:                getEnv("URL"),
 		Port:               getDefaultEnv("PORT", "80"),
-		SSL:                getEnv("SSL"),
 		DBURL:              getEnv("DB_URL"),
-		CookiesAuthSecret:  getEnv("COOKIES_AUTH_SECRET"),
 		GoogleClientID:     getEnv("AUTH_GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: getEnv("AUTH_GOOGLE_CLIENT_SECRET"),
 		GithubClientID:     getEnv("AUTH_GITHUB_CLIENT_ID"),
 		GithubClientSecret: getEnv("AUTH_GITHUB_CLIENT_SECRET"),
 		GithubApiToken:     getEnv("GITHUB_API_TOKEN"),
+		JWTSigningSecret:   []byte(getEnv("JWT_SECRET")),
 	}
 
 	log.Printf("[Config] Loaded environment configuration!")

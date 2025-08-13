@@ -20,7 +20,6 @@ func main() {
 	// Intialize services
 	config.LoadConfig()
 	gh.InitGithubWrapper()
-	auth.InitCookieStore()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
 	docs.InitDocsService()
@@ -41,7 +40,6 @@ func main() {
 		Addr: address,
 		Handler: middleware.AddMiddleware(router,
 			middleware.CORSMiddleware,
-			middleware.AuthMiddleware,
 		),
 	}
 

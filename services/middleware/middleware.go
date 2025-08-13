@@ -1,16 +1,12 @@
 package middleware
 
 import (
-	"context"
-	goErrors "errors"
 	"net/http"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/database"
 )
 
 type Middleware func(http.Handler) http.Handler
@@ -48,33 +44,11 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId, err := auth.GetUserId(r)
-		if err != nil {
-			if !goErrors.Is(err, errors.ErrorNotAuthenticated) {
-				errors.HandleError(w, r, err)
-				return
-			}
-		}
-
-		user, err := database.Queries.GetUserById(r.Context(), userId)
-		if err != nil {
-			if !goErrors.Is(err, pgx.ErrNoRows) {
-				errors.HandleError(w, r, err)
-				return
-			}
-		}
-
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user", &user)))
-	})
-}
-
 func RequireAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value("user")
-		if user == nil {
-			http.Error(w, "please login to access this resource", http.StatusUnauthorized)
+		_, err := auth.GetToken(r)
+		if err != nil {
+			errors.HandleError(w, r, err)
 			return
 		}
 		next.ServeHTTP(w, r)

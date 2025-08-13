@@ -10,19 +10,29 @@ import (
 	"github.com/piquel-fr/api/services/database"
 )
 
-func VerifyUser(context context.Context, inUser *oauth.User) (int32, error) {
+func GetUserProfile(context context.Context, inUser *oauth.User) (*models.UserProfile, error) {
 	user, err := database.Queries.GetUserByEmail(context, inUser.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return registerUser(context, inUser)
+			err = nil
+			user, err = registerUser(context, inUser)
 		}
-		return 0, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return user.ID, nil
+	profile := &models.UserProfile{User: &user}
+
+	role := Policy.Roles[profile.Role]
+
+	profile.RoleName = role.Name
+	profile.Color = role.Color
+
+	return profile, nil
 }
 
-func registerUser(context context.Context, inUser *oauth.User) (int32, error) {
+func registerUser(context context.Context, inUser *oauth.User) (repository.User, error) {
 	params := repository.AddUserParams{}
 
 	params.Email = inUser.Email
@@ -31,8 +41,8 @@ func registerUser(context context.Context, inUser *oauth.User) (int32, error) {
 	params.Image = inUser.Image
 	params.Name = inUser.Name
 
-	id, err := database.Queries.AddUser(context, params)
-	return id, err
+	user, err := database.Queries.AddUser(context, params)
+	return user, err
 }
 
 func GetProfileFromUsername(username string) (*models.UserProfile, error) {

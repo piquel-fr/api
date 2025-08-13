@@ -3,23 +3,21 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/middleware"
+	"github.com/piquel-fr/api/utils"
 )
 
 func CreateAuthHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /logout", handleLogout)
 	handler.HandleFunc("GET /{provider}", handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/{callback}", handleAuthCallback)
 
-	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
@@ -57,32 +55,22 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := auth.VerifyUser(r.Context(), user)
+	profile, err := auth.GetUserProfile(r.Context(), user)
 	if err != nil {
-		http.Error(w, "Error verifying user", http.StatusInternalServerError)
-		panic(err)
+		errors.HandleError(w, r, err)
+		return
 	}
 
-	err = auth.StoreUserSession(w, r, userId, &oauth.UserSession{Token: token, User: user})
+	tokenString, err := auth.GenerateTokenString(profile.ID)
 	if err != nil {
-		http.Error(w, "Error authencticating", http.StatusInternalServerError)
-		panic(err)
+		errors.HandleError(w, r, err)
+		return
 	}
 
-	http.Redirect(w, r, formatRedirectURL(r.URL.Query().Get("state")), http.StatusTemporaryRedirect)
+	redirectUrl := formatRedirectURL(r.URL.Query().Get("state"), tokenString)
+	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func formatRedirectURL(redirectTo string) string {
-	return fmt.Sprintf("%s/%s", config.Envs.RedirectTo, strings.Trim(redirectTo, "/"))
-}
-
-// will be removed when moving to Bearer (should be done in frontend)
-func handleLogout(w http.ResponseWriter, r *http.Request) {
-	err := auth.RemoveUserSession(w, r)
-	if err != nil {
-		http.Error(w, "Error removing cookies", http.StatusInternalServerError)
-		panic(err)
-	}
-
-	http.Redirect(w, r, formatRedirectURL(r.URL.Query().Get("redirectTo")), http.StatusTemporaryRedirect)
+func formatRedirectURL(redirectTo string, token string) string {
+	return fmt.Sprintf("%s?redirectTo=%s&token=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
 }

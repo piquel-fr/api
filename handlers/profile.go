@@ -33,12 +33,12 @@ func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 	if username == "" {
 		id, err := auth.GetUserId(r)
 		if err != nil {
-			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
+			errors.HandleError(w, r, err)
 			return
 		}
 		profile, err := auth.GetProfileFromUserId(id)
 		if err != nil {
-			http.Error(w, "Please login or specify a username", http.StatusUnauthorized)
+			errors.HandleError(w, r, err)
 			return
 		}
 		username = profile.Username
