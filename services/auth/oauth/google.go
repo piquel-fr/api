@@ -13,12 +13,10 @@ import (
 )
 
 type google struct {
-	name            string
 	config          oauth2.Config
 	authCodeOptions oauth2.AuthCodeOption
 }
 
-func (gg *google) GetName() string                { return gg.name }
 func (gg *google) GetOAuthConfig() *oauth2.Config { return &gg.config }
 func (gg *google) AuthCodeURL(state string) string {
 	return gg.config.AuthCodeURL(state, gg.authCodeOptions)

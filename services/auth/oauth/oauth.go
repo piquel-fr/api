@@ -12,7 +12,6 @@ import (
 )
 
 type Provider interface {
-	GetName() string
 	GetOAuthConfig() *oauth2.Config
 	FetchUser(context.Context, *oauth2.Token) (*User, error)
 	AuthCodeURL(state string) string
@@ -25,7 +24,6 @@ var providers map[string]Provider
 func InitOAuth() {
 	providers = map[string]Provider{
 		"github": &github{
-			name: "github",
 			config: oauth2.Config{
 				ClientID:     config.Envs.GithubClientID,
 				ClientSecret: config.Envs.GithubClientSecret,
@@ -35,7 +33,6 @@ func InitOAuth() {
 			},
 		},
 		"google": &google{
-			name: "google",
 			config: oauth2.Config{
 				ClientID:     config.Envs.GoogleClientID,
 				ClientSecret: config.Envs.GoogleClientSecret,

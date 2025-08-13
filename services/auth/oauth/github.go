@@ -18,11 +18,9 @@ const (
 )
 
 type github struct {
-	name   string
 	config oauth2.Config
 }
 
-func (gh *github) GetName() string                 { return gh.name }
 func (gh *github) GetOAuthConfig() *oauth2.Config  { return &gh.config }
 func (gh *github) AuthCodeURL(state string) string { return gh.config.AuthCodeURL(state) }
 
