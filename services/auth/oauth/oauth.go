@@ -2,7 +2,6 @@ package oauth
 
 import (
 	"context"
-	"encoding/gob"
 	"fmt"
 	"net/http"
 
@@ -21,15 +20,9 @@ type Provider interface {
 
 type User struct{ Name, Username, Email, Image string }
 
-type UserSession struct {
-	*oauth2.Token
-	*User
-}
-
 var providers map[string]Provider
 
 func InitOAuth() {
-	gob.Register(UserSession{})
 	providers = map[string]Provider{
 		"github": &github{
 			name: "github",
