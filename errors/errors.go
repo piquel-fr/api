@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -46,6 +47,11 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		http.NotFound(w, r)
+		return
+	}
+
+	if errors.Is(err, jwt.ErrTokenMalformed) {
+		HandleError(w, r, ErrorNotAuthenticated)
 		return
 	}
 

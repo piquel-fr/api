@@ -21,7 +21,6 @@ func LoadConfig() {
 
 	// Load config from environment
 	Envs = models.EnvsConfig{
-		Domain:             getEnv("DOMAIN"),
 		AuthCallbackUrl:    getEnv("AUTH_CALLBACK"),
 		Url:                getEnv("URL"),
 		Port:               getDefaultEnv("PORT", "80"),
