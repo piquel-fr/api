@@ -92,8 +92,7 @@ func (gh *github) getPrivateEmail(context context.Context, token *oauth2.Token) 
 		Primary  bool   `json:"primary"`
 		Verified bool   `json:"verified"`
 	}
-	err = json.NewDecoder(response.Body).Decode(&mailList)
-	if err != nil {
+	if err = json.NewDecoder(response.Body).Decode(&mailList); err != nil {
 		return "", err
 	}
 	for _, v := range mailList {
