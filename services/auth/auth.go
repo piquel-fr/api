@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/database"
@@ -31,14 +32,10 @@ func GetToken(r *http.Request) (*jwt.Token, error) {
 
 	authHeader := r.Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
-	if len(parts) == 2 && parts[0] == "Bearer" {
-		tokenString = parts[1]
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return nil, errors.ErrorNotAuthenticated
 	}
-
-	if tokenString == "" {
-		cookie := r.Header.Get("Cookie")
-		tokenString = strings.TrimPrefix(cookie, "jwt=")
-	}
+	tokenString = parts[1]
 
 	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		return config.Envs.JWTSigningSecret, nil
