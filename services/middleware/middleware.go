@@ -1,15 +1,12 @@
 package middleware
 
 import (
-	"context"
-	goErrors "errors"
 	"net/http"
 	"strings"
 
 	repository "github.com/piquel-fr/api/database/generated"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/database"
 )
 
 type Middleware func(http.Handler) http.Handler
@@ -41,37 +38,17 @@ func CORSMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Max-Age", "43100")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization")
 
 		next.ServeHTTP(w, r)
 	})
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId, err := auth.GetUserId(r)
-		if err != nil {
-			if !goErrors.Is(err, errors.ErrorNotAuthenticated) {
-				errors.HandleError(w, r, err)
-				return
-			}
-		}
-
-		user, err := database.Queries.GetUserById(r.Context(), userId)
-		if err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user", &user)))
-	})
-}
-
 func RequireAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value("user")
-		if user == nil {
-			http.Error(w, "please login to access this resource", http.StatusUnauthorized)
+		_, err := auth.GetToken(r)
+		if err != nil {
+			errors.HandleError(w, r, err)
 			return
 		}
 		next.ServeHTTP(w, r)

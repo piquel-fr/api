@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/piquel-fr/api/handlers"
-	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/database"
@@ -21,13 +20,10 @@ func main() {
 	// Intialize services
 	config.LoadConfig()
 	gh.InitGithubWrapper()
-	auth.InitAuthentication()
-	auth.InitCookieStore()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
 	docs.InitDocsService()
-
-	models.Init()
+	auth.InitAuthService()
 
 	// Initialize the router
 	router := http.NewServeMux()
@@ -44,7 +40,6 @@ func main() {
 		Addr: address,
 		Handler: middleware.AddMiddleware(router,
 			middleware.CORSMiddleware,
-			middleware.AuthMiddleware,
 		),
 	}
 

@@ -1,41 +1,63 @@
 package auth
 
 import (
-	"fmt"
-	"log"
+	"net/http"
+	"strconv"
+	"strings"
 
-	"github.com/markbates/goth"
-	"github.com/markbates/goth/providers/github"
-	"github.com/markbates/goth/providers/google"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/services/config"
 )
 
-func InitAuthentication() {
-	goth.UseProviders(
-		google.New(
-			config.Envs.GoogleClientID,
-			config.Envs.GoogleClientSecret,
-			buildCallbackURL("google"),
-			"email", "profile",
-		),
-		github.New(
-			config.Envs.GithubClientID,
-			config.Envs.GithubClientSecret,
-			buildCallbackURL("github"),
-			"user:email",
-		),
-	)
-
-	log.Printf("[Auth] Initialized auth service!\n")
+func InitAuthService() {
+	oauth.InitOAuth()
 }
 
-func buildCallbackURL(provider string) string {
-	var url string
-	if config.Envs.SSL == "true" {
-		url = fmt.Sprintf("https://%s/auth/%s/callback", config.Envs.Host, provider)
-	} else {
-		url = fmt.Sprintf("http://%s:%s/auth/%s/callback", config.Envs.Host, config.Envs.Port, provider)
+func GenerateTokenString(userId int32) (string, error) {
+	idString := strconv.Itoa(int(userId))
+	token := jwt.NewWithClaims(config.Configuration.JWTSigningMethod,
+		jwt.RegisteredClaims{
+			Subject: idString,
+		})
+
+	return token.SignedString(config.Envs.JWTSigningSecret)
+}
+
+func GetToken(r *http.Request) (*jwt.Token, error) {
+	tokenString := ""
+
+	authHeader := r.Header.Get("Authorization")
+	parts := strings.Split(authHeader, " ")
+	if len(parts) == 2 && parts[0] == "Bearer" {
+		tokenString = parts[1]
 	}
-	log.Printf("[Auth] Added auth provider listener for %s on %s", provider, url)
-	return url
+
+	if tokenString == "" {
+		cookie := r.Header.Get("Cookie")
+		tokenString = strings.TrimPrefix(cookie, "jwt=")
+	}
+
+	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
+		return config.Envs.JWTSigningSecret, nil
+	})
+}
+
+func GetUserId(r *http.Request) (int32, error) {
+	token, err := GetToken(r)
+	if err != nil {
+		return 0, err
+	}
+
+	subject, err := token.Claims.GetSubject()
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := strconv.Atoi(subject)
+	if err != nil {
+		return 0, err
+	}
+
+	return int32(id), nil
 }
