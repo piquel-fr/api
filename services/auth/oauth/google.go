@@ -35,18 +35,13 @@ func (gg *google) FetchUser(context context.Context, token *oauth2.Token) (*User
 		return nil, fmt.Errorf("google responded with a %d trying to fetch user information", response.StatusCode)
 	}
 
-	responseBytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	u := struct {
 		Email   string `json:"email"`
 		Name    string `json:"name"`
 		Picture string `json:"picture"`
 	}{}
 
-	if err := json.Unmarshal(responseBytes, &u); err != nil {
+	if err = json.NewDecoder(response.Body).Decode(&u); err != nil {
 		return nil, err
 	}
 

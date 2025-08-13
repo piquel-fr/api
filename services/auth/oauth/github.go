@@ -47,8 +47,7 @@ func (gh *github) FetchUser(context context.Context, token *oauth2.Token) (*User
 		Picture string `json:"avatar_url"`
 	}{}
 
-	err = json.NewDecoder(response.Body).Decode(&u)
-	if err != nil {
+	if err = json.NewDecoder(response.Body).Decode(&u); err != nil {
 		return nil, err
 	}
 
