@@ -17,11 +17,12 @@ import (
 func main() {
 	log.Printf("Initializing piquel.fr API...\n")
 
-	// Intialize services
+	// Intialize external services
 	config.LoadConfig()
-	gh.InitGithubWrapper()
+	gh.InitGithubClient()
 	database.InitDatabase()
 	defer database.DeinitDatabase()
+
 	docs.InitDocsService()
 	auth.InitAuthService()
 

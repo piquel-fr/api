@@ -12,7 +12,7 @@ import (
 
 var Client *github.Client
 
-func InitGithubWrapper() {
+func InitGithubClient() {
 	Client = github.NewClient(nil).WithAuthToken(config.Envs.GithubApiToken)
 }
 
