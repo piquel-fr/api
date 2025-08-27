@@ -1,6 +1,6 @@
 package models
 
-import repository "github.com/piquel-fr/api/database/generated"
+import "github.com/piquel-fr/api/database/repository"
 
 type UserProfile struct {
 	*repository.User

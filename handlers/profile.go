@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/services/middleware"
 )
 

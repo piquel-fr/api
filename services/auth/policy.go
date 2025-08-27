@@ -7,7 +7,7 @@ import (
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/database"
 )
 
 func own(request *Request) error {

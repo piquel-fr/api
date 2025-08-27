@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/database/repository"
 )
 
 type PolicyConfiguration struct {

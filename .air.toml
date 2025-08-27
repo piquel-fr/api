@@ -6,7 +6,7 @@ tmp_dir = "bin"
   cmd = "make build"
 
   delay = 1000
-  exclude_dir = ["bin", "database/generated"]
+  exclude_dir = ["bin", "database/repository"]
   exclude_unchanged = false
   follow_symlink = false
   full_bin = ""

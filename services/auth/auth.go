@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/services/database"
 )
 
 func InitAuthService() {

@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
-	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth/oauth"
-	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/database"
 )
 
 func GetUserProfile(context context.Context, inUser *oauth.User) (*models.UserProfile, error) {

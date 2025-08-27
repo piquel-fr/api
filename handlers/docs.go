@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	repository "github.com/piquel-fr/api/database/generated"
+	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/database"
 	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/docs/render"
 	gh "github.com/piquel-fr/api/services/github"
