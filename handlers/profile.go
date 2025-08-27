@@ -4,20 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/profile"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
-func CreateProfileHandler() http.Handler {
+func (h *Handler) CreateProfileHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /", handleGetProfileQuery)
-	handler.HandleFunc("GET /{user}", handleGetProfile)
-	handler.HandleFunc("PUT /{user}", handleUpdateProfile)
+	handler.HandleFunc("GET /", h.handleGetProfileQuery)
+	handler.HandleFunc("GET /{user}", h.handleGetProfile)
+	handler.HandleFunc("PUT /{user}", h.handleUpdateProfile)
 
 	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{user}", middleware.CreateOptionsHandler("GET", "PUT"))
@@ -25,19 +23,19 @@ func CreateProfileHandler() http.Handler {
 	return handler
 }
 
-func handleGetProfile(w http.ResponseWriter, r *http.Request) {
-	writeProfile(w, r, r.PathValue("user"))
+func (h *Handler) handleGetProfile(w http.ResponseWriter, r *http.Request) {
+	h.writeProfile(w, r, r.PathValue("user"))
 }
 
-func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		id, err := auth.GetUserId(r)
+		id, err := h.AuthService.GetUserId(r)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
-		profile, err := profile.GetProfileFromUserId(r.Context(), id)
+		profile, err := h.AuthService.GetProfileFromUserId(r.Context(), id)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -45,11 +43,11 @@ func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 		username = profile.Username
 	}
 
-	writeProfile(w, r, username)
+	h.writeProfile(w, r, username)
 }
 
-func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
-	profile, err := profile.GetProfileFromUsername(r.Context(), username)
+func (h *Handler) writeProfile(w http.ResponseWriter, r *http.Request, username string) {
+	profile, err := h.AuthService.GetProfileFromUsername(r.Context(), username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -59,10 +57,10 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 	json.NewEncoder(w).Encode(profile)
 }
 
-func handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("user")
 
-	profile, err := profile.GetProfileFromUsername(r.Context(), username)
+	profile, err := h.AuthService.GetProfileFromUsername(r.Context(), username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -75,7 +73,7 @@ func handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 		Context:   r.Context(),
 	}
 
-	if err := auth.Authorize(request); err != nil {
+	if err := h.AuthService.Authorize(request); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -95,7 +93,7 @@ func handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	params.ID = profile.ID
 
-	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
+	if err := h.database.UpdateUser(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

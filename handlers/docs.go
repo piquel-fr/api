@@ -7,27 +7,24 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/docs/render"
 	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
-	gh "github.com/piquel-fr/api/utils/github"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
-func CreateDocsHandler() http.Handler {
+func (h *Handler) CreateDocsHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /", handleListDocs)
-	handler.HandleFunc("POST /", handleNewDocs)
-	handler.HandleFunc("GET /{documentation}", handleGetDocs)
-	handler.HandleFunc("PUT /{documentation}", handleUpdateDocs)
-	handler.HandleFunc("DELETE /{documentation}", handleDeleteDocs)
-	handler.HandleFunc("GET /{documentation}/page/", handleGetDocsPage)
+	handler.HandleFunc("GET /", h.handleListDocs)
+	handler.HandleFunc("POST /", h.handleNewDocs)
+	handler.HandleFunc("GET /{documentation}", h.handleGetDocs)
+	handler.HandleFunc("PUT /{documentation}", h.handleUpdateDocs)
+	handler.HandleFunc("DELETE /{documentation}", h.handleDeleteDocs)
+	handler.HandleFunc("GET /{documentation}/page/", h.handleGetDocsPage)
 
 	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET", "POST"))
 	handler.Handle("OPTIONS /{documentation}", middleware.CreateOptionsHandler("GET", "PUT", "DELETE"))
@@ -36,8 +33,8 @@ func CreateDocsHandler() http.Handler {
 	return handler
 }
 
-func handleListDocs(w http.ResponseWriter, r *http.Request) {
-	requester, err := auth.GetUserFromRequest(r)
+func (h *Handler) handleListDocs(w http.ResponseWriter, r *http.Request) {
+	requester, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -72,7 +69,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username := r.URL.Query().Get("user"); username != "" {
-		user, err := auth.GetUserFromUsername(r.Context(), username)
+		user, err := h.AuthService.GetUserFromUsername(r.Context(), username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -84,14 +81,14 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 			Offset:  int32(offset),
 		}
 
-		instances, err = database.Queries.ListUserDocsInstances(r.Context(), params)
+		instances, err = h.database.ListUserDocsInstances(r.Context(), params)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
 	} else if r.URL.Query().Has("own") {
 		if r.URL.Query().Has("count") {
-			count, err := database.Queries.CountUserDocsInstances(r.Context(), requester.ID)
+			count, err := h.database.CountUserDocsInstances(r.Context(), requester.ID)
 			if err != nil {
 				errors.HandleError(w, r, err)
 				return
@@ -108,7 +105,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 			Offset:  int32(offset),
 		}
 
-		configs, err := database.Queries.ListUserDocsInstances(r.Context(), params)
+		configs, err := h.database.ListUserDocsInstances(r.Context(), params)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -129,7 +126,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 			Offset: int32(offset),
 		}
 
-		instances, err = database.Queries.ListDocsInstances(r.Context(), params)
+		instances, err = h.database.ListDocsInstances(r.Context(), params)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -151,7 +148,7 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 			Context:   r.Context(),
 		}
 
-		if err = auth.Authorize(authRequest); err != nil {
+		if err = h.AuthService.Authorize(authRequest); err != nil {
 			continue
 		}
 
@@ -174,8 +171,8 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func handleNewDocs(w http.ResponseWriter, r *http.Request) {
-	user, err := auth.GetUserFromRequest(r)
+func (h *Handler) handleNewDocs(w http.ResponseWriter, r *http.Request) {
+	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -188,7 +185,7 @@ func handleNewDocs(w http.ResponseWriter, r *http.Request) {
 		Context:   r.Context(),
 	}
 
-	if err := auth.Authorize(authRequest); err != nil {
+	if err := h.AuthService.Authorize(authRequest); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -205,28 +202,28 @@ func handleNewDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	params.Root = utils.FormatLocalPathString(params.Root)
 
-	if err := validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
+	if err := h.validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	params.OwnerId = user.ID
-	if _, err = database.Queries.AddDocsInstance(r.Context(), params); err != nil {
+	if _, err = h.database.AddDocsInstance(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 }
 
-func handleGetDocs(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleGetDocs(w http.ResponseWriter, r *http.Request) {
 	docsName := r.PathValue("documentation")
-	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
+	config, err := h.database.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := auth.GetUserFromRequest(r)
+	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -239,7 +236,7 @@ func handleGetDocs(w http.ResponseWriter, r *http.Request) {
 		Context:   r.Context(),
 	}
 
-	if err = auth.Authorize(authRequest); err != nil {
+	if err = h.AuthService.Authorize(authRequest); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -254,16 +251,16 @@ func handleGetDocs(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	docsName := r.PathValue("documentation")
-	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
+	config, err := h.database.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := auth.GetUserFromRequest(r)
+	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -276,7 +273,7 @@ func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		Context:   r.Context(),
 	}
 
-	if err = auth.Authorize(authRequest); err != nil {
+	if err = h.AuthService.Authorize(authRequest); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -290,13 +287,13 @@ func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	params.Root = utils.FormatLocalPathString(params.Root)
 	params.Name = strings.ToLower(params.Name)
 
-	if err = validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
+	if err = h.validateDocsInstance(params.Name, params.RepoOwner, params.RepoName, params.RepoRef, params.Root); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
 	params.ID = docsConfig.ID
-	err = database.Queries.UpdateDocsInstance(r.Context(), params)
+	err = h.database.UpdateDocsInstance(r.Context(), params)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -304,19 +301,19 @@ func handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func validateDocsInstance(name, owner, repo, ref, root string) error {
+func (h *Handler) validateDocsInstance(name, owner, repo, ref, root string) error {
 	// root cannot start with .
 	if strings.HasPrefix(strings.Trim(root, "/"), ".") {
 		return errors.NewError("root cannot start with \".\"", http.StatusBadRequest)
 	}
 
 	// repository must exist
-	if !gh.RepositoryExists(owner, repo) {
+	if !h.gh.RepositoryExists(owner, repo) {
 		return errors.NewError(fmt.Sprintf("repository \"%s/%s\" does not exist", owner, repo), http.StatusBadRequest)
 	}
 
 	// root must exist
-	if _, err := gh.GetRepositoryFile(owner, repo, ref, root); err != nil {
+	if _, err := h.gh.GetRepositoryFile(owner, repo, ref, root); err != nil {
 		return errors.NewError(fmt.Sprintf("file %s does not exist in %s/%s:%s", root, owner, repo, ref), http.StatusBadRequest)
 	}
 
@@ -327,16 +324,16 @@ func validateDocsInstance(name, owner, repo, ref, root string) error {
 	return nil
 }
 
-func handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	docsName := r.PathValue("documentation")
-	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
+	config, err := h.database.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 	docsConfig := models.DocsInstance(config)
 
-	user, err := auth.GetUserFromRequest(r)
+	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -349,26 +346,26 @@ func handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 		Context:   r.Context(),
 	}
 
-	if err = auth.Authorize(authRequest); err != nil {
+	if err = h.AuthService.Authorize(authRequest); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	err = database.Queries.RemoveDocsInstance(r.Context(), docsConfig.ID)
+	err = h.database.RemoveDocsInstance(r.Context(), docsConfig.ID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 }
 
-func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 	docsName := r.PathValue("documentation")
 	page := r.URL.Path
 	page = strings.Replace(page, docsName, "", 1)
 	page = strings.Replace(page, "page", "", 1)
 	page = utils.FormatLocalPathString(page)
 
-	config, err := database.Queries.GetDocsInstanceByName(r.Context(), docsName)
+	config, err := h.database.GetDocsInstanceByName(r.Context(), docsName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -376,7 +373,7 @@ func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 	docsConfig := models.DocsInstance(config)
 
 	if !docsConfig.Public {
-		user, err := auth.GetUserFromRequest(r)
+		user, err := h.AuthService.GetUserFromRequest(r)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -389,7 +386,7 @@ func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 			Context:   r.Context(),
 		}
 
-		if err = auth.Authorize(authRequest); err != nil {
+		if err = h.AuthService.Authorize(authRequest); err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
@@ -403,7 +400,7 @@ func handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 		PathPrefix: pathPrefix,
 	}
 
-	html, err := docs.GetDocsInstancePage(page, &renderConfig)
+	html, err := h.DocsService.GetDocsInstancePage(page, &renderConfig)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

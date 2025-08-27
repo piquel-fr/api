@@ -9,18 +9,12 @@ import (
 	"github.com/piquel-fr/api/models"
 )
 
-var Envs models.EnvsConfig
-var Configuration = models.Configuration{
-	MaxDocsInstanceCount: 3,
-	JWTSigningMethod:     jwt.SigningMethodHS256,
-}
-
-func LoadConfig() {
+func LoadConfig() *models.Configuration {
 	godotenv.Load()
 	log.Printf("[Config] Loading configuration...")
 
 	// Load config from environment
-	Envs = models.EnvsConfig{
+	envs := models.EnvsConfig{
 		AuthCallbackUrl:    getEnv("AUTH_CALLBACK"),
 		Url:                getEnv("URL"),
 		Port:               getDefaultEnv("PORT", "80"),
@@ -34,6 +28,11 @@ func LoadConfig() {
 	}
 
 	log.Printf("[Config] Loaded environment configuration!")
+	return &models.Configuration{
+		Envs:                 envs,
+		MaxDocsInstanceCount: 3,
+		JWTSigningMethod:     jwt.SigningMethodHS256,
+	}
 }
 
 func getEnv(key string) string {

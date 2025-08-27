@@ -5,14 +5,11 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/models"
 )
 
-var Queries *repository.Queries
-var connection *pgxpool.Pool
-
-func InitDatabase() {
+func InitDatabase(config *models.Configuration) (*pgxpool.Pool, *repository.Queries) {
 	log.Printf("[Database] Attempting to connect to the database...\n")
 
 	connection, err := pgxpool.New(context.Background(), config.Envs.DBURL)
@@ -25,10 +22,7 @@ func InitDatabase() {
 		panic(err)
 	}
 
-	Queries = repository.New(connection)
+	queries := repository.New(connection)
 	log.Printf("[Database] Successfully connected to the database!\n")
-}
-
-func DeinitDatabase() {
-	connection.Close()
+	return connection, queries
 }

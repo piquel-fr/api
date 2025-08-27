@@ -6,13 +6,13 @@ import (
 	"io"
 )
 
-func renderCustom(md []byte, config *RenderConfig) ([]byte, error) {
+func (r *Renderer) renderCustom(md []byte, config *RenderConfig) ([]byte, error) {
 	var err error
-	md, err = renderSingleline(md, config)
+	md, err = r.renderSingleline(md, config)
 	if err != nil {
 		return nil, err
 	}
-	md, err = renderMultiline(md, config)
+	md, err = r.renderMultiline(md, config)
 	if err != nil {
 		return nil, err
 	}
@@ -20,8 +20,8 @@ func renderCustom(md []byte, config *RenderConfig) ([]byte, error) {
 	return md, nil
 }
 
-func renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
-	match := singleline.FindSubmatch(md)
+func (r *Renderer) renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
+	match := r.singleline.FindSubmatch(md)
 	if match == nil {
 		return md, nil
 	}
@@ -31,7 +31,7 @@ func renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
 	var newMarkdown bytes.Buffer
 	switch string(tag) {
 	case "include":
-		include, err := loadInclude(string(param), config)
+		include, err := r.loadInclude(string(param), config)
 		if err != nil {
 			return nil, err
 		}
@@ -41,11 +41,11 @@ func renderSingleline(md []byte, config *RenderConfig) ([]byte, error) {
 	}
 
 	md = bytes.Replace(md, total, newMarkdown.Bytes(), 1)
-	return renderSingleline(md, config)
+	return r.renderSingleline(md, config)
 }
 
-func renderMultiline(md []byte, config *RenderConfig) ([]byte, error) {
-	match := multiline.FindSubmatch(md)
+func (r *Renderer) renderMultiline(md []byte, config *RenderConfig) ([]byte, error) {
+	match := r.multiline.FindSubmatch(md)
 	if match == nil {
 		return md, nil
 	}
@@ -63,5 +63,5 @@ func renderMultiline(md []byte, config *RenderConfig) ([]byte, error) {
 	}
 
 	md = bytes.Replace(md, total, newMarkdown.Bytes(), 1)
-	return renderMultiline(md, config)
+	return r.renderMultiline(md, config)
 }

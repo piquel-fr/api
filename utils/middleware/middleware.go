@@ -42,15 +42,17 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func RequireAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := auth.GetToken(r)
-		if err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
+func RequireAuthMiddleware(auth auth.AuthService) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, err := auth.GetToken(r)
+			if err != nil {
+				errors.HandleError(w, r, err)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func CreateOptionsHandler(methods ...string) http.Handler {

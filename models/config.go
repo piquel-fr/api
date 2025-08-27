@@ -16,6 +16,7 @@ type EnvsConfig struct {
 }
 
 type Configuration struct {
+	Envs                 EnvsConfig
 	MaxDocsInstanceCount int64
 	JWTSigningMethod     jwt.SigningMethod
 }

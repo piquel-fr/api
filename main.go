@@ -18,28 +18,21 @@ func main() {
 	log.Printf("Initializing piquel.fr API...\n")
 
 	// Intialize external services
-	config.LoadConfig()
-	gh.InitGithubClient()
-	database.InitDatabase()
-	defer database.DeinitDatabase()
+	config := config.LoadConfig()
+	gh := gh.InitGithubClient(config)
+	connection, queries := database.InitDatabase(config)
+	defer connection.Close()
 
-	docs.InitDocsService()
-	auth.InitAuthService()
-
-	// Initialize the router
-	router := http.NewServeMux()
-
-	log.Printf("[Router] Initialized router!\n")
-
-	router.Handle("/profile/", http.StripPrefix("/profile", handlers.CreateProfileHandler()))
-	router.Handle("/auth/", http.StripPrefix("/auth", handlers.CreateAuthHandler()))
-	router.Handle("/docs/", http.StripPrefix("/docs", handlers.CreateDocsHandler()))
+	handler := handlers.Handler{
+		AuthService: auth.NewRealAuthService(config, queries),
+		DocsService: docs.NewRealDocsService(gh),
+	}
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
 
 	server := http.Server{
 		Addr: address,
-		Handler: middleware.AddMiddleware(router,
+		Handler: middleware.AddMiddleware(handler.CreateHttpHandler(config, queries, gh),
 			middleware.CORSMiddleware,
 		),
 	}

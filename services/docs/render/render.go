@@ -21,36 +21,36 @@ type RenderConfig struct {
 	PathPrefix string
 }
 
-func parseMarkdown(md []byte) ast.Node {
+func (r *Renderer) parseMarkdown(md []byte) ast.Node {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)
 	return p.Parse(md)
 }
 
-func renderHTML(doc ast.Node) []byte {
+func (r *Renderer) renderHTML(doc ast.Node) []byte {
 	options := html.RendererOptions{
 		Flags:          html.CommonFlags,
-		RenderNodeHook: renderHook,
+		RenderNodeHook: r.renderHook,
 	}
 	renderer := html.NewRenderer(options)
 
 	return markdown.Render(doc, renderer)
 }
 
-func renderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+func (r *Renderer) renderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 	switch node := node.(type) {
 	case *ast.CodeBlock:
-		renderCodeBlock(w, node)
+		r.renderCodeBlock(w, node)
 		return ast.GoToNext, true
 	}
 	return ast.GoToNext, false
 }
 
-func fixupAST(doc ast.Node, config *RenderConfig) ast.Node {
+func (r *Renderer) fixupAST(doc ast.Node, config *RenderConfig) ast.Node {
 	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
 		switch node := node.(type) {
 		case *ast.Link:
-			fixupLink(node, entering, config)
+			r.fixupLink(node, entering, config)
 		}
 
 		return ast.GoToNext
@@ -58,7 +58,7 @@ func fixupAST(doc ast.Node, config *RenderConfig) ast.Node {
 	return doc
 }
 
-func fixupLink(link *ast.Link, entering bool, config *RenderConfig) {
+func (r *Renderer) fixupLink(link *ast.Link, entering bool, config *RenderConfig) {
 	if !entering {
 		return
 	}
@@ -72,7 +72,7 @@ func fixupLink(link *ast.Link, entering bool, config *RenderConfig) {
 
 var highlightStyle = styles.Get("tokyonight")
 
-func renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock) error {
+func (r *Renderer) renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock) error {
 	lang := string(codeBlock.Info)
 	source := string(codeBlock.Literal)
 	l := lexers.Get(lang)
@@ -89,5 +89,5 @@ func renderCodeBlock(w io.Writer, codeBlock *ast.CodeBlock) error {
 		return err
 	}
 
-	return htmlFormatter.Format(w, highlightStyle, iterator)
+	return r.htmlFormatter.Format(w, highlightStyle, iterator)
 }

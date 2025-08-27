@@ -8,11 +8,20 @@ import (
 	gh "github.com/piquel-fr/api/utils/github"
 )
 
-func InitDocsService() {
-	render.InitRenderer()
+type DocsService interface {
+	GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error)
 }
 
-func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {
+type realDocsService struct {
+	gh       *gh.GhWrapper
+	renderer *render.Renderer
+}
+
+func NewRealDocsService(gh *gh.GhWrapper) *realDocsService {
+	return &realDocsService{gh: gh, renderer: render.NewRenderer(gh)}
+}
+
+func (r *realDocsService) GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {
 	if strings.HasPrefix(strings.Trim(route, "/"), ".") {
 		return nil, errors.ErrorNotFound
 	}
@@ -21,7 +30,7 @@ func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, err
 		route = config.Instance.Root
 	}
 
-	file, err := gh.GetRepositoryFile(
+	file, err := r.gh.GetRepositoryFile(
 		config.Instance.RepoOwner, config.Instance.RepoName,
 		config.Instance.RepoRef, route,
 	)
@@ -29,7 +38,7 @@ func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, err
 		return nil, err
 	}
 
-	html, err := render.RenderPage(file, config)
+	html, err := r.renderer.RenderPage(file, config)
 	if err != nil {
 		return nil, err
 	}
