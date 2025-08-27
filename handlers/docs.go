@@ -16,7 +16,6 @@ import (
 	"github.com/piquel-fr/api/services/docs/render"
 	gh "github.com/piquel-fr/api/services/github"
 	"github.com/piquel-fr/api/services/middleware"
-	"github.com/piquel-fr/api/services/profile"
 	"github.com/piquel-fr/api/utils"
 )
 
@@ -73,14 +72,14 @@ func handleListDocs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username := r.URL.Query().Get("user"); username != "" {
-		profile, err := profile.GetProfileFromUsername(r.Context(), username)
+		user, err := auth.GetUserFromUsername(r.Context(), username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
 
 		params := repository.ListUserDocsInstancesParams{
-			OwnerId: profile.ID,
+			OwnerId: user.ID,
 			Limit:   int32(limit),
 			Offset:  int32(offset),
 		}

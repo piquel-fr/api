@@ -97,3 +97,7 @@ func registerUser(ctx context.Context, inUser *oauth.User) (*repository.User, er
 	user, err := database.Queries.AddUser(ctx, params)
 	return &user, err
 }
+
+func GetUserFromUsername(ctx context.Context, username string) (repository.User, error) {
+	return database.Queries.GetUserByUsername(ctx, username)
+}
