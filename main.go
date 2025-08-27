@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/config"
 	"github.com/piquel-fr/api/services/docs"
-	gh "github.com/piquel-fr/api/services/github"
-	"github.com/piquel-fr/api/services/middleware"
+	gh "github.com/piquel-fr/api/utils/github"
+	"github.com/piquel-fr/api/utils/middleware"
 )
 
 func main() {

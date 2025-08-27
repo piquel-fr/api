@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/piquel-fr/api/database/repository"
-	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

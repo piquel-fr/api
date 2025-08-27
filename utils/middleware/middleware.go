@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 type Middleware func(http.Handler) http.Handler

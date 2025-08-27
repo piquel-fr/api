@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/models"
-	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 func own(request *Request) error {

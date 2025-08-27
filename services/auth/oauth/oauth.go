@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/utils/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 )

@@ -3,7 +3,7 @@ package auth
 import (
 	"slices"
 
-	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 func Authorize(request *Request) error {

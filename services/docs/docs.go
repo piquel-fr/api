@@ -3,9 +3,9 @@ package docs
 import (
 	"strings"
 
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/docs/render"
-	gh "github.com/piquel-fr/api/services/github"
+	"github.com/piquel-fr/api/utils/errors"
+	gh "github.com/piquel-fr/api/utils/github"
 )
 
 func InitDocsService() {

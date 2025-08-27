@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 func IsDir(path string) bool {

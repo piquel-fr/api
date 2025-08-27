@@ -6,10 +6,10 @@ import (
 
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/services/profile"
+	"github.com/piquel-fr/api/utils/errors"
+	"github.com/piquel-fr/api/utils/middleware"
 )
 
 func CreateProfileHandler() http.Handler {

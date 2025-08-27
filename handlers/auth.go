@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/auth/oauth"
-	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/utils"
+	"github.com/piquel-fr/api/utils/errors"
+	"github.com/piquel-fr/api/utils/middleware"
 )
 
 func CreateAuthHandler() http.Handler {

@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	"github.com/alecthomas/chroma/v2/formatters/html"
-	gh "github.com/piquel-fr/api/services/github"
+	gh "github.com/piquel-fr/api/utils/github"
 )
 
 var (

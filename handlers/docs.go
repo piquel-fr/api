@@ -9,14 +9,14 @@ import (
 
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/docs/render"
-	gh "github.com/piquel-fr/api/services/github"
-	"github.com/piquel-fr/api/services/middleware"
 	"github.com/piquel-fr/api/utils"
+	"github.com/piquel-fr/api/utils/errors"
+	gh "github.com/piquel-fr/api/utils/github"
+	"github.com/piquel-fr/api/utils/middleware"
 )
 
 func CreateDocsHandler() http.Handler {
