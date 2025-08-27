@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/services/middleware"
+	"github.com/piquel-fr/api/services/profile"
 )
 
 func CreateProfileHandler() http.Handler {
@@ -36,7 +37,7 @@ func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 			errors.HandleError(w, r, err)
 			return
 		}
-		profile, err := auth.GetProfileFromUserId(id)
+		profile, err := profile.GetProfileFromUserId(r.Context(), id)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -48,7 +49,7 @@ func handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
-	profile, err := auth.GetProfileFromUsername(username)
+	profile, err := profile.GetProfileFromUsername(r.Context(), username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -61,7 +62,7 @@ func writeProfile(w http.ResponseWriter, r *http.Request, username string) {
 func handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("user")
 
-	profile, err := auth.GetProfileFromUsername(username)
+	profile, err := profile.GetProfileFromUsername(r.Context(), username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

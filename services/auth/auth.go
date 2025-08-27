@@ -1,11 +1,13 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/errors"
@@ -68,5 +70,30 @@ func GetUserFromRequest(r *http.Request) (*repository.User, error) {
 	}
 
 	user, err := database.Queries.GetUserById(r.Context(), userId)
+	return &user, err
+}
+
+func GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
+	user, err := database.Queries.GetUserByEmail(ctx, inUser.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return registerUser(ctx, inUser)
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func registerUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
+	params := repository.AddUserParams{}
+
+	params.Email = inUser.Email
+	params.Username = inUser.Username
+	params.Role = "default"
+	params.Image = inUser.Image
+	params.Name = inUser.Name
+
+	user, err := database.Queries.AddUser(ctx, params)
 	return &user, err
 }

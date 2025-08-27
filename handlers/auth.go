@@ -49,19 +49,19 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := provider.FetchUser(r.Context(), token)
+	oauthUser, err := provider.FetchUser(r.Context(), token)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	profile, err := auth.GetUserProfile(r.Context(), user)
+	user, err := auth.GetUser(r.Context(), oauthUser)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	tokenString, err := auth.GenerateTokenString(profile.ID)
+	tokenString, err := auth.GenerateTokenString(user.ID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
