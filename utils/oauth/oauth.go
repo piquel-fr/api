@@ -17,8 +17,10 @@ type Provider interface {
 
 type User struct{ Name, Username, Email, Image string }
 
-func GetProviders() map[string]Provider {
-	return map[string]Provider{
+var Providers map[string]Provider
+
+func InitOAuth() {
+	Providers = map[string]Provider{
 		"github": &github{
 			config: oauth2.Config{
 				ClientID:     config.Envs.GithubClientID,

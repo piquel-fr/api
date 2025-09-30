@@ -13,8 +13,8 @@ import (
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/models"
-	"github.com/piquel-fr/api/services/auth/oauth"
 	"github.com/piquel-fr/api/utils/errors"
+	"github.com/piquel-fr/api/utils/oauth"
 )
 
 type AuthService interface {
@@ -31,13 +31,11 @@ type AuthService interface {
 	GetProfileFromUserId(ctx context.Context, userId int32) (*models.UserProfile, error)
 }
 
-type realAuthService struct {
-	providers map[string]oauth.Provider
-}
+// auth service has no state
+type realAuthService struct{}
 
 func NewRealAuthService() *realAuthService {
-	service := &realAuthService{providers: oauth.GetProviders()}
-	return service
+	return &realAuthService{}
 }
 
 func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
@@ -124,7 +122,7 @@ func (s *realAuthService) GetUserFromUsername(ctx context.Context, username stri
 }
 
 func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
-	provider, ok := s.providers[name]
+	provider, ok := oauth.Providers[name]
 	if !ok {
 		return nil, errors.NewError(fmt.Sprintf("provider %s does not exist", name), http.StatusBadRequest)
 	}

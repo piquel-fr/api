@@ -12,6 +12,7 @@ import (
 	"github.com/piquel-fr/api/services/docs"
 	gh "github.com/piquel-fr/api/utils/github"
 	"github.com/piquel-fr/api/utils/middleware"
+	"github.com/piquel-fr/api/utils/oauth"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 	// Intialize external services
 	config.LoadConfig()
 	gh.InitGithubClient()
+	oauth.InitOAuth()
 	database.InitDatabase()
 	defer database.Connection.Close()
 
