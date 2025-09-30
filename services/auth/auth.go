@@ -33,13 +33,10 @@ type AuthService interface {
 
 type realAuthService struct {
 	providers map[string]oauth.Provider
-
-	policy PolicyConfiguration
 }
 
 func NewRealAuthService() *realAuthService {
 	service := &realAuthService{providers: oauth.GetProviders()}
-	service.createPolicy()
 	return service
 }
 

@@ -15,7 +15,7 @@ func (s *realAuthService) GetProfileFromUsername(ctx context.Context, username s
 
 	profile := &models.UserProfile{User: &user}
 
-	role := s.policy.Roles[profile.Role]
+	role := policy.Roles[profile.Role]
 
 	profile.RoleName = role.Name
 	profile.Color = role.Color
@@ -31,7 +31,7 @@ func (s *realAuthService) GetProfileFromUserId(ctx context.Context, userId int32
 
 	profile := &models.UserProfile{User: &user}
 
-	role := s.policy.Roles[profile.Role]
+	role := policy.Roles[profile.Role]
 
 	profile.RoleName = role.Name
 	profile.Color = role.Color

@@ -17,91 +17,89 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-func (s *realAuthService) createPolicy() {
-	s.policy = PolicyConfiguration{
-		Permissions: map[string]*Permission{
-			"updateOwn": {
-				Action:     "update",
-				Conditions: Conditions{own},
-			},
-			"deleteOwn": {
-				Action:     "delete",
-				Conditions: Conditions{own},
-			},
+var policy = PolicyConfiguration{
+	Permissions: map[string]*Permission{
+		"updateOwn": {
+			Action:     "update",
+			Conditions: Conditions{own},
 		},
-		Roles: Roles{
-			"admin": {
-				Name:  "Admin",
-				Color: "red",
-				Permissions: map[string][]*Permission{
-					"user": {
-						{Action: "update"},
-						{Action: "delete"},
-					},
-					"documentation": {
-						{Action: "view"},
-						{Action: "create"},
-						{Action: "update"},
-						{Action: "delete"},
-					},
+		"deleteOwn": {
+			Action:     "delete",
+			Conditions: Conditions{own},
+		},
+	},
+	Roles: Roles{
+		"admin": {
+			Name:  "Admin",
+			Color: "red",
+			Permissions: map[string][]*Permission{
+				"user": {
+					{Action: "update"},
+					{Action: "delete"},
 				},
-				Parents: []string{"default", "developer"},
+				"documentation": {
+					{Action: "view"},
+					{Action: "create"},
+					{Action: "update"},
+					{Action: "delete"},
+				},
 			},
-			"default": {
-				Name:  "",
-				Color: "gray",
-				Permissions: map[string][]*Permission{
-					"user": {
-						{Preset: "updateOwn"},
-						{Preset: "deleteOwn"},
-					},
-					"docs_instance": {
-						{
-							Action: "view",
-							Conditions: Conditions{
-								func(request *Request) error {
-									docs, ok := request.Ressource.(*models.DocsInstance)
-									if !ok {
-										return newRequestMalformedError(request)
-									}
+			Parents: []string{"default", "developer"},
+		},
+		"default": {
+			Name:  "",
+			Color: "gray",
+			Permissions: map[string][]*Permission{
+				"user": {
+					{Preset: "updateOwn"},
+					{Preset: "deleteOwn"},
+				},
+				"docs_instance": {
+					{
+						Action: "view",
+						Conditions: Conditions{
+							func(request *Request) error {
+								docs, ok := request.Ressource.(*models.DocsInstance)
+								if !ok {
+									return newRequestMalformedError(request)
+								}
 
-									if docs.Public {
-										return nil
-									}
-
-									if docs.GetOwner() == request.User.ID {
-										return nil
-									}
-
-									return errors.ErrorForbidden
-								},
-							},
-						},
-						{
-							Action: "create",
-							Conditions: Conditions{
-								func(request *Request) error {
-									count, err := database.Queries.CountUserDocsInstances(request.Context, request.User.ID)
-									if err != nil {
-										return err
-									}
-
-									if count >= config.MaxDocsInstanceCount {
-										return errors.NewError(
-											fmt.Sprintf("you already have %d/%d documentation instances", count, config.MaxDocsInstanceCount),
-											http.StatusForbidden,
-										)
-									}
-
+								if docs.Public {
 									return nil
-								},
+								}
+
+								if docs.GetOwner() == request.User.ID {
+									return nil
+								}
+
+								return errors.ErrorForbidden
 							},
 						},
-						{Preset: "updateOwn"},
-						{Preset: "deleteOwn"},
 					},
+					{
+						Action: "create",
+						Conditions: Conditions{
+							func(request *Request) error {
+								count, err := database.Queries.CountUserDocsInstances(request.Context, request.User.ID)
+								if err != nil {
+									return err
+								}
+
+								if count >= config.MaxDocsInstanceCount {
+									return errors.NewError(
+										fmt.Sprintf("you already have %d/%d documentation instances", count, config.MaxDocsInstanceCount),
+										http.StatusForbidden,
+									)
+								}
+
+								return nil
+							},
+						},
+					},
+					{Preset: "updateOwn"},
+					{Preset: "deleteOwn"},
 				},
 			},
 		},
-	}
+	},
 }
