@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/utils/errors"
 )
@@ -79,14 +81,14 @@ func (s *realAuthService) createPolicy() {
 							Action: "create",
 							Conditions: Conditions{
 								func(request *Request) error {
-									count, err := s.database.CountUserDocsInstances(request.Context, request.User.ID)
+									count, err := database.Queries.CountUserDocsInstances(request.Context, request.User.ID)
 									if err != nil {
 										return err
 									}
 
-									if count >= s.config.MaxDocsInstanceCount {
+									if count >= config.MaxDocsInstanceCount {
 										return errors.NewError(
-											fmt.Sprintf("you already have %d/%d documentation instances", count, s.config.MaxDocsInstanceCount),
+											fmt.Sprintf("you already have %d/%d documentation instances", count, config.MaxDocsInstanceCount),
 											http.StatusForbidden,
 										)
 									}

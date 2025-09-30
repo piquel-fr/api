@@ -11,10 +11,9 @@ import (
 type Renderer struct {
 	singleline, multiline *regexp.Regexp
 	htmlFormatter         *html.Formatter
-	gh                    *gh.GhWrapper
 }
 
-func NewRenderer(gh *gh.GhWrapper) *Renderer {
+func NewRenderer() *Renderer {
 	singleline, err := regexp.Compile(`(?m)^{ *([a-z]+)(?: *\"(.*)\")? */}$`)
 	if err != nil {
 		panic(err)
@@ -45,7 +44,7 @@ func (r *Renderer) RenderPage(md []byte, config *RenderConfig) ([]byte, error) {
 }
 
 func (r *Renderer) loadInclude(path string, config *RenderConfig) ([]byte, error) {
-	file, err := r.gh.GetRepositoryFile(
+	file, err := gh.GetRepositoryFile(
 		config.Instance.RepoOwner, config.Instance.RepoName,
 		config.Instance.RepoRef, ".common/includes/"+path)
 	return file, err

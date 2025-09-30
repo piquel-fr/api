@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
@@ -69,5 +70,5 @@ func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) formatRedirectURL(redirectTo string, token string) string {
-	return fmt.Sprintf("%s?redirectTo=%s&token=%s", h.config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
+	return fmt.Sprintf("%s?redirectTo=%s&token=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
 }

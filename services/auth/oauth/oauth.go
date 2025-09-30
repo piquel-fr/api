@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/config"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 )
@@ -17,7 +17,7 @@ type Provider interface {
 
 type User struct{ Name, Username, Email, Image string }
 
-func GetProviders(config *models.Configuration) map[string]Provider {
+func GetProviders() map[string]Provider {
 	return map[string]Provider{
 		"github": &github{
 			config: oauth2.Config{

@@ -13,12 +13,11 @@ type DocsService interface {
 }
 
 type realDocsService struct {
-	gh       *gh.GhWrapper
 	renderer *render.Renderer
 }
 
-func NewRealDocsService(gh *gh.GhWrapper) *realDocsService {
-	return &realDocsService{gh: gh, renderer: render.NewRenderer(gh)}
+func NewRealDocsService() *realDocsService {
+	return &realDocsService{renderer: render.NewRenderer()}
 }
 
 func (r *realDocsService) GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {
@@ -30,7 +29,7 @@ func (r *realDocsService) GetDocsInstancePage(route string, config *render.Rende
 		route = config.Instance.Root
 	}
 
-	file, err := r.gh.GetRepositoryFile(
+	file, err := gh.GetRepositoryFile(
 		config.Instance.RepoOwner, config.Instance.RepoName,
 		config.Instance.RepoRef, route,
 	)

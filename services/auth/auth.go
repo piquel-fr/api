@@ -9,6 +9,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth/oauth"
@@ -30,27 +32,25 @@ type AuthService interface {
 }
 
 type realAuthService struct {
-	config    *models.Configuration
 	providers map[string]oauth.Provider
-	database  *repository.Queries
 
 	policy PolicyConfiguration
 }
 
-func NewRealAuthService(config *models.Configuration, database *repository.Queries) *realAuthService {
-	service := &realAuthService{config: config, providers: oauth.GetProviders(config)}
+func NewRealAuthService() *realAuthService {
+	service := &realAuthService{providers: oauth.GetProviders()}
 	service.createPolicy()
 	return service
 }
 
 func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
 	idString := strconv.Itoa(int(userId))
-	token := jwt.NewWithClaims(s.config.JWTSigningMethod,
+	token := jwt.NewWithClaims(config.JWTSigningMethod,
 		jwt.RegisteredClaims{
 			Subject: idString,
 		})
 
-	return token.SignedString(s.config.Envs.JWTSigningSecret)
+	return token.SignedString(config.Envs.JWTSigningSecret)
 }
 
 func (s *realAuthService) GetToken(r *http.Request) (*jwt.Token, error) {
@@ -64,7 +64,7 @@ func (s *realAuthService) GetToken(r *http.Request) (*jwt.Token, error) {
 	tokenString = parts[1]
 
 	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
-		return s.config.Envs.JWTSigningSecret, nil
+		return config.Envs.JWTSigningSecret, nil
 	})
 }
 
@@ -93,12 +93,12 @@ func (s *realAuthService) GetUserFromRequest(r *http.Request) (*repository.User,
 		return nil, err
 	}
 
-	user, err := s.database.GetUserById(r.Context(), userId)
+	user, err := database.Queries.GetUserById(r.Context(), userId)
 	return &user, err
 }
 
 func (s *realAuthService) GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
-	user, err := s.database.GetUserByEmail(ctx, inUser.Email)
+	user, err := database.Queries.GetUserByEmail(ctx, inUser.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return s.registerUser(ctx, inUser)
@@ -118,12 +118,12 @@ func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) 
 	params.Image = inUser.Image
 	params.Name = inUser.Name
 
-	user, err := s.database.AddUser(ctx, params)
+	user, err := database.Queries.AddUser(ctx, params)
 	return &user, err
 }
 
 func (s *realAuthService) GetUserFromUsername(ctx context.Context, username string) (repository.User, error) {
-	return s.database.GetUserByUsername(ctx, username)
+	return database.Queries.GetUserByUsername(ctx, username)
 }
 
 func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {

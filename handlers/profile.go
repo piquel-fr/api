@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/utils/errors"
@@ -93,7 +94,7 @@ func (h *Handler) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	params.ID = profile.ID
 
-	if err := h.database.UpdateUser(r.Context(), params); err != nil {
+	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

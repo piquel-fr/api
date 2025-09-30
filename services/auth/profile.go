@@ -3,11 +3,12 @@ package auth
 import (
 	"context"
 
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/models"
 )
 
 func (s *realAuthService) GetProfileFromUsername(ctx context.Context, username string) (*models.UserProfile, error) {
-	user, err := s.database.GetUserByUsername(ctx, username)
+	user, err := database.Queries.GetUserByUsername(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +24,7 @@ func (s *realAuthService) GetProfileFromUsername(ctx context.Context, username s
 }
 
 func (s *realAuthService) GetProfileFromUserId(ctx context.Context, userId int32) (*models.UserProfile, error) {
-	user, err := s.database.GetUserById(ctx, userId)
+	user, err := database.Queries.GetUserById(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
