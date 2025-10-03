@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/utils"
+	"github.com/piquel-fr/api/utils/errors"
 	"golang.org/x/oauth2"
 )
 

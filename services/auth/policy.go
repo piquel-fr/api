@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/models"
-	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/services/database"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 func own(request *Request) error {
@@ -17,7 +17,7 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-var Policy = &PolicyConfiguration{
+var policy = PolicyConfiguration{
 	Permissions: map[string]*Permission{
 		"updateOwn": {
 			Action:     "update",
@@ -85,9 +85,9 @@ var Policy = &PolicyConfiguration{
 									return err
 								}
 
-								if count >= config.Configuration.MaxDocsInstanceCount {
+								if count >= config.MaxDocsInstanceCount {
 									return errors.NewError(
-										fmt.Sprintf("you already have %d/%d documentation instances", count, config.Configuration.MaxDocsInstanceCount),
+										fmt.Sprintf("you already have %d/%d documentation instances", count, config.MaxDocsInstanceCount),
 										http.StatusForbidden,
 									)
 								}

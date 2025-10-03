@@ -3,16 +3,24 @@ package docs
 import (
 	"strings"
 
-	"github.com/piquel-fr/api/errors"
 	"github.com/piquel-fr/api/services/docs/render"
-	gh "github.com/piquel-fr/api/services/github"
+	"github.com/piquel-fr/api/utils/errors"
+	gh "github.com/piquel-fr/api/utils/github"
 )
 
-func InitDocsService() {
-	render.InitRenderer()
+type DocsService interface {
+	GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error)
 }
 
-func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {
+type realDocsService struct {
+	renderer *render.Renderer
+}
+
+func NewRealDocsService() *realDocsService {
+	return &realDocsService{renderer: render.NewRenderer()}
+}
+
+func (r *realDocsService) GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, error) {
 	if strings.HasPrefix(strings.Trim(route, "/"), ".") {
 		return nil, errors.ErrorNotFound
 	}
@@ -29,7 +37,7 @@ func GetDocsInstancePage(route string, config *render.RenderConfig) ([]byte, err
 		return nil, err
 	}
 
-	html, err := render.RenderPage(file, config)
+	html, err := r.renderer.RenderPage(file, config)
 	if err != nil {
 		return nil, err
 	}

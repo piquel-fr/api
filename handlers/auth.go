@@ -4,19 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/auth/oauth"
-	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/services/middleware"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/utils"
+	"github.com/piquel-fr/api/utils/errors"
+	"github.com/piquel-fr/api/utils/middleware"
 )
 
-func CreateAuthHandler() http.Handler {
+func (h *Handler) CreateAuthHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /{provider}", handleProviderLogin)
-	handler.HandleFunc("GET /{provider}/{callback}", handleAuthCallback)
+	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
+	handler.HandleFunc("GET /{provider}/{callback}", h.handleAuthCallback)
 
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
@@ -24,9 +22,9 @@ func CreateAuthHandler() http.Handler {
 	return handler
 }
 
-func handleProviderLogin(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	providerName := r.PathValue("provider")
-	provider, err := oauth.GetProvider(providerName)
+	provider, err := h.AuthService.GetProvider(providerName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -35,9 +33,9 @@ func handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, provider.AuthCodeURL(r.URL.Query().Get("redirectTo")), http.StatusTemporaryRedirect)
 }
 
-func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	providerName := r.PathValue("provider")
-	provider, err := oauth.GetProvider(providerName)
+	provider, err := h.AuthService.GetProvider(providerName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -49,28 +47,28 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := provider.FetchUser(r.Context(), token)
+	oauthUser, err := provider.FetchUser(r.Context(), token)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	profile, err := auth.GetUserProfile(r.Context(), user)
+	user, err := h.AuthService.GetUser(r.Context(), oauthUser)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	tokenString, err := auth.GenerateTokenString(profile.ID)
+	tokenString, err := h.AuthService.GenerateTokenString(user.ID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	redirectUrl := formatRedirectURL(r.URL.Query().Get("state"), tokenString)
+	redirectUrl := h.formatRedirectURL(r.URL.Query().Get("state"), tokenString)
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func formatRedirectURL(redirectTo string, token string) string {
+func (h *Handler) formatRedirectURL(redirectTo string, token string) string {
 	return fmt.Sprintf("%s?redirectTo=%s&token=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
 }

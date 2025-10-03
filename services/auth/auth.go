@@ -1,25 +1,46 @@
 package auth
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	repository "github.com/piquel-fr/api/database/generated"
-	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/services/auth/oauth"
-	"github.com/piquel-fr/api/services/config"
-	"github.com/piquel-fr/api/services/database"
+	"github.com/jackc/pgx/v5"
+	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/utils/errors"
+	"github.com/piquel-fr/api/utils/oauth"
 )
 
-func InitAuthService() {
-	oauth.InitOAuth()
+type AuthService interface {
+	GenerateTokenString(userId int32) (string, error)
+	GetToken(r *http.Request) (*jwt.Token, error)
+	GetUserId(r *http.Request) (int32, error)
+	GetUserFromRequest(r *http.Request) (*repository.User, error)
+	GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error)
+	GetUserFromUsername(ctx context.Context, username string) (repository.User, error)
+	Authorize(request *Request) error
+	GetProvider(name string) (oauth.Provider, error)
+
+	GetProfileFromUsername(ctx context.Context, username string) (*models.UserProfile, error)
+	GetProfileFromUserId(ctx context.Context, userId int32) (*models.UserProfile, error)
 }
 
-func GenerateTokenString(userId int32) (string, error) {
+// auth service has no state
+type realAuthService struct{}
+
+func NewRealAuthService() *realAuthService {
+	return &realAuthService{}
+}
+
+func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
 	idString := strconv.Itoa(int(userId))
-	token := jwt.NewWithClaims(config.Configuration.JWTSigningMethod,
+	token := jwt.NewWithClaims(config.JWTSigningMethod,
 		jwt.RegisteredClaims{
 			Subject: idString,
 		})
@@ -27,7 +48,7 @@ func GenerateTokenString(userId int32) (string, error) {
 	return token.SignedString(config.Envs.JWTSigningSecret)
 }
 
-func GetToken(r *http.Request) (*jwt.Token, error) {
+func (s *realAuthService) GetToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ""
 
 	authHeader := r.Header.Get("Authorization")
@@ -42,8 +63,8 @@ func GetToken(r *http.Request) (*jwt.Token, error) {
 	})
 }
 
-func GetUserId(r *http.Request) (int32, error) {
-	token, err := GetToken(r)
+func (s *realAuthService) GetUserId(r *http.Request) (int32, error) {
+	token, err := s.GetToken(r)
 	if err != nil {
 		return 0, err
 	}
@@ -61,12 +82,49 @@ func GetUserId(r *http.Request) (int32, error) {
 	return int32(id), nil
 }
 
-func GetUserFromRequest(r *http.Request) (*repository.User, error) {
-	userId, err := GetUserId(r)
+func (s *realAuthService) GetUserFromRequest(r *http.Request) (*repository.User, error) {
+	userId, err := s.GetUserId(r)
 	if err != nil {
 		return nil, err
 	}
 
 	user, err := database.Queries.GetUserById(r.Context(), userId)
 	return &user, err
+}
+
+func (s *realAuthService) GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
+	user, err := database.Queries.GetUserByEmail(ctx, inUser.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return s.registerUser(ctx, inUser)
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
+	params := repository.AddUserParams{}
+
+	params.Email = inUser.Email
+	params.Username = inUser.Username
+	params.Role = "default"
+	params.Image = inUser.Image
+	params.Name = inUser.Name
+
+	user, err := database.Queries.AddUser(ctx, params)
+	return &user, err
+}
+
+func (s *realAuthService) GetUserFromUsername(ctx context.Context, username string) (repository.User, error) {
+	return database.Queries.GetUserByUsername(ctx, username)
+}
+
+func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
+	provider, ok := oauth.Providers[name]
+	if !ok {
+		return nil, errors.NewError(fmt.Sprintf("provider %s does not exist", name), http.StatusBadRequest)
+	}
+	return provider, nil
 }

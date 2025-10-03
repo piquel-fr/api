@@ -6,13 +6,13 @@ import (
 	"net/http"
 
 	"github.com/google/go-github/v74/github"
-	"github.com/piquel-fr/api/errors"
-	"github.com/piquel-fr/api/services/config"
+	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 var Client *github.Client
 
-func InitGithubWrapper() {
+func InitGithubClient() {
 	Client = github.NewClient(nil).WithAuthToken(config.Envs.GithubApiToken)
 }
 

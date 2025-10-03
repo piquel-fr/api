@@ -3,10 +3,10 @@ package auth
 import (
 	"slices"
 
-	"github.com/piquel-fr/api/errors"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
-func Authorize(request *Request) error {
+func (s *realAuthService) Authorize(request *Request) error {
 	if request.User == nil || request.Ressource == nil {
 		return newRequestMalformedError(request)
 	}
@@ -18,7 +18,7 @@ func Authorize(request *Request) error {
 		return newRequestMalformedError(request)
 	}
 
-	isAuthozized, err := authorize(request, role, resourceName, []string{})
+	isAuthozized, err := s.authorize(request, role, resourceName, []string{})
 	if err != nil {
 		return err
 	}
@@ -30,8 +30,8 @@ func Authorize(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-func authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
-	role, ok := Policy.Roles[roleName]
+func (s *realAuthService) authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
+	role, ok := policy.Roles[roleName]
 	if !ok {
 		return false, newRoleNotFoundError(roleName)
 	}
@@ -51,7 +51,7 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 			return false, newRequestMalformedError(request)
 		}
 
-		isAuthozized, err := validateAction(permissions, action, request)
+		isAuthozized, err := s.validateAction(permissions, action, request)
 		if err != nil {
 			return false, err
 		}
@@ -71,7 +71,7 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 					return false, newRoleInheritanceCycleError(checkedRoles, parent)
 				}
 
-				isAuthozized, err := authorize(parentRequest, parent, resourceName, checkedRoles)
+				isAuthozized, err := s.authorize(parentRequest, parent, resourceName, checkedRoles)
 				if err != nil {
 					return false, err
 				}
@@ -90,11 +90,11 @@ func authorize(request *Request, roleName, resourceName string, checkedRoles []s
 	return true, nil
 }
 
-func validateAction(permissions []*Permission, action string, request *Request) (bool, error) {
+func (s *realAuthService) validateAction(permissions []*Permission, action string, request *Request) (bool, error) {
 	for _, permission := range permissions {
 
 		if permission.Preset != "" {
-			permission = Policy.Permissions[permission.Preset]
+			permission = policy.Permissions[permission.Preset]
 		}
 
 		if permission.Action != action {
@@ -105,7 +105,7 @@ func validateAction(permissions []*Permission, action string, request *Request) 
 			return true, nil
 		}
 
-		isAuthozized, err := checkPermission(permission, request)
+		isAuthozized, err := s.checkPermission(permission, request)
 		if err != nil {
 			return false, err
 		}
@@ -118,7 +118,7 @@ func validateAction(permissions []*Permission, action string, request *Request) 
 	return false, nil
 }
 
-func checkPermission(permission *Permission, request *Request) (bool, error) {
+func (s *realAuthService) checkPermission(permission *Permission, request *Request) (bool, error) {
 	if permission.Conditions == nil {
 		return true, nil
 	}

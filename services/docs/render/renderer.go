@@ -5,45 +5,45 @@ import (
 	"regexp"
 
 	"github.com/alecthomas/chroma/v2/formatters/html"
-	gh "github.com/piquel-fr/api/services/github"
+	gh "github.com/piquel-fr/api/utils/github"
 )
 
-var (
-	singleline    *regexp.Regexp
-	multiline     *regexp.Regexp
-	htmlFormatter *html.Formatter
-)
+type Renderer struct {
+	singleline, multiline *regexp.Regexp
+	htmlFormatter         *html.Formatter
+}
 
-func InitRenderer() {
-	var err error
-	singleline, err = regexp.Compile(`(?m)^{ *([a-z]+)(?: *\"(.*)\")? */}$`)
+func NewRenderer() *Renderer {
+	singleline, err := regexp.Compile(`(?m)^{ *([a-z]+)(?: *\"(.*)\")? */}$`)
 	if err != nil {
 		panic(err)
 	}
 
-	multiline, err = regexp.Compile(`(?m)^{ *([a-z]+) *}\n?((?:.|\n)*?)\n?{/}$`)
+	multiline, err := regexp.Compile(`(?m)^{ *([a-z]+) *}\n?((?:.|\n)*?)\n?{/}$`)
 	if err != nil {
 		panic(err)
 	}
 
-	htmlFormatter = html.New()
+	htmlFormatter := html.New()
 	if htmlFormatter == nil {
 		panic(fmt.Errorf("Error creating html formatter"))
 	}
+
+	return &Renderer{singleline: singleline, multiline: multiline, htmlFormatter: htmlFormatter}
 }
 
-func RenderPage(md []byte, config *RenderConfig) ([]byte, error) {
-	md, err := renderCustom(md, config)
+func (r *Renderer) RenderPage(md []byte, config *RenderConfig) ([]byte, error) {
+	md, err := r.renderCustom(md, config)
 	if err != nil {
 		return nil, err
 	}
 
-	ast := parseMarkdown(md)
-	ast = fixupAST(ast, config)
-	return renderHTML(ast), nil
+	ast := r.parseMarkdown(md)
+	ast = r.fixupAST(ast, config)
+	return r.renderHTML(ast), nil
 }
 
-func loadInclude(path string, config *RenderConfig) ([]byte, error) {
+func (r *Renderer) loadInclude(path string, config *RenderConfig) ([]byte, error) {
 	file, err := gh.GetRepositoryFile(
 		config.Instance.RepoOwner, config.Instance.RepoName,
 		config.Instance.RepoRef, ".common/includes/"+path)
