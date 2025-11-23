@@ -19,6 +19,15 @@ type DocsInstance struct {
 	Root      string `json:"root"`
 }
 
+type MailAccount struct {
+	ID       int32  `json:"id"`
+	OwnerId  int32  `json:"ownerId"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type User struct {
 	ID        int32     `json:"id"`
 	Username  string    `json:"username"`

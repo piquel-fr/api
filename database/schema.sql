@@ -20,3 +20,12 @@ CREATE TABLE "docs_instances" (
     
     "root" TEXT NOT NULL DEFAULT 'index.md'
 );
+
+CREATE TABLE "mail_accounts" (
+    "id" SERIAL PRIMARY KEY NOT NULL,
+    "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,
+    "email" TEXT NOT NULL UNIQUE,
+    "name" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL
+);
