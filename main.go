@@ -10,6 +10,7 @@ import (
 	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/docs"
+	"github.com/piquel-fr/api/services/email"
 	gh "github.com/piquel-fr/api/utils/github"
 	"github.com/piquel-fr/api/utils/middleware"
 	"github.com/piquel-fr/api/utils/oauth"
@@ -26,8 +27,9 @@ func main() {
 	defer database.Connection.Close()
 
 	handler := handlers.Handler{
-		AuthService: auth.NewRealAuthService(),
-		DocsService: docs.NewRealDocsService(),
+		AuthService:  auth.NewRealAuthService(),
+		DocsService:  docs.NewRealDocsService(),
+		EmailService: email.NewRealEmailService(),
 	}
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)

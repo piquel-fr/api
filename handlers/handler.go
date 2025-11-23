@@ -5,11 +5,13 @@ import (
 
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/docs"
+	"github.com/piquel-fr/api/services/email"
 )
 
 type Handler struct {
-	AuthService auth.AuthService
-	DocsService docs.DocsService
+	AuthService  auth.AuthService
+	DocsService  docs.DocsService
+	EmailService email.EmailService
 }
 
 func (h *Handler) CreateHttpHandler() http.Handler {
@@ -18,6 +20,7 @@ func (h *Handler) CreateHttpHandler() http.Handler {
 	router.Handle("/auth/", http.StripPrefix("/auth", h.CreateAuthHandler()))
 	router.Handle("/profile/", http.StripPrefix("/profile", h.CreateProfileHandler()))
 	router.Handle("/docs/", http.StripPrefix("/docs", h.CreateDocsHandler()))
+	router.Handle("/email/", http.StripPrefix("/email", h.CreateEmailHandler()))
 
 	return router
 }
