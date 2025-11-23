@@ -13,10 +13,24 @@ import (
 
 func (h *Handler) CreateEmailHandler() http.Handler {
 	handler := http.NewServeMux()
+
+	/**
+	 * // accounts
+	 * GET / - list accounts
+	 * POST / - add account
+	 * DELETE {email} - delete account
+	 * GET /{email} - get account info
+	 *
+	 * // emails
+	 * GET /{email}/get - list emails
+	 * POST /{email} - send an email
+	 */
+
 	return handler
 }
 
 func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
+	email := r.PathValue("email")
 	requester, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
@@ -46,12 +60,6 @@ func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("invalid number %s specified for offset", limitStr), http.StatusBadRequest)
-		return
-	}
-
-	email := r.URL.Query().Get("email")
-	if email == "" {
-		http.Error(w, fmt.Sprintf("please specify an email to get mail from"), http.StatusBadRequest)
 		return
 	}
 
@@ -101,7 +109,8 @@ func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (h *Handler) handleListEmailAccounts(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {}
 
-func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request)    {}
+func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {}
+
 func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
