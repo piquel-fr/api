@@ -14,16 +14,26 @@ import (
 func (h *Handler) CreateEmailHandler() http.Handler {
 	handler := http.NewServeMux()
 
+	// accounts
+	handler.HandleFunc("GET /", h.handleListAccounts)
+	handler.HandleFunc("POST /", h.handleAddAccount)
+	handler.HandleFunc("DELETE /{email}", h.handleRemoveAccount)
+
+	// emails
+	handler.HandleFunc("GET /{email}/get", h.handleListEmails)
+
 	/**
 	 * // accounts
-	 * GET / - list accounts
-	 * POST / - add account
-	 * DELETE {email} - delete account
-	 * GET /{email} - get account info
+	 * [x] GET / - list accounts
+	 * [x] POST / - add account
+	 * [x] DELETE {email} - delete account
+	 * [ ] GET /{email} - get account info
 	 *
 	 * // emails
-	 * GET /{email}/get - list emails
-	 * POST /{email} - send an email
+	 * [x] GET /{email}/get - list emails
+	 * [ ] POST /{email} - send an email
+	 *
+	 * // OPTIONS handlers
 	 */
 
 	return handler
