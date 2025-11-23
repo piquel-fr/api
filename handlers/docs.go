@@ -9,7 +9,6 @@ import (
 
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
-	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/docs/render"
 	"github.com/piquel-fr/api/utils"
@@ -142,7 +141,7 @@ func (h *Handler) handleListDocs(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		docsInstance := models.DocsInstance(instance)
+		docsInstance := repository.DocsInstance(instance)
 		authRequest := &auth.Request{
 			User:      requester,
 			Ressource: &docsInstance,
@@ -182,7 +181,7 @@ func (h *Handler) handleNewDocs(w http.ResponseWriter, r *http.Request) {
 
 	authRequest := &auth.Request{
 		User:      user,
-		Ressource: &models.DocsInstance{},
+		Ressource: &repository.DocsInstance{},
 		Actions:   []string{"create"},
 		Context:   r.Context(),
 	}
@@ -223,7 +222,7 @@ func (h *Handler) handleGetDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.DocsInstance(config)
+	docsConfig := repository.DocsInstance(config)
 
 	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
@@ -260,7 +259,7 @@ func (h *Handler) handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.DocsInstance(config)
+	docsConfig := repository.DocsInstance(config)
 
 	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
@@ -333,7 +332,7 @@ func (h *Handler) handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.DocsInstance(config)
+	docsConfig := repository.DocsInstance(config)
 
 	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
@@ -372,7 +371,7 @@ func (h *Handler) handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
-	docsConfig := models.DocsInstance(config)
+	docsConfig := repository.DocsInstance(config)
 
 	if !docsConfig.Public {
 		user, err := h.AuthService.GetUserFromRequest(r)
