@@ -15,13 +15,3 @@ func (profile *UserProfile) GetResourceName() string {
 func (profile *UserProfile) GetOwner() int32 {
 	return profile.ID
 }
-
-type DocsInstance repository.DocsInstance
-
-func (docs *DocsInstance) GetResourceName() string {
-	return "docs_instance"
-}
-
-func (docs *DocsInstance) GetOwner() int32 {
-	return docs.OwnerId
-}

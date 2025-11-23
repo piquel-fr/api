@@ -6,7 +6,7 @@ import (
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
-	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/utils/errors"
 )
 
@@ -82,7 +82,7 @@ var policy = PolicyConfiguration{
 						Action: "view",
 						Conditions: Conditions{
 							func(request *Request) error {
-								docs, ok := request.Ressource.(*models.DocsInstance)
+								docs, ok := request.Ressource.(*repository.DocsInstance)
 								if !ok {
 									return newRequestMalformedError(request)
 								}
