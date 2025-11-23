@@ -37,7 +37,13 @@ var policy = PolicyConfiguration{
 					{Action: "update"},
 					{Action: "delete"},
 				},
-				"documentation": {
+				"docs_instance": {
+					{Action: "view"},
+					{Action: "create"},
+					{Action: "update"},
+					{Action: "delete"},
+				},
+				"email_account": {
 					{Action: "view"},
 					{Action: "create"},
 					{Action: "update"},
@@ -45,6 +51,23 @@ var policy = PolicyConfiguration{
 				},
 			},
 			Parents: []string{"default", "developer"},
+		},
+		"developer": {
+			Name:  "Developer",
+			Color: "blue",
+			Permissions: map[string][]*Permission{
+				"email_account": {
+					{
+						Action:     "fetch",
+						Conditions: Conditions{own},
+					},
+					{
+						Action:     "add",
+						Conditions: Conditions{own},
+					},
+					{Preset: "deleteOwn"},
+				},
+			},
 		},
 		"default": {
 			Name:  "",
