@@ -29,7 +29,7 @@ func (h *Handler) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
+	username := r.URL.Query().Get("user")
 	if username == "" {
 		id, err := h.AuthService.GetUserId(r)
 		if err != nil {
