@@ -4,15 +4,6 @@ import (
 	"github.com/piquel-fr/api/database/repository"
 )
 
-/*
-type Email struct {
-	To, Cc, Bcc,
-	From, Sender []string
-	Date    time.Time
-	Subject string
-}
-*/
-
 type EmailService interface {
 	// account stuff
 	GetAccountByEmail(email string) (repository.MailAccount, error)
@@ -20,11 +11,6 @@ type EmailService interface {
 	AddAccount(params repository.AddEmailAccountParams) error
 	RemoveAccount(accountId int32) error
 	GetAccountInfo(account *repository.MailAccount) (AccountInfo, error)
-
-	// email stuff
-	//SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
-	//CountEmailsForAccount(account *repository.MailAccount) (int, error)
-	//GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
 }
 
 type realEmailService struct{}
@@ -32,118 +18,3 @@ type realEmailService struct{}
 func NewRealEmailService() *realEmailService {
 	return &realEmailService{}
 }
-
-/*
-func (r *realEmailService) SendEmail(destination []string, from *repository.MailAccount, subject, content string) error {
-	message := mail.NewMsg()
-	if err := message.From(from.Email); err != nil {
-		return fmt.Errorf("failed to add FROM address %s: %w", from.Email, err)
-	}
-
-	for _, to := range destination {
-		if err := message.AddTo(to); err != nil {
-			return fmt.Errorf("failed to add TO address %s: %w", to, err)
-		}
-	}
-
-	message.Subject(subject)
-	message.SetBodyString(mail.TypeTextHTML, content)
-
-	// Deliver the mails via SMTP
-	client, err := mail.NewClient(config.Envs.SmtpHost,
-		mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover), mail.WithTLSPortPolicy(mail.TLSMandatory),
-		mail.WithUsername(from.Username), mail.WithPassword(from.Password),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create new mail delivery client: %s", err)
-	}
-	if err := client.DialAndSend(message); err != nil {
-		return fmt.Errorf("failed to deliver mail: %s", err)
-	}
-
-	return nil
-}
-
-func (r *realEmailService) CountEmailsForAccount(account *repository.MailAccount) (int, error) {
-	return 0, nil
-}
-
-func (r *realEmailService) GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error) {
-	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
-	client, err := imapclient.DialTLS(addr, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer client.Logout()
-
-	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
-		return nil, err
-	}
-
-	// Select INBOX
-	mailbox, err := client.Select("INBOX", nil).Wait()
-	if err != nil {
-		return nil, err
-	}
-
-	seqSet := imap.SeqSet{{Start: 1, Stop: mailbox.NumMessages}}
-	fetchOptions := &imap.FetchOptions{
-		Envelope: true,
-		BodySection: []*imap.FetchItemBodySection{
-			{Specifier: imap.PartSpecifierHeader},
-		},
-	}
-
-	messages, err := client.Fetch(seqSet, fetchOptions).Collect()
-	if err != nil {
-		return nil, err
-	}
-
-	emails := []*Email{}
-	for _, msg := range messages {
-		email := Email{}
-
-		for _, to := range msg.Envelope.To {
-			if to.IsGroupEnd() || to.IsGroupStart() {
-				continue
-			}
-			email.To = append(email.To, to.Addr())
-		}
-
-		for _, cc := range msg.Envelope.Cc {
-			if cc.IsGroupEnd() || cc.IsGroupStart() {
-				continue
-			}
-			email.Cc = append(email.Cc, cc.Addr())
-		}
-
-		for _, bcc := range msg.Envelope.Bcc {
-			if bcc.IsGroupEnd() || bcc.IsGroupStart() {
-				continue
-			}
-			email.Bcc = append(email.Bcc, bcc.Addr())
-		}
-
-		for _, from := range msg.Envelope.From {
-			if from.IsGroupEnd() || from.IsGroupStart() {
-				continue
-			}
-			email.From = append(email.From, from.Addr())
-		}
-
-		for _, sender := range msg.Envelope.Sender {
-			if sender.IsGroupEnd() || sender.IsGroupStart() {
-				continue
-			}
-			email.Sender = append(email.Sender, sender.Addr())
-		}
-
-		email.Date = msg.Envelope.Date
-		email.Subject = msg.Envelope.Subject
-
-		emails = append(emails, &email)
-	}
-
-	return emails, nil
-}
-*/
