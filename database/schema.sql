@@ -29,3 +29,9 @@ CREATE TABLE "mail_accounts" (
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL
 );
+
+CREATE TABLE "mail_share" (
+    "userId" SERIAL REFERENCES "users" ("id") NOT NULL UNIQUE COMBO,
+    "account" SERIAL REFERENCES "mail_accounts" ("id") NOT NULL UNIQUE COMBO,
+    "permission" TEXT
+);
