@@ -1,9 +1,14 @@
 package email
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/emersion/go-imap/v2"
+	"github.com/emersion/go-imap/v2/imapclient"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/wneessen/go-mail"
 )
 
 type Email struct {
