@@ -44,7 +44,7 @@ var policy = PolicyConfiguration{
 					{Action: "update"},
 					{Action: "delete"},
 				},
-				"documentation": {
+				"docs_instance": {
 					{Action: "view"},
 					{Action: "create"},
 					{Action: "update"},
