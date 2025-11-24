@@ -1,14 +1,7 @@
 package email
 
 import (
-	"fmt"
 	"time"
-
-	"github.com/emersion/go-imap/v2"
-	"github.com/emersion/go-imap/v2/imapclient"
-	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database/repository"
-	"github.com/wneessen/go-mail"
 )
 
 type Email struct {
@@ -19,9 +12,12 @@ type Email struct {
 }
 
 type EmailService interface {
-	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
-	CountEmailsForAccount(account *repository.MailAccount) (int, error)
-	GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
+	// account stuff
+
+	// email stuff
+	//SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
+	//CountEmailsForAccount(account *repository.MailAccount) (int, error)
+	//GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
 }
 
 type realEmailService struct{}
@@ -30,6 +26,7 @@ func NewRealEmailService() *realEmailService {
 	return &realEmailService{}
 }
 
+/*
 func (r *realEmailService) SendEmail(destination []string, from *repository.MailAccount, subject, content string) error {
 	message := mail.NewMsg()
 	if err := message.From(from.Email); err != nil {
@@ -142,3 +139,4 @@ func (r *realEmailService) GetEmailsForAccount(account *repository.MailAccount, 
 
 	return emails, nil
 }
+*/

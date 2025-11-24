@@ -1,14 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"strconv"
-
-	"github.com/piquel-fr/api/database"
-	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/utils/errors"
 )
 
 func (h *Handler) CreateEmailHandler() http.Handler {
@@ -16,29 +9,25 @@ func (h *Handler) CreateEmailHandler() http.Handler {
 
 	// accounts
 	handler.HandleFunc("GET /", h.handleListAccounts)
-	handler.HandleFunc("POST /", h.handleAddAccount)
+	handler.HandleFunc("PUT /", h.handleAddAccount)
 	handler.HandleFunc("DELETE /{email}", h.handleRemoveAccount)
 
 	// emails
-	handler.HandleFunc("GET /{email}/get", h.handleListEmails)
+	//handler.HandleFunc("GET /{email}/get", h.handleListEmails)
 
-	/**
-	 * // accounts
-	 * [x] GET / - list accounts
-	 * [x] POST / - add account
-	 * [x] DELETE {email} - delete account
-	 * [ ] GET /{email} - get account info
-	 *
-	 * // emails
-	 * [x] GET /{email}/get - list emails
-	 * [ ] POST /{email} - send an email
-	 *
-	 * // OPTIONS handlers
-	 */
+	// OPTIONS handlers
 
 	return handler
 }
 
+func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
+
+/*
 func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
 	email := r.PathValue("email")
 	requester, err := h.AuthService.GetUserFromRequest(r)
@@ -118,9 +107,4 @@ func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
 }
-
-func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {}
-
-func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {}
-
-func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
+*/
