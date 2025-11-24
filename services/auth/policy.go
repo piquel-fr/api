@@ -17,6 +17,8 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
+const systemRole string = "system"
+
 var policy = PolicyConfiguration{
 	Permissions: map[string]*Permission{
 		"updateOwn": {
@@ -29,6 +31,11 @@ var policy = PolicyConfiguration{
 		},
 	},
 	Roles: Roles{
+		systemRole: {
+			Name:        "System",
+			Color:       "gray",
+			Permissions: map[string][]*Permission{},
+		},
 		"admin": {
 			Name:  "Admin",
 			Color: "red",
@@ -45,6 +52,11 @@ var policy = PolicyConfiguration{
 				},
 			},
 			Parents: []string{"default", "developer"},
+		},
+		"developer": {
+			Name:        "Developer",
+			Color:       "blue",
+			Permissions: map[string][]*Permission{},
 		},
 		"default": {
 			Name:  "",

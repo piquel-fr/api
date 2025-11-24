@@ -14,6 +14,11 @@ func (s *realAuthService) Authorize(request *Request) error {
 	role := request.User.Role
 	resourceName := request.Ressource.GetResourceName()
 
+	// system role has all permissions
+	if role == systemRole {
+		return nil
+	}
+
 	if role == "" || resourceName == "" {
 		return newRequestMalformedError(request)
 	}
