@@ -1,7 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 func (h *Handler) CreateEmailHandler() http.Handler {
@@ -14,7 +21,7 @@ func (h *Handler) CreateEmailHandler() http.Handler {
 	handler.HandleFunc("GET /{email}", h.handleAccountInfo)
 
 	// emails
-	//handler.HandleFunc("GET /{email}/get", h.handleListEmails)
+	handler.HandleFunc("GET /{email}/get", h.handleListEmails)
 
 	// OPTIONS handlers
 
@@ -26,7 +33,6 @@ func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request)    {}
 func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
 func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request)   {}
 
-/*
 func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
 	email := r.PathValue("email")
 	requester, err := h.AuthService.GetUserFromRequest(r)
@@ -106,4 +112,3 @@ func (h *Handler) handleListEmails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
 }
-*/

@@ -1,17 +1,17 @@
 package email
 
 import (
+	"time"
+
 	"github.com/piquel-fr/api/database/repository"
 )
 
-/*
 type Email struct {
 	To, Cc, Bcc,
 	From, Sender []string
 	Date    time.Time
 	Subject string
 }
-*/
 
 type EmailService interface {
 	// account stuff
@@ -22,9 +22,9 @@ type EmailService interface {
 	GetAccountInfo(account *repository.MailAccount) (AccountInfo, error)
 
 	// email stuff
-	//SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
-	//CountEmailsForAccount(account *repository.MailAccount) (int, error)
-	//GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
+	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
+	CountEmailsForAccount(account *repository.MailAccount) (int, error)
+	GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
 }
 
 type realEmailService struct{}
@@ -33,7 +33,6 @@ func NewRealEmailService() *realEmailService {
 	return &realEmailService{}
 }
 
-/*
 func (r *realEmailService) SendEmail(destination []string, from *repository.MailAccount, subject, content string) error {
 	message := mail.NewMsg()
 	if err := message.From(from.Email); err != nil {
@@ -146,4 +145,3 @@ func (r *realEmailService) GetEmailsForAccount(account *repository.MailAccount, 
 
 	return emails, nil
 }
-*/
