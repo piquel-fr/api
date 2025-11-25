@@ -35,6 +35,7 @@ var policy = PolicyConfiguration{
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
+			Parents: []string{"default", "developer", "admin"},
 		},
 		"admin": {
 			Name:  "Admin",
@@ -57,6 +58,7 @@ var policy = PolicyConfiguration{
 			Name:        "Developer",
 			Color:       "blue",
 			Permissions: map[string][]*Permission{},
+			Parents: []string{"default"},
 		},
 		"default": {
 			Name:  "",
