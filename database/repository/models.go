@@ -28,6 +28,12 @@ type MailAccount struct {
 	Password string `json:"password"`
 }
 
+type MailShare struct {
+	UserId     int32  `json:"userId"`
+	Account    int32  `json:"account"`
+	Permission string `json:"permission"`
+}
+
 type User struct {
 	ID        int32     `json:"id"`
 	Username  string    `json:"username"`

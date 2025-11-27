@@ -37,8 +37,29 @@ func (q *Queries) AddEmailAccount(ctx context.Context, arg AddEmailAccountParams
 	return id, err
 }
 
+const addShare = `-- name: AddShare :exec
+INSERT INTO "mail_share" (
+    "userId", "account", "permission"
+)
+VALUES ($1, $2, $3)
+`
+
+type AddShareParams struct {
+	UserId     int32  `json:"userId"`
+	Account    int32  `json:"account"`
+	Permission string `json:"permission"`
+}
+
+func (q *Queries) AddShare(ctx context.Context, arg AddShareParams) error {
+	_, err := q.db.Exec(ctx, addShare, arg.UserId, arg.Account, arg.Permission)
+	return err
+}
+
 const countUserMailAccounts = `-- name: CountUserMailAccounts :one
-SELECT COUNT(*) FROM "mail_accounts" WHERE "ownerId" = $1
+SELECT COUNT(DISTINCT "mail_accounts"."id")
+FROM "mail_accounts"
+LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
+WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1
 `
 
 func (q *Queries) CountUserMailAccounts(ctx context.Context, ownerid int32) (int64, error) {
@@ -49,7 +70,10 @@ func (q *Queries) CountUserMailAccounts(ctx context.Context, ownerid int32) (int
 }
 
 const getMailAccountByEmail = `-- name: GetMailAccountByEmail :one
-SELECT id, "ownerId", email, name, username, password FROM "mail_accounts" WHERE "email" = $1
+SELECT m.id, m."ownerId", m.email, m.name, m.username, m.password FROM "mail_accounts" m
+LEFT JOIN "mail_share" s ON m."id" = s."account"
+WHERE m."email" = $1 
+LIMIT 1
 `
 
 func (q *Queries) GetMailAccountByEmail(ctx context.Context, email string) (MailAccount, error) {
@@ -67,7 +91,10 @@ func (q *Queries) GetMailAccountByEmail(ctx context.Context, email string) (Mail
 }
 
 const getMailAccountById = `-- name: GetMailAccountById :one
-SELECT id, "ownerId", email, name, username, password FROM "mail_accounts" WHERE "id" = $1
+SELECT m.id, m."ownerId", m.email, m.name, m.username, m.password FROM "mail_accounts" m
+LEFT JOIN "mail_share" s ON m."id" = s."account"
+WHERE m."id" = $1 
+LIMIT 1
 `
 
 func (q *Queries) GetMailAccountById(ctx context.Context, id int32) (MailAccount, error) {
@@ -84,54 +111,15 @@ func (q *Queries) GetMailAccountById(ctx context.Context, id int32) (MailAccount
 	return i, err
 }
 
-const listMailAccounts = `-- name: ListMailAccounts :many
-SELECT id, "ownerId", email, name, username, password FROM "mail_accounts" LIMIT $1 OFFSET $2
-`
-
-type ListMailAccountsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListMailAccounts(ctx context.Context, arg ListMailAccountsParams) ([]MailAccount, error) {
-	rows, err := q.db.Query(ctx, listMailAccounts, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []MailAccount
-	for rows.Next() {
-		var i MailAccount
-		if err := rows.Scan(
-			&i.ID,
-			&i.OwnerId,
-			&i.Email,
-			&i.Name,
-			&i.Username,
-			&i.Password,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listUserMailAccounts = `-- name: ListUserMailAccounts :many
-SELECT id, "ownerId", email, name, username, password FROM "mail_accounts" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3
+SELECT DISTINCT mail_accounts.id, mail_accounts."ownerId", mail_accounts.email, mail_accounts.name, mail_accounts.username, mail_accounts.password FROM "mail_accounts"
+LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
+WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1
+ORDER BY "mail_accounts"."id"
 `
 
-type ListUserMailAccountsParams struct {
-	OwnerId int32 `json:"ownerId"`
-	Limit   int32 `json:"limit"`
-	Offset  int32 `json:"offset"`
-}
-
-func (q *Queries) ListUserMailAccounts(ctx context.Context, arg ListUserMailAccountsParams) ([]MailAccount, error) {
-	rows, err := q.db.Query(ctx, listUserMailAccounts, arg.OwnerId, arg.Limit, arg.Offset)
+func (q *Queries) ListUserMailAccounts(ctx context.Context, ownerid int32) ([]MailAccount, error) {
+	rows, err := q.db.Query(ctx, listUserMailAccounts, ownerid)
 	if err != nil {
 		return nil, err
 	}
@@ -158,10 +146,26 @@ func (q *Queries) ListUserMailAccounts(ctx context.Context, arg ListUserMailAcco
 }
 
 const removeMailAccount = `-- name: RemoveMailAccount :exec
-DELETE FROM "mail_accounts" WHERE "id" = $1
+DELETE FROM "mail_accounts" 
+WHERE "id" = $1
 `
 
 func (q *Queries) RemoveMailAccount(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, removeMailAccount, id)
+	return err
+}
+
+const removeShare = `-- name: RemoveShare :exec
+DELETE FROM "mail_share"
+WHERE "userId" = $1 AND "account" = $2
+`
+
+type RemoveShareParams struct {
+	UserId  int32 `json:"userId"`
+	Account int32 `json:"account"`
+}
+
+func (q *Queries) RemoveShare(ctx context.Context, arg RemoveShareParams) error {
+	_, err := q.db.Exec(ctx, removeShare, arg.UserId, arg.Account)
 	return err
 }

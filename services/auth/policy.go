@@ -40,19 +40,18 @@ var policy = PolicyConfiguration{
 			Name:  "Admin",
 			Color: "red",
 			Permissions: map[string][]*Permission{
-				"user": {
+				repository.ResourceUser: {
 					{Action: "update"},
 					{Action: "delete"},
 				},
-				"docs_instance": {
+				repository.ResourceDocsInstance: {
 					{Action: "view"},
 					{Action: "create"},
 					{Action: "update"},
 					{Action: "delete"},
 				},
-				"email_account": {
+				repository.ResourceMailAccount: {
 					{Action: "view"},
-					{Action: "create"},
 					{Action: "update"},
 					{Action: "delete"},
 				},
@@ -63,7 +62,7 @@ var policy = PolicyConfiguration{
 			Name:  "Developer",
 			Color: "blue",
 			Permissions: map[string][]*Permission{
-				"email_account": {
+				repository.ResourceMailAccount: {
 					{
 						Action:     "fetch",
 						Conditions: Conditions{own},
@@ -76,11 +75,11 @@ var policy = PolicyConfiguration{
 			Name:  "",
 			Color: "gray",
 			Permissions: map[string][]*Permission{
-				"user": {
+				repository.ResourceUser: {
 					{Preset: "updateOwn"},
 					{Preset: "deleteOwn"},
 				},
-				"docs_instance": {
+				repository.ResourceDocsInstance: {
 					{
 						Action: "view",
 						Conditions: Conditions{

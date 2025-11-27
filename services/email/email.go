@@ -1,6 +1,7 @@
 package email
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -20,11 +21,11 @@ type Email struct {
 
 type EmailService interface {
 	// account stuff
-	GetAccountByEmail(email string) (repository.MailAccount, error)
-	ListAccounts(userId int32) ([]MailAccount, error)
-	AddAccount(params repository.AddEmailAccountParams) error
-	RemoveAccount(accountId int32) error
-	GetAccountInfo(account *repository.MailAccount) (AccountInfo, error)
+	GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error)
+	ListAccounts(ctx context.Context, userId int32) ([]MailAccount, error)
+	AddAccount(ctx context.Context, params repository.AddEmailAccountParams) error
+	RemoveAccount(ctx context.Context, accountId int32) error
+	GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error)
 
 	// email stuff
 	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
