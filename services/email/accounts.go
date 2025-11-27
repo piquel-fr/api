@@ -21,7 +21,27 @@ func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) 
 }
 
 func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]MailAccount, error) {
-	return nil, nil
+	dbAccounts, err := database.Queries.ListUserMailAccounts(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts := []MailAccount{}
+	for _, dbAccount := range dbAccounts {
+		// TODO: get number of unreal emails
+
+		account := MailAccount{
+			MailAccount: dbAccount,
+			Unread:      0,
+		}
+
+		// make sure we don't return username and password
+		account.Username = ""
+		account.Password = ""
+		accounts = append(accounts, account)
+	}
+
+	return accounts, nil
 }
 
 func (r *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) error {
