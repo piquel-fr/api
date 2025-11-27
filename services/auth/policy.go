@@ -35,6 +35,7 @@ var policy = PolicyConfiguration{
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
+			Parents: []string{"default", "developer", "admin"},
 		},
 		"admin": {
 			Name:  "Admin",
@@ -75,6 +76,7 @@ var policy = PolicyConfiguration{
 					{Preset: "deleteOwn"},
 				},
 			},
+			Parents: []string{"default"},
 		},
 		"default": {
 			Name:  "",
