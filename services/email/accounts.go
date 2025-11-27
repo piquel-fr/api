@@ -1,31 +1,37 @@
 package email
 
-import "github.com/piquel-fr/api/database/repository"
+import (
+	"context"
 
-type AccountInfo struct {
-}
+	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/database/repository"
+)
 
 type MailAccount struct {
-	repository.MailAccount
 	Unread int `json:"unread"`
+	repository.MailAccount
 }
 
-func (r *realEmailService) GetAccountByEmail(email string) (repository.MailAccount, error) {
-	return repository.MailAccount{}, nil
+type AccountInfo struct {
+	MailAccount
 }
 
-func (r *realEmailService) ListAccounts(userId int32) ([]MailAccount, error) {
+func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error) {
+	return database.Queries.GetMailAccountByEmail(ctx, email)
+}
+
+func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]MailAccount, error) {
 	return nil, nil
 }
 
-func (r *realEmailService) AddAccount(params repository.AddEmailAccountParams) error {
+func (r *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) error {
 	return nil
 }
 
-func (r *realEmailService) RemoveAccount(accountId int32) error {
+func (r *realEmailService) RemoveAccount(ctx context.Context, accountId int32) error {
 	return nil
 }
 
-func (r *realEmailService) GetAccountInfo(account *repository.MailAccount) (AccountInfo, error) {
+func (r *realEmailService) GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error) {
 	return AccountInfo{}, nil
 }
