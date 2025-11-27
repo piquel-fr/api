@@ -68,10 +68,6 @@ var policy = PolicyConfiguration{
 						Action:     "fetch",
 						Conditions: Conditions{own},
 					},
-					{
-						Action:     "add",
-						Conditions: Conditions{own},
-					},
 					{Preset: "deleteOwn"},
 				},
 			},
