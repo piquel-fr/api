@@ -5,19 +5,40 @@ INSERT INTO "mail_accounts" (
 VALUES ($1, $2, $3, $4, $5) RETURNING "id";
 
 -- name: GetMailAccountByEmail :one
-SELECT * FROM "mail_accounts" WHERE "email" = $1;
+SELECT m.* FROM "mail_accounts" m
+LEFT JOIN "mail_share" s ON m."id" = s."account"
+WHERE m."email" = $1 
+LIMIT 1;
 
 -- name: GetMailAccountById :one
-SELECT * FROM "mail_accounts" WHERE "id" = $1;
-
--- name: ListMailAccounts :many
-SELECT * FROM "mail_accounts" LIMIT $1 OFFSET $2;
+SELECT m.* FROM "mail_accounts" m
+LEFT JOIN "mail_share" s ON m."id" = s."account"
+WHERE m."id" = $1 
+LIMIT 1;
 
 -- name: ListUserMailAccounts :many
-SELECT * FROM "mail_accounts" WHERE "ownerId" = $1 LIMIT $2 OFFSET $3;
+SELECT DISTINCT "mail_accounts".* FROM "mail_accounts"
+LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
+WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1
+ORDER BY "mail_accounts"."id"
+LIMIT $2 OFFSET $3;
 
 -- name: CountUserMailAccounts :one
-SELECT COUNT(*) FROM "mail_accounts" WHERE "ownerId" = $1;
+SELECT COUNT(DISTINCT "mail_accounts"."id")
+FROM "mail_accounts"
+LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
+WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1;
 
 -- name: RemoveMailAccount :exec
-DELETE FROM "mail_accounts" WHERE "id" = $1;
+DELETE FROM "mail_accounts" 
+WHERE "id" = $1;
+
+-- name: AddShare :exec
+INSERT INTO "mail_share" (
+    "userId", "account", "permission"
+)
+VALUES ($1, $2, $3);
+
+-- name: RemoveShare :exec
+DELETE FROM "mail_share"
+WHERE "userId" = $1 AND "account" = $2;

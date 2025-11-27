@@ -31,7 +31,8 @@ CREATE TABLE "mail_accounts" (
 );
 
 CREATE TABLE "mail_share" (
-    "userId" SERIAL REFERENCES "users" ("id") NOT NULL UNIQUE COMBO,
-    "account" SERIAL REFERENCES "mail_accounts" ("id") NOT NULL UNIQUE COMBO,
-    "permission" TEXT
+    "userId" INTEGER REFERENCES "users" ("id") NOT NULL,
+    "account" INTEGER REFERENCES "mail_accounts" ("id") NOT NULL,
+    "permission" TEXT NOT NULL,
+    UNIQUE ("userId", "account")
 );
