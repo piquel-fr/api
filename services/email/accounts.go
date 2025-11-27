@@ -44,12 +44,12 @@ func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]Ma
 	return accounts, nil
 }
 
-func (r *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) error {
-	return nil
+func (r *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error) {
+	return database.Queries.AddEmailAccount(ctx, params)
 }
 
 func (r *realEmailService) RemoveAccount(ctx context.Context, accountId int32) error {
-	return nil
+	return database.Queries.RemoveMailAccount(ctx, accountId)
 }
 
 func (r *realEmailService) GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error) {
