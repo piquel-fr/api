@@ -52,7 +52,6 @@ var policy = PolicyConfiguration{
 				},
 				repository.ResourceMailAccount: {
 					{Action: "view"},
-					{Action: "add"},
 					{Action: "update"},
 					{Action: "delete"},
 				},
@@ -64,14 +63,6 @@ var policy = PolicyConfiguration{
 			Color: "blue",
 			Permissions: map[string][]*Permission{
 				repository.ResourceMailAccount: {
-					{
-						Action:     "fetch",
-						Conditions: Conditions{own},
-					},
-					{
-						Action:     "add",
-						Conditions: Conditions{own},
-					},
 					{Preset: "deleteOwn"},
 				},
 			},
