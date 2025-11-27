@@ -20,8 +20,7 @@ LIMIT 1;
 SELECT DISTINCT "mail_accounts".* FROM "mail_accounts"
 LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
 WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1
-ORDER BY "mail_accounts"."id"
-LIMIT $2 OFFSET $3;
+ORDER BY "mail_accounts"."id";
 
 -- name: CountUserMailAccounts :one
 SELECT COUNT(DISTINCT "mail_accounts"."id")

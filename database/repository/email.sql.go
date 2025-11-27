@@ -116,17 +116,10 @@ SELECT DISTINCT mail_accounts.id, mail_accounts."ownerId", mail_accounts.email, 
 LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
 WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1
 ORDER BY "mail_accounts"."id"
-LIMIT $2 OFFSET $3
 `
 
-type ListUserMailAccountsParams struct {
-	OwnerId int32 `json:"ownerId"`
-	Limit   int32 `json:"limit"`
-	Offset  int32 `json:"offset"`
-}
-
-func (q *Queries) ListUserMailAccounts(ctx context.Context, arg ListUserMailAccountsParams) ([]MailAccount, error) {
-	rows, err := q.db.Query(ctx, listUserMailAccounts, arg.OwnerId, arg.Limit, arg.Offset)
+func (q *Queries) ListUserMailAccounts(ctx context.Context, ownerid int32) ([]MailAccount, error) {
+	rows, err := q.db.Query(ctx, listUserMailAccounts, ownerid)
 	if err != nil {
 		return nil, err
 	}
