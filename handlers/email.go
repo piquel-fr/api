@@ -21,9 +21,14 @@ func (h *Handler) CreateEmailHandler() http.Handler {
 	handler.HandleFunc("GET /{email}", h.handleAccountInfo)
 	handler.HandleFunc("DELETE /{email}", h.handleRemoveAccount)
 
+	// sharing
+	handler.HandleFunc("PUT /{email}/share", h.handleShareAccount)
+	handler.HandleFunc("DELETE /{email}/share", h.handleRemoveAccountShare)
+
 	// OPTIONS handlers
 	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET", "PUT"))
 	handler.Handle("OPTIONS /{email}", middleware.CreateOptionsHandler("GET", "DELETE"))
+	handler.Handle("OPTIONS /{email}/share", middleware.CreateOptionsHandler("PUT", "DELETE"))
 
 	return handler
 }
@@ -180,6 +185,87 @@ func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.EmailService.RemoveAccount(r.Context(), account.ID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+}
+
+func (h *Handler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
+	user, err := h.AuthService.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.AuthService.Authorize(&auth.Request{
+		User:      user,
+		Ressource: &account,
+		Actions:   []string{"share"},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	sharingUser, err := h.AuthService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params := repository.AddShareParams{
+		UserId:     sharingUser.ID,
+		Account:    account.ID,
+		Permission: "",
+	}
+
+	if err := h.EmailService.AddShare(r.Context(), params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+}
+
+func (h *Handler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Request) {
+	user, err := h.AuthService.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.AuthService.Authorize(&auth.Request{
+		User:      user,
+		Ressource: &account,
+		Actions:   []string{"share"},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	sharingUser, err := h.AuthService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params := repository.RemoveShareParams{
+		UserId:  sharingUser.ID,
+		Account: account.ID,
+	}
+
+	if err := h.EmailService.RemoveShare(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
