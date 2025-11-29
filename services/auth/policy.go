@@ -29,6 +29,10 @@ var policy = PolicyConfiguration{
 			Action:     "delete",
 			Conditions: Conditions{own},
 		},
+		"viewOwn": {
+			Action:     "view",
+			Conditions: Conditions{own},
+		},
 	},
 	Roles: Roles{
 		systemRole: {
@@ -55,7 +59,7 @@ var policy = PolicyConfiguration{
 					{Action: "view"},
 					{Action: "update"},
 					{Action: "delete"},
-					{Action: "list_emails"},
+					{Action: "list_accounts"},
 				},
 			},
 			Parents: []string{"default", "developer"},
@@ -65,7 +69,14 @@ var policy = PolicyConfiguration{
 			Color: "blue",
 			Permissions: map[string][]*Permission{
 				repository.ResourceMailAccount: {
+					{Preset: "viewOwn"},
 					{Preset: "deleteOwn"},
+				},
+				repository.ResourceUser: {
+					{
+						Action:     "list_accounts",
+						Conditions: Conditions{own},
+					},
 				},
 			},
 			Parents: []string{"default"},
@@ -122,10 +133,6 @@ var policy = PolicyConfiguration{
 					},
 					{Preset: "updateOwn"},
 					{Preset: "deleteOwn"},
-					{
-						Action:     "list_emails",
-						Conditions: Conditions{own},
-					},
 				},
 			},
 		},

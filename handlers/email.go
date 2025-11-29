@@ -50,7 +50,7 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 		User:      requester,
 		Ressource: &user,
 		Context:   r.Context(),
-		Actions:   []string{"list_emails"},
+		Actions:   []string{"list_accounts"},
 	}); err != nil {
 		errors.HandleError(w, r, err)
 		return
