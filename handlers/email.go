@@ -55,7 +55,7 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 		User:      requester,
 		Ressource: &user,
 		Context:   r.Context(),
-		Actions:   []string{"list_accounts"},
+		Actions:   []string{"list_email_accounts"},
 	}); err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -132,18 +132,18 @@ func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.AuthService.Authorize(&auth.Request{
-		User:      user,
-		Ressource: &account,
-		Actions:   []string{"view"},
-		Context:   r.Context(),
-	}); err != nil {
+	accountInfo, err := h.EmailService.GetAccountInfo(r.Context(), &account)
+	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	accountInfo, err := h.EmailService.GetAccountInfo(r.Context(), &account)
-	if err != nil {
+	if err := h.AuthService.Authorize(&auth.Request{
+		User:      user,
+		Ressource: &accountInfo,
+		Actions:   []string{"view"},
+		Context:   r.Context(),
+	}); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

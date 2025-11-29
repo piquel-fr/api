@@ -3,10 +3,12 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/utils/errors"
 )
 
@@ -53,7 +55,7 @@ var policy = PolicyConfiguration{
 					{Action: "view"},
 					{Action: "update"},
 					{Action: "delete"},
-					{Action: "list_accounts"},
+					{Action: "list_email_accounts"},
 					{Action: "share"},
 				},
 			},
@@ -64,12 +66,31 @@ var policy = PolicyConfiguration{
 			Color: "blue",
 			Permissions: map[string][]*Permission{
 				repository.ResourceMailAccount: {
-					makeOwn("view"),
+					{
+						Action: "view",
+						Conditions: Conditions{
+							func(request *Request) error {
+								if request.Ressource.GetOwner() == request.User.ID {
+									return nil
+								}
+
+								info, ok := request.Ressource.(*email.AccountInfo)
+								if !ok {
+									return newRequestMalformedError(request)
+								}
+
+								if slices.Contains(info.Shares, request.User.Username) {
+									return nil
+								}
+								return errors.ErrorNotFound
+							},
+						},
+					},
 					makeOwn("delete"),
 				},
 				repository.ResourceUser: {
 					makeOwn("share"),
-					makeOwn("list_accounts"),
+					makeOwn("list_email_accounts"),
 				},
 			},
 			Parents: []string{"default"},
