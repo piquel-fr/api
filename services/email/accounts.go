@@ -9,9 +9,9 @@ import (
 )
 
 type Mailbox struct {
-	Name        string
-	NumMessages int `json:"num_messages"`
-	NumUnread   int `json:"num_unread"`
+	Name        string `json:"name"`
+	NumMessages int    `json:"num_messages"`
+	NumUnread   int    `json:"num_unread"`
 }
 
 type AccountInfo struct {

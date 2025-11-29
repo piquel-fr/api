@@ -114,7 +114,48 @@ func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request)   {}
+func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
+	user, err := h.AuthService.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.AuthService.Authorize(&auth.Request{
+		User:      user,
+		Ressource: &account,
+		Actions:   []string{"delete"},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	accountInfo, err := h.EmailService.GetAccountInfo(r.Context(), &account)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	accountInfo.Username = ""
+	accountInfo.Password = ""
+
+	data, err := json.Marshal(accountInfo)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
+
 func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
 	user, err := h.AuthService.GetUserFromRequest(r)
 	if err != nil {
