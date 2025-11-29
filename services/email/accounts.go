@@ -27,6 +27,10 @@ func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]re
 	return database.Queries.ListUserMailAccounts(ctx, userId)
 }
 
+func (r *realEmailService) CountAccounts(ctx context.Context, userId int32) (int64, error) {
+	return database.Queries.CountUserMailAccounts(ctx, userId)
+}
+
 func (r *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error) {
 	return database.Queries.AddEmailAccount(ctx, params)
 }

@@ -35,7 +35,7 @@ var policy = PolicyConfiguration{
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
-			Parents: []string{"default", "developer", "admin"},
+			Parents:     []string{"default", "developer", "admin"},
 		},
 		"admin": {
 			Name:  "Admin",
@@ -55,6 +55,7 @@ var policy = PolicyConfiguration{
 					{Action: "view"},
 					{Action: "update"},
 					{Action: "delete"},
+					{Action: "list_emails"},
 				},
 			},
 			Parents: []string{"default", "developer"},
@@ -121,6 +122,10 @@ var policy = PolicyConfiguration{
 					},
 					{Preset: "updateOwn"},
 					{Preset: "deleteOwn"},
+					{
+						Action:     "list_emails",
+						Conditions: Conditions{own},
+					},
 				},
 			},
 		},

@@ -1,8 +1,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
@@ -22,7 +27,67 @@ func (h *Handler) CreateEmailHandler() http.Handler {
 	return handler
 }
 
-func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request)  {}
+func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
+	requester, err := h.AuthService.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	var user repository.User
+	if username := r.URL.Query().Get("user"); username != "" {
+		user, err = h.AuthService.GetUserFromUsername(r.Context(), username)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+	} else {
+		user = *requester
+	}
+
+	if err := h.AuthService.Authorize(&auth.Request{
+		User:      requester,
+		Ressource: &user,
+		Context:   r.Context(),
+		Actions:   []string{"list_emails"},
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if r.URL.Query().Has("count") {
+		count, err := h.EmailService.CountAccounts(r.Context(), user.ID)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte(strconv.Itoa(int(count))))
+		return
+	}
+
+	accounts, err := h.EmailService.ListAccounts(r.Context(), user.ID)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	for _, account := range accounts {
+		account.Username = ""
+		account.Password = ""
+	}
+
+	data, err := json.Marshal(accounts)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
+
 func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request)    {}
 func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request)   {}
 func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
