@@ -60,6 +60,7 @@ var policy = PolicyConfiguration{
 					{Action: "update"},
 					{Action: "delete"},
 					{Action: "list_accounts"},
+					{Action: "share"},
 				},
 			},
 			Parents: []string{"default", "developer"},
@@ -73,6 +74,10 @@ var policy = PolicyConfiguration{
 					{Preset: "deleteOwn"},
 				},
 				repository.ResourceUser: {
+					{
+						Action:     "share",
+						Conditions: Conditions{own},
+					},
 					{
 						Action:     "list_accounts",
 						Conditions: Conditions{own},
