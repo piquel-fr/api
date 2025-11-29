@@ -115,4 +115,31 @@ func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request)   {}
-func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
+	user, err := h.AuthService.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.AuthService.Authorize(&auth.Request{
+		User:      user,
+		Ressource: &account,
+		Actions:   []string{"delete"},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.EmailService.RemoveAccount(r.Context(), account.ID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+}
