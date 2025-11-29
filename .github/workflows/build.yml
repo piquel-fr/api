@@ -1,0 +1,43 @@
+name: Build
+on:
+  push:
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
+      - '.gitignore'
+      - 'README.md'
+      - 'Makefile'
+  pull_request:
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
+      - '.gitignore'
+      - 'README.md'
+      - 'Makefile'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Container
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: |
+            piquel-fr/api:latest
+            piquel-fr/api:${{ github.sha }}
+          outputs: type=cacheonly
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
