@@ -70,7 +70,7 @@ func (h *Handler) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	request := &auth.Request{
 		User:      profile.User,
 		Ressource: profile,
-		Actions:   []string{"update"},
+		Actions:   []string{auth.ActionUpdate},
 		Context:   r.Context(),
 	}
 

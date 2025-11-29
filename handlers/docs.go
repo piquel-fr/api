@@ -144,7 +144,7 @@ func (h *Handler) handleListDocs(w http.ResponseWriter, r *http.Request) {
 		authRequest := &auth.Request{
 			User:      requester,
 			Ressource: &instance,
-			Actions:   []string{"view"},
+			Actions:   []string{auth.ActionView},
 			Context:   r.Context(),
 		}
 
@@ -181,7 +181,7 @@ func (h *Handler) handleNewDocs(w http.ResponseWriter, r *http.Request) {
 	authRequest := &auth.Request{
 		User:      user,
 		Ressource: &repository.DocsInstance{},
-		Actions:   []string{"create"},
+		Actions:   []string{auth.ActionCreate},
 		Context:   r.Context(),
 	}
 
@@ -232,7 +232,7 @@ func (h *Handler) handleGetDocs(w http.ResponseWriter, r *http.Request) {
 	authRequest := &auth.Request{
 		User:      user,
 		Ressource: &docsConfig,
-		Actions:   []string{"view"},
+		Actions:   []string{auth.ActionView},
 		Context:   r.Context(),
 	}
 
@@ -269,7 +269,7 @@ func (h *Handler) handleUpdateDocs(w http.ResponseWriter, r *http.Request) {
 	authRequest := &auth.Request{
 		User:      user,
 		Ressource: &docsConfig,
-		Actions:   []string{"update"},
+		Actions:   []string{auth.ActionUpdate},
 		Context:   r.Context(),
 	}
 
@@ -342,7 +342,7 @@ func (h *Handler) handleDeleteDocs(w http.ResponseWriter, r *http.Request) {
 	authRequest := &auth.Request{
 		User:      user,
 		Ressource: &docsConfig,
-		Actions:   []string{"delete"},
+		Actions:   []string{auth.ActionDelete},
 		Context:   r.Context(),
 	}
 
@@ -382,7 +382,7 @@ func (h *Handler) handleGetDocsPage(w http.ResponseWriter, r *http.Request) {
 		authRequest := &auth.Request{
 			User:      user,
 			Ressource: &docsConfig,
-			Actions:   []string{"view"},
+			Actions:   []string{auth.ActionView},
 			Context:   r.Context(),
 		}
 
