@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/utils/errors"
@@ -88,6 +89,30 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request)    {}
+func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
+	user, err := h.AuthService.GetUserFromRequest(r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "please submit your creation request with the required json payload", http.StatusBadRequest)
+		return
+	}
+
+	params := repository.AddEmailAccountParams{}
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params.OwnerId = user.ID
+	if _, err = database.Queries.AddEmailAccount(r.Context(), params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+}
+
 func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request)   {}
 func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {}
