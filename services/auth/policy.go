@@ -17,23 +17,17 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
+func makeOwn(action string) *Permission {
+	return &Permission{
+		Action:     action,
+		Conditions: Conditions{own},
+	}
+}
+
 const RoleSystem string = "system"
 
 var policy = PolicyConfiguration{
-	Permissions: map[string]*Permission{
-		"updateOwn": {
-			Action:     "update",
-			Conditions: Conditions{own},
-		},
-		"deleteOwn": {
-			Action:     "delete",
-			Conditions: Conditions{own},
-		},
-		"viewOwn": {
-			Action:     "view",
-			Conditions: Conditions{own},
-		},
-	},
+	Permissions: map[string]*Permission{},
 	Roles: Roles{
 		RoleSystem: {
 			Name:        "System",
@@ -70,18 +64,12 @@ var policy = PolicyConfiguration{
 			Color: "blue",
 			Permissions: map[string][]*Permission{
 				repository.ResourceMailAccount: {
-					{Preset: "viewOwn"},
-					{Preset: "deleteOwn"},
+					makeOwn("view"),
+					makeOwn("delete"),
 				},
 				repository.ResourceUser: {
-					{
-						Action:     "share",
-						Conditions: Conditions{own},
-					},
-					{
-						Action:     "list_accounts",
-						Conditions: Conditions{own},
-					},
+					makeOwn("share"),
+					makeOwn("list_accounts"),
 				},
 			},
 			Parents: []string{"default"},
@@ -91,8 +79,8 @@ var policy = PolicyConfiguration{
 			Color: "gray",
 			Permissions: map[string][]*Permission{
 				repository.ResourceUser: {
-					{Preset: "updateOwn"},
-					{Preset: "deleteOwn"},
+					makeOwn("update"),
+					makeOwn("delete"),
 				},
 				repository.ResourceDocsInstance: {
 					{
@@ -136,8 +124,8 @@ var policy = PolicyConfiguration{
 							},
 						},
 					},
-					{Preset: "updateOwn"},
-					{Preset: "deleteOwn"},
+					makeOwn("update"),
+					makeOwn("delete"),
 				},
 			},
 		},
