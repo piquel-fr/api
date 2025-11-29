@@ -8,6 +8,7 @@ import (
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/utils/errors"
 )
 

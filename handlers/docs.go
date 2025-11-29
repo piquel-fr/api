@@ -141,7 +141,6 @@ func (h *Handler) handleListDocs(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		docsInstance := repository.DocsInstance(instance)
 		authRequest := &auth.Request{
 			User:      requester,
 			Ressource: &instance,

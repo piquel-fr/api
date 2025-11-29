@@ -22,10 +22,16 @@ type Email struct {
 type EmailService interface {
 	// account stuff
 	GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error)
-	ListAccounts(ctx context.Context, userId int32) ([]MailAccount, error)
-	AddAccount(ctx context.Context, params repository.AddEmailAccountParams) error
+	ListAccounts(ctx context.Context, userId int32) ([]repository.MailAccount, error)
+	CountAccounts(ctx context.Context, userId int32) (int64, error)
+	AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error)
 	RemoveAccount(ctx context.Context, accountId int32) error
 	GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error)
+
+	// sharing
+	AddShare(ctx context.Context, params repository.AddShareParams) error
+	RemoveShare(ctx context.Context, params repository.RemoveShareParams) error
+	GetAccountShares(ctx context.Context, account int32) ([]int32, error)
 
 	// email stuff
 	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
@@ -33,10 +39,15 @@ type EmailService interface {
 	GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
 }
 
-type realEmailService struct{}
+type realEmailService struct {
+	imapAddr string
+}
 
 func NewRealEmailService() *realEmailService {
-	return &realEmailService{}
+	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
+	return &realEmailService{
+		imapAddr: addr,
+	}
 }
 
 func (r *realEmailService) SendEmail(destination []string, from *repository.MailAccount, subject, content string) error {
