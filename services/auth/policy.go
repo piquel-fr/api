@@ -12,6 +12,13 @@ import (
 	"github.com/piquel-fr/api/utils/errors"
 )
 
+const (
+	RoleSystem    string = "system"
+	RoleAdmin     string = "admin"
+	RoleDeveloper string = "developer"
+	RoleDefault   string = "default"
+)
+
 func own(request *Request) error {
 	if request.Ressource.GetOwner() == request.User.ID {
 		return nil
@@ -26,8 +33,6 @@ func makeOwn(action string) *Permission {
 	}
 }
 
-const RoleSystem string = "system"
-
 var policy = PolicyConfiguration{
 	Permissions: map[string]*Permission{},
 	Roles: Roles{
@@ -35,9 +40,9 @@ var policy = PolicyConfiguration{
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
-			Parents:     []string{"default", "developer", "admin"},
+			Parents:     []string{RoleDefault, RoleDeveloper, RoleAdmin},
 		},
-		"admin": {
+		RoleAdmin: {
 			Name:  "Admin",
 			Color: "red",
 			Permissions: map[string][]*Permission{
@@ -59,9 +64,9 @@ var policy = PolicyConfiguration{
 					{Action: "share"},
 				},
 			},
-			Parents: []string{"default", "developer"},
+			Parents: []string{RoleDefault, RoleDeveloper},
 		},
-		"developer": {
+		RoleDeveloper: {
 			Name:  "Developer",
 			Color: "blue",
 			Permissions: map[string][]*Permission{
@@ -93,9 +98,9 @@ var policy = PolicyConfiguration{
 					makeOwn("list_email_accounts"),
 				},
 			},
-			Parents: []string{"default"},
+			Parents: []string{RoleDefault},
 		},
-		"default": {
+		RoleDefault: {
 			Name:  "",
 			Color: "gray",
 			Permissions: map[string][]*Permission{

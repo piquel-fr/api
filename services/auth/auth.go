@@ -108,7 +108,7 @@ func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) 
 
 	params.Email = inUser.Email
 	params.Username = inUser.Username
-	params.Role = "default"
+	params.Role = RoleDefault
 	params.Image = inUser.Image
 	params.Name = inUser.Name
 
