@@ -55,7 +55,7 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 		User:      requester,
 		Ressource: &user,
 		Context:   r.Context(),
-		Actions:   []string{"list_email_accounts"},
+		Actions:   []string{auth.ActionListEmailAccounts},
 	}); err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -141,7 +141,7 @@ func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
 	if err := h.AuthService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &accountInfo,
-		Actions:   []string{"view"},
+		Actions:   []string{auth.ActionView},
 		Context:   r.Context(),
 	}); err != nil {
 		errors.HandleError(w, r, err)
@@ -177,7 +177,7 @@ func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
 	if err := h.AuthService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
-		Actions:   []string{"delete"},
+		Actions:   []string{auth.ActionDelete},
 		Context:   r.Context(),
 	}); err != nil {
 		errors.HandleError(w, r, err)
@@ -206,7 +206,7 @@ func (h *Handler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
 	if err := h.AuthService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
-		Actions:   []string{"share"},
+		Actions:   []string{auth.ActionShare},
 		Context:   r.Context(),
 	}); err != nil {
 		errors.HandleError(w, r, err)
@@ -247,7 +247,7 @@ func (h *Handler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Reques
 	if err := h.AuthService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
-		Actions:   []string{"share"},
+		Actions:   []string{auth.ActionShare},
 		Context:   r.Context(),
 	}); err != nil {
 		errors.HandleError(w, r, err)

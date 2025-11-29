@@ -11,6 +11,23 @@ import (
 	"github.com/piquel-fr/api/utils/errors"
 )
 
+const (
+	RoleSystem    string = "system"
+	RoleAdmin     string = "admin"
+	RoleDeveloper string = "developer"
+	RoleDefault   string = "default"
+)
+
+const (
+	ActionView   string = "view"
+	ActionCreate string = "create"
+	ActionUpdate string = "update"
+	ActionDelete string = "delete"
+	ActionShare  string = "share"
+
+	ActionListEmailAccounts string = "list_email_accounts"
+)
+
 func own(request *Request) error {
 	if request.Ressource.GetOwner() == request.User.ID {
 		return nil
@@ -25,8 +42,6 @@ func makeOwn(action string) *Permission {
 	}
 }
 
-const RoleSystem string = "system"
-
 var policy = PolicyConfiguration{
 	Permissions: map[string]*Permission{},
 	Roles: Roles{
@@ -34,39 +49,39 @@ var policy = PolicyConfiguration{
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
-			Parents:     []string{"default", "developer", "admin"},
+			Parents:     []string{RoleDefault, RoleDeveloper, RoleAdmin},
 		},
-		"admin": {
+		RoleAdmin: {
 			Name:  "Admin",
 			Color: "red",
 			Permissions: map[string][]*Permission{
 				repository.ResourceUser: {
-					{Action: "update"},
-					{Action: "delete"},
+					{Action: ActionUpdate},
+					{Action: ActionDelete},
 				},
 				repository.ResourceDocsInstance: {
-					{Action: "view"},
-					{Action: "create"},
-					{Action: "update"},
-					{Action: "delete"},
+					{Action: ActionView},
+					{Action: ActionCreate},
+					{Action: ActionUpdate},
+					{Action: ActionDelete},
 				},
 				repository.ResourceMailAccount: {
-					{Action: "view"},
-					{Action: "update"},
-					{Action: "delete"},
-					{Action: "list_email_accounts"},
-					{Action: "share"},
+					{Action: ActionView},
+					{Action: ActionUpdate},
+					{Action: ActionDelete},
+					{Action: ActionListEmailAccounts},
+					{Action: ActionShare},
 				},
 			},
-			Parents: []string{"default", "developer"},
+			Parents: []string{RoleDefault, RoleDeveloper},
 		},
-		"developer": {
+		RoleDeveloper: {
 			Name:  "Developer",
 			Color: "blue",
 			Permissions: map[string][]*Permission{
 				repository.ResourceMailAccount: {
 					{
-						Action: "view",
+						Action: ActionView,
 						Conditions: Conditions{
 							func(request *Request) error {
 								if request.Ressource.GetOwner() == request.User.ID {
@@ -85,26 +100,26 @@ var policy = PolicyConfiguration{
 							},
 						},
 					},
-					makeOwn("delete"),
+					makeOwn(ActionDelete),
 				},
 				repository.ResourceUser: {
-					makeOwn("share"),
-					makeOwn("list_email_accounts"),
+					makeOwn(ActionShare),
+					makeOwn(ActionListEmailAccounts),
 				},
 			},
-			Parents: []string{"default"},
+			Parents: []string{RoleDefault},
 		},
-		"default": {
+		RoleDefault: {
 			Name:  "",
 			Color: "gray",
 			Permissions: map[string][]*Permission{
 				repository.ResourceUser: {
-					makeOwn("update"),
-					makeOwn("delete"),
+					makeOwn(ActionUpdate),
+					makeOwn(ActionDelete),
 				},
 				repository.ResourceDocsInstance: {
 					{
-						Action: "view",
+						Action: ActionView,
 						Conditions: Conditions{
 							func(request *Request) error {
 								docs, ok := request.Ressource.(*repository.DocsInstance)
@@ -125,7 +140,7 @@ var policy = PolicyConfiguration{
 						},
 					},
 					{
-						Action: "create",
+						Action: ActionCreate,
 						Conditions: Conditions{
 							func(request *Request) error {
 								count, err := database.Queries.CountUserDocsInstances(request.Context, request.User.ID)
@@ -144,8 +159,8 @@ var policy = PolicyConfiguration{
 							},
 						},
 					},
-					makeOwn("update"),
-					makeOwn("delete"),
+					makeOwn(ActionUpdate),
+					makeOwn(ActionDelete),
 				},
 			},
 		},
