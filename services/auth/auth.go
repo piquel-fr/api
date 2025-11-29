@@ -12,7 +12,6 @@ import (
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
-	"github.com/piquel-fr/api/models"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/oauth"
 )
@@ -27,8 +26,8 @@ type AuthService interface {
 	Authorize(request *Request) error
 	GetProvider(name string) (oauth.Provider, error)
 
-	GetProfileFromUsername(ctx context.Context, username string) (*models.UserProfile, error)
-	GetProfileFromUserId(ctx context.Context, userId int32) (*models.UserProfile, error)
+	GetProfileFromUsername(ctx context.Context, username string) (*UserProfile, error)
+	GetProfileFromUserId(ctx context.Context, userId int32) (*UserProfile, error)
 }
 
 // auth service has no state

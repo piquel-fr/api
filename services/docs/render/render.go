@@ -12,12 +12,12 @@ import (
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/utils"
 )
 
 type RenderConfig struct {
-	Instance   *models.DocsInstance
+	Instance   *repository.DocsInstance
 	PathPrefix string
 }
 

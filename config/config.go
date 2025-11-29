@@ -9,16 +9,23 @@ import (
 )
 
 type EnvsConfig struct {
-	AuthCallbackUrl    string
-	Url                string
-	Port               string
-	DBURL              string
-	GithubApiToken     string
+	AuthCallbackUrl string
+	Url             string
+	Port            string
+	DBURL           string
+	GithubApiToken  string
+
+	// auth
 	JWTSigningSecret   []byte
 	GoogleClientID     string
 	GoogleClientSecret string
 	GithubClientID     string
 	GithubClientSecret string
+
+	// mail
+	SmtpHost string
+	ImapHost string
+	ImapPort string
 }
 
 var Envs EnvsConfig
@@ -41,6 +48,9 @@ func LoadConfig() {
 		GithubClientSecret: getEnv("AUTH_GITHUB_CLIENT_SECRET"),
 		GithubApiToken:     getEnv("GITHUB_API_TOKEN"),
 		JWTSigningSecret:   []byte(getEnv("JWT_SECRET")),
+		SmtpHost:           getEnv("SMTP_HOST"),
+		ImapHost:           getEnv("IMAP_HOST"),
+		ImapPort:           getDefaultEnv("IMAP_PORT", "993"),
 	}
 
 	log.Printf("[Config] Loaded environment configuration!")

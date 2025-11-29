@@ -4,16 +4,22 @@ import (
 	"context"
 
 	"github.com/piquel-fr/api/database"
-	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/database/repository"
 )
 
-func (s *realAuthService) GetProfileFromUsername(ctx context.Context, username string) (*models.UserProfile, error) {
+type UserProfile struct {
+	*repository.User
+	Color    string `json:"color"`
+	RoleName string `json:"role_name"`
+}
+
+func (s *realAuthService) GetProfileFromUsername(ctx context.Context, username string) (*UserProfile, error) {
 	user, err := database.Queries.GetUserByUsername(ctx, username)
 	if err != nil {
 		return nil, err
 	}
 
-	profile := &models.UserProfile{User: &user}
+	profile := &UserProfile{User: &user}
 
 	role := policy.Roles[profile.Role]
 
@@ -23,13 +29,13 @@ func (s *realAuthService) GetProfileFromUsername(ctx context.Context, username s
 	return profile, nil
 }
 
-func (s *realAuthService) GetProfileFromUserId(ctx context.Context, userId int32) (*models.UserProfile, error) {
+func (s *realAuthService) GetProfileFromUserId(ctx context.Context, userId int32) (*UserProfile, error) {
 	user, err := database.Queries.GetUserById(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	profile := &models.UserProfile{User: &user}
+	profile := &UserProfile{User: &user}
 
 	role := policy.Roles[profile.Role]
 

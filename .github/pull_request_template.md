@@ -5,7 +5,7 @@
 - [ ] Implement the feature
 - [ ] Test the feature
 - [ ] Make sure all checks pass
-- [ ] Properly document the feature in the PR (and docs when we have some)
+- [ ] Properly document the feature in the PR and docs
 
 * Issues linked to the PR: 
 

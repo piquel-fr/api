@@ -3,10 +3,12 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
-	"github.com/piquel-fr/api/models"
+	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/utils/errors"
 )
 
@@ -17,63 +19,96 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-const systemRole string = "system"
+func makeOwn(action string) *Permission {
+	return &Permission{
+		Action:     action,
+		Conditions: Conditions{own},
+	}
+}
+
+const RoleSystem string = "system"
 
 var policy = PolicyConfiguration{
-	Permissions: map[string]*Permission{
-		"updateOwn": {
-			Action:     "update",
-			Conditions: Conditions{own},
-		},
-		"deleteOwn": {
-			Action:     "delete",
-			Conditions: Conditions{own},
-		},
-	},
+	Permissions: map[string]*Permission{},
 	Roles: Roles{
-		systemRole: {
+		RoleSystem: {
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
-			Parents: []string{"default", "developer", "admin"},
+			Parents:     []string{"default", "developer", "admin"},
 		},
 		"admin": {
 			Name:  "Admin",
 			Color: "red",
 			Permissions: map[string][]*Permission{
-				"user": {
+				repository.ResourceUser: {
 					{Action: "update"},
 					{Action: "delete"},
 				},
-				"docs_instance": {
+				repository.ResourceDocsInstance: {
 					{Action: "view"},
 					{Action: "create"},
 					{Action: "update"},
 					{Action: "delete"},
 				},
+				repository.ResourceMailAccount: {
+					{Action: "view"},
+					{Action: "update"},
+					{Action: "delete"},
+					{Action: "list_email_accounts"},
+					{Action: "share"},
+				},
 			},
 			Parents: []string{"default", "developer"},
 		},
 		"developer": {
-			Name:        "Developer",
-			Color:       "blue",
-			Permissions: map[string][]*Permission{},
+			Name:  "Developer",
+			Color: "blue",
+			Permissions: map[string][]*Permission{
+				repository.ResourceMailAccount: {
+					{
+						Action: "view",
+						Conditions: Conditions{
+							func(request *Request) error {
+								if request.Ressource.GetOwner() == request.User.ID {
+									return nil
+								}
+
+								info, ok := request.Ressource.(*email.AccountInfo)
+								if !ok {
+									return newRequestMalformedError(request)
+								}
+
+								if slices.Contains(info.Shares, request.User.Username) {
+									return nil
+								}
+								return errors.ErrorNotFound
+							},
+						},
+					},
+					makeOwn("delete"),
+				},
+				repository.ResourceUser: {
+					makeOwn("share"),
+					makeOwn("list_email_accounts"),
+				},
+			},
 			Parents: []string{"default"},
 		},
 		"default": {
 			Name:  "",
 			Color: "gray",
 			Permissions: map[string][]*Permission{
-				"user": {
-					{Preset: "updateOwn"},
-					{Preset: "deleteOwn"},
+				repository.ResourceUser: {
+					makeOwn("update"),
+					makeOwn("delete"),
 				},
-				"docs_instance": {
+				repository.ResourceDocsInstance: {
 					{
 						Action: "view",
 						Conditions: Conditions{
 							func(request *Request) error {
-								docs, ok := request.Ressource.(*models.DocsInstance)
+								docs, ok := request.Ressource.(*repository.DocsInstance)
 								if !ok {
 									return newRequestMalformedError(request)
 								}
@@ -110,8 +145,8 @@ var policy = PolicyConfiguration{
 							},
 						},
 					},
-					{Preset: "updateOwn"},
-					{Preset: "deleteOwn"},
+					makeOwn("update"),
+					makeOwn("delete"),
 				},
 			},
 		},
