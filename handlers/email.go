@@ -135,7 +135,7 @@ func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
 	if err := h.AuthService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
-		Actions:   []string{"delete"},
+		Actions:   []string{"view"},
 		Context:   r.Context(),
 	}); err != nil {
 		errors.HandleError(w, r, err)

@@ -37,6 +37,7 @@ func (r *realEmailService) AddAccount(ctx context.Context, params repository.Add
 }
 
 func (r *realEmailService) RemoveAccount(ctx context.Context, accountId int32) error {
+	// TODO: remove the shares as well
 	return database.Queries.RemoveMailAccount(ctx, accountId)
 }
 
