@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
@@ -17,24 +18,23 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-const systemRole string = "system"
+func makeOwn(action string) *Permission {
+	return &Permission{
+		Action:     action,
+		Conditions: Conditions{own},
+	}
+}
+
+const RoleSystem string = "system"
 
 var policy = PolicyConfiguration{
-	Permissions: map[string]*Permission{
-		"updateOwn": {
-			Action:     "update",
-			Conditions: Conditions{own},
-		},
-		"deleteOwn": {
-			Action:     "delete",
-			Conditions: Conditions{own},
-		},
-	},
+	Permissions: map[string]*Permission{},
 	Roles: Roles{
-		systemRole: {
+		RoleSystem: {
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},
+			Parents:     []string{"default", "developer", "admin"},
 		},
 		"admin": {
 			Name:  "Admin",
@@ -54,6 +54,8 @@ var policy = PolicyConfiguration{
 					{Action: "view"},
 					{Action: "update"},
 					{Action: "delete"},
+					{Action: "list_email_accounts"},
+					{Action: "share"},
 				},
 			},
 			Parents: []string{"default", "developer"},
@@ -64,20 +66,41 @@ var policy = PolicyConfiguration{
 			Permissions: map[string][]*Permission{
 				repository.ResourceMailAccount: {
 					{
-						Action:     "fetch",
-						Conditions: Conditions{own},
+						Action: "view",
+						Conditions: Conditions{
+							func(request *Request) error {
+								if request.Ressource.GetOwner() == request.User.ID {
+									return nil
+								}
+
+								info, ok := request.Ressource.(*email.AccountInfo)
+								if !ok {
+									return newRequestMalformedError(request)
+								}
+
+								if slices.Contains(info.Shares, request.User.Username) {
+									return nil
+								}
+								return errors.ErrorNotFound
+							},
+						},
 					},
-					{Preset: "deleteOwn"},
+					makeOwn("delete"),
+				},
+				repository.ResourceUser: {
+					makeOwn("share"),
+					makeOwn("list_email_accounts"),
 				},
 			},
+			Parents: []string{"default"},
 		},
 		"default": {
 			Name:  "",
 			Color: "gray",
 			Permissions: map[string][]*Permission{
 				repository.ResourceUser: {
-					{Preset: "updateOwn"},
-					{Preset: "deleteOwn"},
+					makeOwn("update"),
+					makeOwn("delete"),
 				},
 				repository.ResourceDocsInstance: {
 					{
@@ -121,8 +144,8 @@ var policy = PolicyConfiguration{
 							},
 						},
 					},
-					{Preset: "updateOwn"},
-					{Preset: "deleteOwn"},
+					makeOwn("update"),
+					makeOwn("delete"),
 				},
 			},
 		},

@@ -111,6 +111,31 @@ func (q *Queries) GetMailAccountById(ctx context.Context, id int32) (MailAccount
 	return i, err
 }
 
+const listAccountShares = `-- name: ListAccountShares :many
+SELECT "userId" FROM "mail_share" WHERE "account" = $1
+ORDER BY "userId"
+`
+
+func (q *Queries) ListAccountShares(ctx context.Context, account int32) ([]int32, error) {
+	rows, err := q.db.Query(ctx, listAccountShares, account)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var userId int32
+		if err := rows.Scan(&userId); err != nil {
+			return nil, err
+		}
+		items = append(items, userId)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserMailAccounts = `-- name: ListUserMailAccounts :many
 SELECT DISTINCT mail_accounts.id, mail_accounts."ownerId", mail_accounts.email, mail_accounts.name, mail_accounts.username, mail_accounts.password FROM "mail_accounts"
 LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"

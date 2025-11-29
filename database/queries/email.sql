@@ -41,3 +41,7 @@ VALUES ($1, $2, $3);
 -- name: RemoveShare :exec
 DELETE FROM "mail_share"
 WHERE "userId" = $1 AND "account" = $2;
+
+-- name: ListAccountShares :many
+SELECT "userId" FROM "mail_share" WHERE "account" = $1
+ORDER BY "userId";
