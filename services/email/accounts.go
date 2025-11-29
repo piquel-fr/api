@@ -16,7 +16,7 @@ type Mailbox struct {
 
 type AccountInfo struct {
 	*repository.MailAccount
-	Mailboxes []Mailbox
+	Mailboxes []Mailbox `json:"mailboxes"`
 }
 
 func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error) {
@@ -71,4 +71,12 @@ func (r *realEmailService) GetAccountInfo(ctx context.Context, account *reposito
 	}
 
 	return accountInfo, nil
+}
+
+func (r *realEmailService) AddShare(ctx context.Context, params repository.AddShareParams) error {
+	return database.Queries.AddShare(ctx, params)
+}
+
+func (r *realEmailService) RemoveShare(ctx context.Context, params repository.RemoveShareParams) error {
+	return database.Queries.RemoveShare(ctx, params)
 }

@@ -17,7 +17,7 @@ func own(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-const systemRole string = "system"
+const RoleSystem string = "system"
 
 var policy = PolicyConfiguration{
 	Permissions: map[string]*Permission{
@@ -35,7 +35,7 @@ var policy = PolicyConfiguration{
 		},
 	},
 	Roles: Roles{
-		systemRole: {
+		RoleSystem: {
 			Name:        "System",
 			Color:       "gray",
 			Permissions: map[string][]*Permission{},

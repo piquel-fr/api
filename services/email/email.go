@@ -16,6 +16,10 @@ type EmailService interface {
 	AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error)
 	RemoveAccount(ctx context.Context, accountId int32) error
 	GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error)
+
+	// sharing
+	AddShare(ctx context.Context, params repository.AddShareParams) error
+	RemoveShare(ctx context.Context, params repository.RemoveShareParams) error
 }
 
 type realEmailService struct {
