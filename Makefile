@@ -1,4 +1,4 @@
-SPEC_DIR=./api/specification
+SPEC_DIR=./api/specifications
 SPEC_OUT_DIR=./api
 SPEC_FILES=$(shell find $(SPEC_DIR) -name '*.json')
 OUT_SPECS=$(SPEC_FILES:$(SPEC_DIR)/%.json=$(SPEC_OUT_DIR)/%.gen.go)
@@ -7,7 +7,7 @@ SPEC_GEN_CONFIG=$(SPEC_DIR)/oapi-codegen.yml
 SPEC_REMOTE=https://piquel.fr/specifications
 
 # The requested specifications
-SPECS=auth email profile
+SPECS=email profile
 
 .PHONY: run
 run: build
