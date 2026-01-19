@@ -2,6 +2,7 @@ SPEC_DIR=./api/specification
 SPEC_OUT_DIR=./api
 SPECS=$(shell find $(SPEC_DIR) -name '*.json')
 OUT_SPECS=$(SPECS:$(SPEC_DIR)/%.json=$(SPEC_OUT_DIR)/%.gen.go)
+SPEC_GEN_CONFIG=$(SPEC_DIR)/oapi-codegen.yml
 
 .PHONY: run
 run: build
@@ -19,4 +20,4 @@ sql: $(wildcard *.sql)
 
 $(SPEC_OUT_DIR)/%.gen.go: $(SPEC_DIR)/%.json
 	@echo Generating spec for $*...
-	@oapi-codegen --config oapi-codegen.yml -o $@ $<
+	@oapi-codegen --config $(SPEC_GEN_CONFIG) -o $@ $<
