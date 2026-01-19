@@ -7,7 +7,7 @@ SPEC_GEN_CONFIG=$(SPEC_DIR)/oapi-codegen.yml
 SPEC_REMOTE=https://piquel.fr/specification
 
 # The requested specifications
-SPECS=api
+SPECS=auth email profile
 
 .PHONY: run
 run: build
