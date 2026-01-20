@@ -9,7 +9,6 @@ import (
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/email"
 	gh "github.com/piquel-fr/api/utils/github"
 	"github.com/piquel-fr/api/utils/middleware"
@@ -28,7 +27,6 @@ func main() {
 
 	handler := handlers.Handler{
 		AuthService:  auth.NewRealAuthService(),
-		DocsService:  docs.NewRealDocsService(),
 		EmailService: email.NewRealEmailService(),
 	}
 

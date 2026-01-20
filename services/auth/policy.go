@@ -1,12 +1,8 @@
 package auth
 
 import (
-	"fmt"
-	"net/http"
 	"slices"
 
-	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/utils/errors"
@@ -60,12 +56,6 @@ var policy = PolicyConfiguration{
 					{Action: ActionUpdate},
 					{Action: ActionDelete},
 				},
-				repository.ResourceDocsInstance: {
-					{Action: ActionView},
-					{Action: ActionCreate},
-					{Action: ActionUpdate},
-					{Action: ActionDelete},
-				},
 				repository.ResourceMailAccount: {
 					{Action: ActionView},
 					{Action: ActionUpdate},
@@ -115,51 +105,6 @@ var policy = PolicyConfiguration{
 			Color: "gray",
 			Permissions: map[string][]*Permission{
 				repository.ResourceUser: {
-					makeOwn(ActionUpdate),
-					makeOwn(ActionDelete),
-				},
-				repository.ResourceDocsInstance: {
-					{
-						Action: ActionView,
-						Conditions: Conditions{
-							func(request *Request) error {
-								docs, ok := request.Ressource.(*repository.DocsInstance)
-								if !ok {
-									return newRequestMalformedError(request)
-								}
-
-								if docs.Public {
-									return nil
-								}
-
-								if docs.GetOwner() == request.User.ID {
-									return nil
-								}
-
-								return errors.ErrorForbidden
-							},
-						},
-					},
-					{
-						Action: ActionCreate,
-						Conditions: Conditions{
-							func(request *Request) error {
-								count, err := database.Queries.CountUserDocsInstances(request.Context, request.User.ID)
-								if err != nil {
-									return err
-								}
-
-								if count >= config.MaxDocsInstanceCount {
-									return errors.NewError(
-										fmt.Sprintf("you already have %d/%d documentation instances", count, config.MaxDocsInstanceCount),
-										http.StatusForbidden,
-									)
-								}
-
-								return nil
-							},
-						},
-					},
 					makeOwn(ActionUpdate),
 					makeOwn(ActionDelete),
 				},

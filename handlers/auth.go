@@ -14,7 +14,7 @@ func (h *Handler) CreateAuthHandler() http.Handler {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
-	handler.HandleFunc("GET /{provider}/{callback}", h.handleAuthCallback)
+	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))

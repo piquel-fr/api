@@ -8,17 +8,6 @@ import (
 	"time"
 )
 
-type DocsInstance struct {
-	ID        int32  `json:"id"`
-	OwnerId   int32  `json:"ownerId"`
-	Name      string `json:"name"`
-	Public    bool   `json:"public"`
-	RepoOwner string `json:"repoOwner"`
-	RepoName  string `json:"repoName"`
-	RepoRef   string `json:"repoRef"`
-	Root      string `json:"root"`
-}
-
 type MailAccount struct {
 	ID       int32  `json:"id"`
 	OwnerId  int32  `json:"ownerId"`
