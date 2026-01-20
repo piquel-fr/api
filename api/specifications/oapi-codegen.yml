@@ -1,7 +1,0 @@
-# oapi-codegen.yaml
-package: api
-generate:
-  models: true         
-  std-http-server: true
-  strict-server: true  
-  embedded-spec: true

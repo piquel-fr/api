@@ -12,12 +12,16 @@ type Handler struct {
 	EmailService email.EmailService
 }
 
-func (h *Handler) CreateHttpHandler() http.Handler {
+func (h *Handler) CreateHttpHandler() *http.ServeMux {
 	router := http.NewServeMux()
 	router.HandleFunc("/", h.rootHandler)
 	router.Handle("/auth/", http.StripPrefix("/auth", h.CreateAuthHandler()))
-	router.Handle("/profile/", http.StripPrefix("/profile", h.CreateProfileHandler()))
 	router.Handle("/email/", http.StripPrefix("/email", h.CreateEmailHandler()))
+
+	// huma test
+	profileRouter := http.NewServeMux()
+	CreateProfileHandler(profileRouter)
+	router.Handle("/profile/", http.StripPrefix("/profile", profileRouter))
 
 	return router
 }

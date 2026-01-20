@@ -5,14 +5,16 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 )
 
 var (
-	ErrorNotAuthenticated = NewError("user is not authenticated", http.StatusUnauthorized)
-	ErrorForbidden        = NewError("you are not allowed to access this ressource", http.StatusForbidden)
-	ErrorNotFound         = NewError("Not Found", http.StatusNotFound)
+	ErrorNotAuthenticated    = NewError("user is not authenticated", http.StatusUnauthorized)
+	ErrorForbidden           = NewError("you are not allowed to access this ressource", http.StatusForbidden)
+	ErrorNotFound            = NewError("Not Found", http.StatusNotFound)
+	ErrorInternalServerError = NewError("Internal Server Error", http.StatusInternalServerError)
 )
 
 type Error struct {
@@ -28,33 +30,37 @@ func (e *Error) Error() string {
 	return e.message
 }
 
-func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+func getError(err error) *Error {
 	if err == nil {
 		panic("nil error being handled")
 	}
 
 	switch err := err.(type) {
 	case *Error:
-		http.Error(w, err.Error(), err.status)
-		return
+		return err
 	case *json.SyntaxError:
-		http.Error(w, "syntax error in json payload", http.StatusBadRequest)
-		return
+		return NewError("syntax error in json payload", http.StatusBadRequest)
 	case *json.UnmarshalTypeError:
-		http.Error(w, "type error in json payload", http.StatusBadRequest)
-		return
+		return NewError("type error in json payload", http.StatusBadRequest)
 	}
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		http.NotFound(w, r)
-		return
+		return ErrorNotFound
 	}
 
 	if errors.Is(err, jwt.ErrTokenMalformed) {
-		HandleError(w, r, ErrorNotAuthenticated)
-		return
+		return ErrorNotAuthenticated
 	}
 
-	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	panic(err)
+}
+
+func HandleHumaError(api huma.API, ctx huma.Context, inErr error) {
+	err := getError(inErr)
+	huma.WriteErr(api, ctx, err.status, err.Error())
+}
+
+func HandleError(w http.ResponseWriter, r *http.Request, inErr error) {
+	err := getError(inErr)
+	http.Error(w, err.Error(), err.status)
 }

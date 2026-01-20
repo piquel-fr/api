@@ -28,6 +28,9 @@ type AuthService interface {
 
 	GetProfileFromUsername(ctx context.Context, username string) (*UserProfile, error)
 	GetProfileFromUserId(ctx context.Context, userId int32) (*UserProfile, error)
+
+	GetUserIdFromToken(token string) (int32, error)
+	GetUserIdFromContext(ctx context.Context) (int32, error)
 }
 
 // auth service has no state
@@ -48,14 +51,12 @@ func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
 }
 
 func (s *realAuthService) GetToken(r *http.Request) (*jwt.Token, error) {
-	tokenString := ""
-
 	authHeader := r.Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
 		return nil, errors.ErrorNotAuthenticated
 	}
-	tokenString = parts[1]
+	tokenString := parts[1]
 
 	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		return config.Envs.JWTSigningSecret, nil
@@ -126,4 +127,33 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 		return nil, errors.NewError(fmt.Sprintf("provider %s does not exist", name), http.StatusBadRequest)
 	}
 	return provider, nil
+}
+
+func (s *realAuthService) GetUserFromToken(tokenString string) (int32, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
+		return config.Envs.JWTSigningSecret, nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	subject, err := token.Claims.GetSubject()
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := strconv.Atoi(subject)
+	if err != nil {
+		return 0, err
+	}
+
+	return int32(id), nil
+}
+
+func (s *realAuthService) GetUserIdFromContext(ctx context.Context) (int32, error) {
+	userId, ok := ctx.Value("userId").(int32)
+	if !ok {
+		return 0, fmt.Errorf("user not found in context")
+	}
+	return userId, nil
 }
