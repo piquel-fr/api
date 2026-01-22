@@ -42,7 +42,7 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func RequireAuthMiddleware(auth auth.AuthService) Middleware {
+func AuthMiddleware(auth auth.AuthService) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_, err := auth.GetToken(r)
