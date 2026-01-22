@@ -20,14 +20,12 @@ type AuthService interface {
 	GenerateTokenString(userId int32) (string, error)
 	GetToken(r *http.Request) (*jwt.Token, error)
 	GetUserId(r *http.Request) (int32, error)
-	GetUserFromRequest(r *http.Request) (*repository.User, error)
 	GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error)
+	GetUserFromRequest(r *http.Request) (*repository.User, error)
+	GetUserFromUserId(ctx context.Context, userId int32) (repository.User, error)
 	GetUserFromUsername(ctx context.Context, username string) (repository.User, error)
 	Authorize(request *Request) error
 	GetProvider(name string) (oauth.Provider, error)
-
-	GetProfileFromUsername(ctx context.Context, username string) (*UserProfile, error)
-	GetProfileFromUserId(ctx context.Context, userId int32) (*UserProfile, error)
 }
 
 // auth service has no state
@@ -116,6 +114,10 @@ func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) 
 
 func (s *realAuthService) GetUserFromUsername(ctx context.Context, username string) (repository.User, error) {
 	return database.Queries.GetUserByUsername(ctx, username)
+}
+
+func (s *realAuthService) GetUserFromUserId(ctx context.Context, userId int32) (repository.User, error) {
+	return database.Queries.GetUserById(ctx, userId)
 }
 
 func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
