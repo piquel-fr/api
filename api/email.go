@@ -1,18 +1,32 @@
-package handlers
+package api
 
 import (
 	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
-func (h *Handler) CreateEmailHandler() http.Handler {
+type EmailHandler struct {
+	authService  auth.AuthService
+	emailService email.EmailService
+}
+
+func CreateEmailHandler(authService auth.AuthService, emailService email.EmailService) *EmailHandler {
+	return &EmailHandler{authService, emailService}
+}
+
+func (h *EmailHandler) getName() string      { return "email" }
+func (h *EmailHandler) getSpec() *openapi3.T { return nil }
+
+func (h *EmailHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
 	// accounts
@@ -33,27 +47,27 @@ func (h *Handler) CreateEmailHandler() http.Handler {
 	return handler
 }
 
-func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
-	requester, err := h.AuthService.GetUserFromRequest(r)
+func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
+	requester, err := h.authService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	var user repository.User
+	var user *repository.User
 	if username := r.URL.Query().Get("user"); username != "" {
-		user, err = h.AuthService.GetUserFromUsername(r.Context(), username)
+		user, err = h.authService.GetUserFromUsername(r.Context(), username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
 	} else {
-		user = *requester
+		user = requester
 	}
 
-	if err := h.AuthService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&auth.Request{
 		User:      requester,
-		Ressource: &user,
+		Ressource: user,
 		Context:   r.Context(),
 		Actions:   []string{auth.ActionListEmailAccounts},
 	}); err != nil {
@@ -62,7 +76,7 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.URL.Query().Has("count") {
-		count, err := h.EmailService.CountAccounts(r.Context(), user.ID)
+		count, err := h.emailService.CountAccounts(r.Context(), user.ID)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -73,7 +87,7 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accounts, err := h.EmailService.ListAccounts(r.Context(), user.ID)
+	accounts, err := h.emailService.ListAccounts(r.Context(), user.ID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -94,8 +108,8 @@ func (h *Handler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.AuthService.GetUserFromRequest(r)
+func (h *EmailHandler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -119,26 +133,26 @@ func (h *Handler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
-	user, err := h.AuthService.GetUserFromRequest(r)
+func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	account, err := h.emailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	accountInfo, err := h.EmailService.GetAccountInfo(r.Context(), &account)
+	accountInfo, err := h.emailService.GetAccountInfo(r.Context(), &account)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := h.AuthService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &accountInfo,
 		Actions:   []string{auth.ActionView},
@@ -161,20 +175,20 @@ func (h *Handler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.AuthService.GetUserFromRequest(r)
+func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	account, err := h.emailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := h.AuthService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionDelete},
@@ -184,26 +198,26 @@ func (h *Handler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.EmailService.RemoveAccount(r.Context(), account.ID); err != nil {
+	if err := h.emailService.RemoveAccount(r.Context(), account.ID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 }
 
-func (h *Handler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.AuthService.GetUserFromRequest(r)
+func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	account, err := h.emailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := h.AuthService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionShare},
@@ -213,7 +227,7 @@ func (h *Handler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sharingUser, err := h.AuthService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
+	sharingUser, err := h.authService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -225,26 +239,26 @@ func (h *Handler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
 		Permission: "",
 	}
 
-	if err := h.EmailService.AddShare(r.Context(), params); err != nil {
+	if err := h.emailService.AddShare(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 }
 
-func (h *Handler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Request) {
-	user, err := h.AuthService.GetUserFromRequest(r)
+func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.GetUserFromRequest(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	account, err := h.EmailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
+	account, err := h.emailService.GetAccountByEmail(r.Context(), r.PathValue("email"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if err := h.AuthService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&auth.Request{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionShare},
@@ -254,7 +268,7 @@ func (h *Handler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	sharingUser, err := h.AuthService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
+	sharingUser, err := h.authService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -265,7 +279,7 @@ func (h *Handler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Reques
 		Account: account.ID,
 	}
 
-	if err := h.EmailService.RemoveShare(r.Context(), params); err != nil {
+	if err := h.emailService.RemoveShare(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
