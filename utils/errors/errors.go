@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 )
@@ -53,11 +52,6 @@ func getError(err error) *Error {
 	}
 
 	panic(err)
-}
-
-func HandleHumaError(api huma.API, ctx huma.Context, inErr error) {
-	err := getError(inErr)
-	huma.WriteErr(api, ctx, err.status, err.Error())
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, inErr error) {

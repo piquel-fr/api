@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/utils/errors"
 )
@@ -62,25 +61,4 @@ func CreateOptionsHandler(methods ...string) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
 		w.WriteHeader(http.StatusOK)
 	})
-}
-
-func AuthMiddleware(auth auth.AuthService, api huma.API) func(huma.Context, func(huma.Context)) {
-	return func(ctx huma.Context, next func(huma.Context)) {
-		authHeader := ctx.Header("Authorization")
-
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			errors.HandleHumaError(api, ctx, errors.ErrorNotAuthenticated)
-			return
-		}
-		tokenString := parts[1]
-
-		userId, err := auth.GetUserIdFromToken(ctx.Context(), tokenString)
-		if err != nil {
-			errors.HandleHumaError(api, ctx, err)
-			return
-		}
-
-		next(huma.WithValue(ctx, "userId", userId))
-	}
 }
