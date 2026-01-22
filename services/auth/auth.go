@@ -22,8 +22,8 @@ type AuthService interface {
 	GetUserId(r *http.Request) (int32, error)
 	GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error)
 	GetUserFromRequest(r *http.Request) (*repository.User, error)
-	GetUserFromUserId(ctx context.Context, userId int32) (repository.User, error)
-	GetUserFromUsername(ctx context.Context, username string) (repository.User, error)
+	GetUserFromUserId(ctx context.Context, userId int32) (*repository.User, error)
+	GetUserFromUsername(ctx context.Context, username string) (*repository.User, error)
 	Authorize(request *Request) error
 	GetProvider(name string) (oauth.Provider, error)
 }
@@ -112,12 +112,14 @@ func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) 
 	return &user, err
 }
 
-func (s *realAuthService) GetUserFromUsername(ctx context.Context, username string) (repository.User, error) {
-	return database.Queries.GetUserByUsername(ctx, username)
+func (s *realAuthService) GetUserFromUsername(ctx context.Context, username string) (*repository.User, error) {
+	user, err := database.Queries.GetUserByUsername(ctx, username)
+	return &user, err
 }
 
-func (s *realAuthService) GetUserFromUserId(ctx context.Context, userId int32) (repository.User, error) {
-	return database.Queries.GetUserById(ctx, userId)
+func (s *realAuthService) GetUserFromUserId(ctx context.Context, userId int32) (*repository.User, error) {
+	user, err := database.Queries.GetUserById(ctx, userId)
+	return &user, err
 }
 
 func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
