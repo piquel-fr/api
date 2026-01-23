@@ -12,7 +12,7 @@ import (
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
-type Spec *openapi3.T
+type Spec struct{ *openapi3.T }
 
 type Handler interface {
 	getName() string
