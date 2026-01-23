@@ -70,6 +70,10 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func newSpecHandler(spec Spec) (http.HandlerFunc, error) {
+	if err := spec.Validate(context.Background()); err != nil {
+		return nil, err
+	}
+
 	data, err := spec.MarshalJSON()
 	if err != nil {
 		return nil, err
