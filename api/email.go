@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
@@ -23,8 +22,8 @@ func CreateEmailHandler(authService auth.AuthService, emailService email.EmailSe
 	return &EmailHandler{authService, emailService}
 }
 
-func (h *EmailHandler) getName() string      { return "email" }
-func (h *EmailHandler) getSpec() *openapi3.T { return nil }
+func (h *EmailHandler) getName() string { return "email" }
+func (h *EmailHandler) getSpec() Spec   { return nil }
 
 func (h *EmailHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()

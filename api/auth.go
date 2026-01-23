@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/utils"
@@ -19,8 +18,6 @@ type AuthHandler struct {
 func CreateAuthHandler(authService auth.AuthService) *AuthHandler {
 	return &AuthHandler{authService}
 }
-
-func (h *AuthHandler) getSpec() *openapi3.T { return nil }
 
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()

@@ -12,9 +12,11 @@ import (
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
+type Spec *openapi3.T
+
 type Handler interface {
 	getName() string
-	getSpec() *openapi3.T
+	getSpec() Spec
 	createHttpHandler() http.Handler
 }
 

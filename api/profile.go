@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
@@ -20,8 +19,8 @@ func CreateProfileHandler(authService auth.AuthService) *ProfileHandler {
 	return &ProfileHandler{authService}
 }
 
-func (h *ProfileHandler) getName() string      { return "profile" }
-func (h *ProfileHandler) getSpec() *openapi3.T { return nil }
+func (h *ProfileHandler) getName() string { return "profile" }
+func (h *ProfileHandler) getSpec() Spec   { return nil }
 
 func (h *ProfileHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
