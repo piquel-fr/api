@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +12,7 @@ import (
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
-type Spec struct{ *openapi3.T }
+type Spec = *openapi3.T
 
 type Handler interface {
 	getName() string
@@ -38,7 +38,7 @@ func CreateRouter(authService auth.AuthService, emailService email.EmailService)
 		specPath := fmt.Sprintf("/specification/%s.json", handler.getName())
 		specHandler, err := newSpecHandler(handler.getSpec())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error creating spec for %s: %w", handler.getName(), err)
 		}
 		router.HandleFunc(specPath, specHandler)
 	}
@@ -66,7 +66,32 @@ func createProtectedRouter(handlers []Handler) http.Handler {
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
 	w.Write([]byte("Welcome to the Piquel API! Visit the <a href=\"https://piquel.fr/docs\">API</a> for more information."))
-	w.WriteHeader(http.StatusOK)
+}
+
+func newSpecBase(handler Handler) Spec {
+	spec := &openapi3.T{
+		OpenAPI: "3.0.3",
+		Info: &openapi3.Info{
+			Title:       fmt.Sprintf("Piquel %s API", handler.getName()),
+			Description: "Allows fetching and updating of a user's profile",
+			Version:     "1.0.0",
+			Contact: &openapi3.Contact{
+				Name:  "Piquel Support",
+				Email: "contact@piquel.fr",
+			},
+		},
+		ExternalDocs: &openapi3.ExternalDocs{
+			Description: "Main docs website",
+			URL:         "https://piquel.fr",
+		},
+	}
+
+	spec.AddServer(&openapi3.Server{
+		URL:         fmt.Sprintf("https://api.piquel.fr/%s", handler.getName()),
+		Description: "Main production endpoints",
+	})
+
+	return spec
 }
 
 func newSpecHandler(spec Spec) (http.HandlerFunc, error) {

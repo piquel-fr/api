@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
@@ -23,7 +24,194 @@ func CreateEmailHandler(authService auth.AuthService, emailService email.EmailSe
 }
 
 func (h *EmailHandler) getName() string { return "email" }
-func (h *EmailHandler) getSpec() Spec   { return nil }
+
+func (h *EmailHandler) getSpec() Spec {
+	spec := newSpecBase(h)
+
+	accountSchema := openapi3.NewObjectSchema().
+		WithProperty("id", openapi3.NewInt32Schema()).
+		WithProperty("ownerId", openapi3.NewInt32Schema()).
+		WithProperty("email", openapi3.NewStringSchema().WithFormat("email")).
+		WithProperty("name", openapi3.NewStringSchema())
+
+	addAccountSchema := openapi3.NewObjectSchema().
+		WithProperty("email", openapi3.NewStringSchema().WithFormat("email")).
+		WithProperty("name", openapi3.NewStringSchema()).
+		WithProperty("username", openapi3.NewStringSchema()).
+		WithProperty("password", openapi3.NewStringSchema())
+
+	spec.Components = &openapi3.Components{
+		Schemas: openapi3.Schemas{
+			"MailAccount":       &openapi3.SchemaRef{Value: accountSchema},
+			"AddAccountPayload": &openapi3.SchemaRef{Value: addAccountSchema},
+		},
+	}
+
+	spec.AddOperation("/", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "List email accounts",
+		Description: "List accounts belonging to the authenticated user, or a specific user if admin.",
+		OperationID: "list-email-accounts",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "query",
+					Required:    false,
+					Description: "Optional username to filter by (admin only)",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "count",
+					In:          "query",
+					Required:    false,
+					Description: "If present, returns only the count of accounts as text",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewBoolSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().
+					WithDescription("List of email accounts").
+					WithJSONSchemaRef(openapi3.NewSchemaRef("", openapi3.NewArraySchema().WithItems(accountSchema))),
+			}),
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().WithContent(openapi3.NewContentWithSchema(openapi3.NewInt32Schema(), nil)).WithDescription("Count of all the email accounts"),
+			}),
+		),
+	})
+
+	spec.AddOperation("/", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Create email account",
+		Description: "Create a new email account for the authenticated user",
+		OperationID: "add-email-account",
+		RequestBody: &openapi3.RequestBodyRef{
+			Value: &openapi3.RequestBody{
+				Required: true,
+				Content: openapi3.NewContentWithJSONSchemaRef(
+					openapi3.NewSchemaRef("#/components/schemas/AddAccountPayload", addAccountSchema),
+				),
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Account created successfully")}),
+			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Invalid input")}),
+		),
+	})
+
+	spec.AddOperation("/{email}", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Get account info",
+		Description: "Get details of a specific email account",
+		OperationID: "get-email-account",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "email",
+					In:          "path",
+					Required:    true,
+					Description: "The email address of the account",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().
+					WithDescription("Account details").
+					WithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/MailAccount", accountSchema)),
+			}),
+		),
+	})
+
+	// 6. Operation: Remove Account (DELETE /{email})
+	spec.AddOperation("/{email}", http.MethodDelete, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Remove account",
+		Description: "Delete an email account",
+		OperationID: "delete-email-account",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "email",
+					In:          "path",
+					Required:    true,
+					Description: "The email address to delete",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Account deleted successfully")}),
+		),
+	})
+
+	// 7. Operation: Share Account (PUT /{email}/share)
+	spec.AddOperation("/{email}/share", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Share account",
+		Description: "Share an email account with another user",
+		OperationID: "share-email-account",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "query",
+					Required:    true,
+					Description: "The username to share the account with",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Account shared successfully")}),
+		),
+	})
+
+	// 8. Operation: Remove Share (DELETE /{email}/share)
+	spec.AddOperation("/{email}/share", http.MethodDelete, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Remove share",
+		Description: "Stop sharing an email account with a specific user",
+		OperationID: "unshare-email-account",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "query",
+					Required:    true,
+					Description: "The username to remove access from",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Share removed successfully")}),
+		),
+	})
+
+	return spec
+}
 
 func (h *EmailHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()

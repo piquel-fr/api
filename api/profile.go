@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
@@ -20,7 +21,111 @@ func CreateProfileHandler(authService auth.AuthService) *ProfileHandler {
 }
 
 func (h *ProfileHandler) getName() string { return "profile" }
-func (h *ProfileHandler) getSpec() Spec   { return nil }
+
+func (h *ProfileHandler) getSpec() Spec {
+	spec := newSpecBase(h)
+
+	userSchema := openapi3.NewObjectSchema().
+		WithProperty("id", openapi3.NewInt32Schema()).
+		WithProperty("username", openapi3.NewStringSchema()).
+		WithProperty("name", openapi3.NewStringSchema()).
+		WithProperty("image", openapi3.NewStringSchema()).
+		WithProperty("email", openapi3.NewStringSchema().WithFormat("email")).
+		WithProperty("role", openapi3.NewStringSchema()).
+		WithProperty("createdAt", openapi3.NewDateTimeSchema())
+
+	updateUserSchema := openapi3.NewObjectSchema().
+		WithProperty("username", openapi3.NewStringSchema()).
+		WithProperty("name", openapi3.NewStringSchema()).
+		WithProperty("image", openapi3.NewStringSchema()).
+		WithProperty("email", openapi3.NewStringSchema().WithFormat("email"))
+
+	spec.Components = &openapi3.Components{
+		Schemas: openapi3.Schemas{
+			"User":             &openapi3.SchemaRef{Value: userSchema},
+			"UpdateUserParams": &openapi3.SchemaRef{Value: updateUserSchema},
+		},
+	}
+
+	spec.AddOperation("/{user}", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"users"},
+		Summary:     "Get specific user",
+		Description: "Get the profile of the user specified in the path",
+		OperationID: "get-user-by-path",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "path",
+					Required:    true,
+					Description: "The username",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().WithDescription("User profile found").WithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/User", userSchema)),
+			}),
+		),
+	})
+
+	spec.AddOperation("/{user}", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"users"},
+		Summary:     "Update user",
+		Description: "Update the profile of the specified user",
+		OperationID: "update-user",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "path",
+					Required:    true,
+					Description: "The username to update",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		RequestBody: &openapi3.RequestBodyRef{
+			Value: &openapi3.RequestBody{
+				Required: true,
+				Content: openapi3.NewContentWithJSONSchemaRef(
+					openapi3.NewSchemaRef("#/components/schemas/UpdateUserSchema", updateUserSchema),
+				),
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("User updated successfully")}),
+			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Invalid input or json")}),
+			openapi3.WithStatus(401, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Unauthorized")}),
+		),
+	})
+
+	spec.AddOperation("/", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"users"},
+		Summary:     "Get user profile",
+		Description: "Get user by query param 'username', or the currently authenticated user if empty",
+		OperationID: "get-profile",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "username",
+					In:          "query",
+					Required:    false,
+					Description: "Optional username. If omitted, returns current user.",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().WithDescription("User profile found").WithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/User", userSchema)),
+			}),
+		),
+	})
+
+	return spec
+}
 
 func (h *ProfileHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
@@ -107,6 +212,5 @@ func (h *ProfileHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Requ
 		errors.HandleError(w, r, err)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 }
