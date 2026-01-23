@@ -69,8 +69,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func newSpecHandler(spec *openapi3.T) (http.HandlerFunc, error) {
-	data, err := json.Marshal(spec)
+func newSpecHandler(spec Spec) (http.HandlerFunc, error) {
+	data, err := spec.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
