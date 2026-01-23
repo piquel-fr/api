@@ -90,8 +90,6 @@ func (h *ProfileHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-
 	if r.Header.Get("Content-Type") != "application/json" {
 		http.Error(w, "please submit your creation request with the required json payload", http.StatusBadRequest)
 		return
@@ -109,4 +107,6 @@ func (h *ProfileHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Requ
 		errors.HandleError(w, r, err)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
