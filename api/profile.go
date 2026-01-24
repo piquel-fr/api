@@ -90,7 +90,7 @@ func (h *ProfileHandler) getSpec() Spec {
 			Value: &openapi3.RequestBody{
 				Required: true,
 				Content: openapi3.NewContentWithJSONSchemaRef(
-					openapi3.NewSchemaRef("#/components/schemas/UpdateUserSchema", updateUserSchema),
+					openapi3.NewSchemaRef("#/components/schemas/UpdateUserParams", updateUserSchema),
 				),
 			},
 		},
