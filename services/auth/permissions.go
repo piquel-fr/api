@@ -99,7 +99,7 @@ func (s *realAuthService) validateAction(permissions []*Permission, action strin
 	for _, permission := range permissions {
 
 		if permission.Preset != "" {
-			permission = Policy.Permissions[permission.Preset]
+			permission = Policy.Presets[permission.Preset]
 		}
 
 		if permission.Action != action {

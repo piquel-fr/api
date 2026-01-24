@@ -7,8 +7,8 @@ import (
 )
 
 type PolicyConfiguration struct {
-	Permissions map[string]*Permission `json:"permissions"`
-	Roles       Roles                  `json:"roles"`
+	Presets map[string]*Permission `json:"presets"`
+	Roles   Roles                  `json:"roles"`
 }
 
 type Permission struct {
