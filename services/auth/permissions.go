@@ -36,7 +36,7 @@ func (s *realAuthService) Authorize(request *Request) error {
 }
 
 func (s *realAuthService) authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
-	role, ok := policy.Roles[roleName]
+	role, ok := Policy.Roles[roleName]
 	if !ok {
 		return false, newRoleNotFoundError(roleName)
 	}
@@ -99,7 +99,7 @@ func (s *realAuthService) validateAction(permissions []*Permission, action strin
 	for _, permission := range permissions {
 
 		if permission.Preset != "" {
-			permission = policy.Permissions[permission.Preset]
+			permission = Policy.Permissions[permission.Preset]
 		}
 
 		if permission.Action != action {
