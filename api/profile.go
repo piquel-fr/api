@@ -43,8 +43,10 @@ func (h *ProfileHandler) getSpec() Spec {
 		WithProperty("image", openapi3.NewStringSchema()).
 		WithRequired([]string{"username", "name", "image"})
 
-	spec.Components.Schemas["User"] = &openapi3.SchemaRef{Value: userSchema}
-	spec.Components.Schemas["UpdateUserParams"] = &openapi3.SchemaRef{Value: updateUserSchema}
+	spec.Components.Schemas = openapi3.Schemas{
+		"User":             &openapi3.SchemaRef{Value: userSchema},
+		"UpdateUserParams": &openapi3.SchemaRef{Value: updateUserSchema},
+	}
 
 	spec.AddOperation("/{user}", http.MethodGet, &openapi3.Operation{
 		Tags:        []string{"users"},
