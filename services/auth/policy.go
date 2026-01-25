@@ -3,6 +3,7 @@ package auth
 import (
 	"slices"
 
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/utils/errors"
@@ -25,33 +26,33 @@ const (
 	ActionListEmailAccounts string = "list_email_accounts"
 )
 
-func own(request *Request) error {
+func own(request *config.AuthRequest) error {
 	if request.Ressource.GetOwner() == request.User.ID {
 		return nil
 	}
 	return errors.ErrorForbidden
 }
 
-func makeOwn(action string) *Permission {
-	return &Permission{
+func makeOwn(action string) *config.Permission {
+	return &config.Permission{
 		Action:     action,
-		Conditions: Conditions{own},
+		Conditions: config.Conditions{own},
 	}
 }
 
-var policy = PolicyConfiguration{
-	Presets: map[string]*Permission{},
-	Roles: Roles{
+var policy = config.PolicyConfiguration{
+	Presets: map[string]*config.Permission{},
+	Roles: map[string]*config.Role{
 		RoleSystem: {
 			Name:        "System",
 			Color:       "gray",
-			Permissions: map[string][]*Permission{},
+			Permissions: map[string][]*config.Permission{},
 			Parents:     []string{RoleDefault, RoleDeveloper, RoleAdmin},
 		},
 		RoleAdmin: {
 			Name:  "Admin",
 			Color: "red",
-			Permissions: map[string][]*Permission{
+			Permissions: map[string][]*config.Permission{
 				repository.ResourceUser: {
 					{Action: ActionUpdate},
 					{Action: ActionDelete},
@@ -69,12 +70,12 @@ var policy = PolicyConfiguration{
 		RoleDeveloper: {
 			Name:  "Developer",
 			Color: "blue",
-			Permissions: map[string][]*Permission{
+			Permissions: map[string][]*config.Permission{
 				repository.ResourceMailAccount: {
 					{
 						Action: ActionView,
-						Conditions: Conditions{
-							func(request *Request) error {
+						Conditions: config.Conditions{
+							func(request *config.AuthRequest) error {
 								if request.Ressource.GetOwner() == request.User.ID {
 									return nil
 								}
@@ -103,7 +104,7 @@ var policy = PolicyConfiguration{
 		RoleDefault: {
 			Name:  "",
 			Color: "gray",
-			Permissions: map[string][]*Permission{
+			Permissions: map[string][]*config.Permission{
 				repository.ResourceUser: {
 					makeOwn(ActionUpdate),
 					makeOwn(ActionDelete),

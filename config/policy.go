@@ -1,4 +1,4 @@
-package auth
+package config
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 type PolicyConfiguration struct {
 	Presets map[string]*Permission `json:"presets"`
-	Roles   Roles                  `json:"roles"`
+	Roles   map[string]*Role       `json:"roles"`
 }
 
 type Permission struct {
@@ -17,16 +17,16 @@ type Permission struct {
 	Preset     string     `json:"preset"`
 }
 
-type Conditions []func(request *Request) error
+type Conditions []func(request *AuthRequest) error
 
-type Roles map[string]*struct {
+type Role struct {
 	Name        string                   `json:"name"`
 	Color       string                   `json:"color"`
 	Permissions map[string][]*Permission `json:"permissions"`
 	Parents     []string                 `json:"parents"`
 }
 
-type Request struct {
+type AuthRequest struct {
 	User      *repository.User
 	Ressource Resource
 	Actions   []string
@@ -37,3 +37,5 @@ type Resource interface {
 	GetResourceName() string
 	GetOwner() int32
 }
+
+var Policy *PolicyConfiguration

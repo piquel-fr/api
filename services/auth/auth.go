@@ -24,15 +24,15 @@ type AuthService interface {
 	GetUserFromRequest(r *http.Request) (*repository.User, error)
 	GetUserFromUserId(ctx context.Context, userId int32) (*repository.User, error)
 	GetUserFromUsername(ctx context.Context, username string) (*repository.User, error)
-	Authorize(request *Request) error
+	Authorize(request *config.AuthRequest) error
 	GetProvider(name string) (oauth.Provider, error)
 
-	GetPolicy() *PolicyConfiguration
+	GetPolicy() *config.PolicyConfiguration
 }
 
 // TEMP: the new auth interface that will be made alongside the new user service
 type NewAuthService interface {
-	GetPolicy() *PolicyConfiguration
+	GetPolicy() *config.PolicyConfiguration
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
@@ -45,7 +45,7 @@ type NewAuthService interface {
 	GetUserFromOAuthUser()
 
 	// authorization
-	Authorize(request *Request) error
+	Authorize(request *config.AuthRequest) error
 	AuthMiddleware(next http.Handler) http.Handler
 }
 
@@ -53,10 +53,11 @@ type NewAuthService interface {
 type realAuthService struct{}
 
 func NewRealAuthService() *realAuthService {
+	config.Policy = &policy
 	return &realAuthService{}
 }
 
-func (s *realAuthService) GetPolicy() *PolicyConfiguration { return &policy }
+func (s *realAuthService) GetPolicy() *config.PolicyConfiguration { return &policy }
 
 func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
 	idString := strconv.Itoa(int(userId))
