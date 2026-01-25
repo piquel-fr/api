@@ -10,6 +10,7 @@ import (
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/email"
+	"github.com/piquel-fr/api/services/users"
 	gh "github.com/piquel-fr/api/utils/github"
 	"github.com/piquel-fr/api/utils/oauth"
 )
@@ -24,10 +25,11 @@ func main() {
 	database.InitDatabase()
 	defer database.Connection.Close()
 
+	userService := users.NewRealUserService()
 	authService := auth.NewRealAuthService()
 	emailService := email.NewRealEmailService()
 
-	router, err := api.CreateRouter(authService, emailService)
+	router, err := api.CreateRouter(userService, authService, emailService)
 	if err != nil {
 		panic(err)
 	}

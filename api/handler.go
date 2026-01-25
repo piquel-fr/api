@@ -9,6 +9,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/email"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
@@ -20,7 +21,7 @@ type Handler interface {
 	createHttpHandler() http.Handler
 }
 
-func CreateRouter(authService auth.AuthService, emailService email.EmailService) (http.Handler, error) {
+func CreateRouter(userService users.UserService, authService auth.AuthService, emailService email.EmailService) (http.Handler, error) {
 	// these routes are unauthenticated and should remail so.
 	// do not any other routes to this router. all other routes
 	// should be added to createProtectedRouter
