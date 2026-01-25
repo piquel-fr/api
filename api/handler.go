@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/email"
 	"github.com/piquel-fr/api/services/users"
@@ -28,6 +30,12 @@ func CreateRouter(userService users.UserService, authService auth.AuthService, e
 	router := http.NewServeMux()
 	router.HandleFunc("/{$}", rootHandler)
 	router.Handle("/auth/", http.StripPrefix("/auth", CreateAuthHandler(authService).createHttpHandler()))
+
+	configHandler, err := configHandler()
+	if err != nil {
+		return nil, err
+	}
+	router.HandleFunc("/config.json", configHandler)
 
 	handlers := []Handler{
 		CreateUserHandler(userService, authService),
@@ -68,6 +76,18 @@ func createProtectedRouter(handlers []Handler) http.Handler {
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
 	w.Write([]byte("Welcome to the Piquel API! Visit the <a href=\"https://piquel.fr/docs\">API</a> for more information."))
+}
+
+func configHandler() (http.HandlerFunc, error) {
+	data, err := json.Marshal(config.GetPublicConfig())
+	if err != nil {
+		return nil, err
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(data)
+	}, nil
 }
 
 func newSpecBase(handler Handler) Spec {

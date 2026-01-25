@@ -37,5 +37,3 @@ type Resource interface {
 	GetResourceName() string
 	GetOwner() int32
 }
-
-var Policy *PolicyConfiguration

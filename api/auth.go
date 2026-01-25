@@ -23,7 +23,7 @@ func CreateAuthHandler(authService auth.AuthService) *AuthHandler {
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /policy.json", h.policyHandler)
+	handler.HandleFunc("GET /policy.json", h.policyHandler) // DEPRECATED TODO: remove
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
