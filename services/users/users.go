@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/utils"
 )
@@ -24,7 +25,7 @@ type UserService interface {
 
 	// other
 	FormatAndValidateUsername(username string) (string, error)
-	ListUsers(ctx context.Context, offset, limit int) ([]repository.User, error)
+	ListUsers(ctx context.Context, offset, limit int32) ([]repository.User, error)
 }
 
 type realUserService struct{}
@@ -71,6 +72,9 @@ func (s *realUserService) ValidateAndFormatUsername(username string) (string, er
 	return username, nil
 }
 
-func (s *realUserService) ListUsers(ctx context.Context, offset, limit int) ([]repository.User, error) {
-	return nil, nil
+func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([]repository.User, error) {
+	if limit > 200 {
+		limit = 200
+	}
+	return database.Queries.ListUsers(ctx, repository.ListUsersParams{Offset: offset, Limit: limit})
 }
