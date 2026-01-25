@@ -9,16 +9,18 @@ import (
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
 type ProfileHandler struct {
+	userService users.UserService
 	authService auth.AuthService
 }
 
-func CreateProfileHandler(authService auth.AuthService) *ProfileHandler {
-	return &ProfileHandler{authService}
+func CreateProfileHandler(userService users.UserService, authService auth.AuthService) *ProfileHandler {
+	return &ProfileHandler{userService, authService}
 }
 
 func (h *ProfileHandler) getName() string { return "profile" }
@@ -148,12 +150,7 @@ func (h *ProfileHandler) handleGetProfile(w http.ResponseWriter, r *http.Request
 func (h *ProfileHandler) handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		id, err := h.authService.GetUserId(r)
-		if err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-		user, err := h.authService.GetUserFromUserId(r.Context(), id)
+		user, err := h.authService.GetUserFromContext(r.Context())
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -165,7 +162,7 @@ func (h *ProfileHandler) handleGetProfileQuery(w http.ResponseWriter, r *http.Re
 }
 
 func (h *ProfileHandler) writeProfile(w http.ResponseWriter, r *http.Request, username string) {
-	user, err := h.authService.GetUserFromUsername(r.Context(), username)
+	user, err := h.userService.GetUserByUsername(r.Context(), username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -178,7 +175,7 @@ func (h *ProfileHandler) writeProfile(w http.ResponseWriter, r *http.Request, us
 func (h *ProfileHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("user")
 
-	user, err := h.authService.GetUserFromUsername(r.Context(), username)
+	user, err := h.userService.GetUserByUsername(r.Context(), username)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

@@ -7,17 +7,19 @@ import (
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
 type AuthHandler struct {
+	userService users.UserService
 	authService auth.AuthService
 }
 
-func CreateAuthHandler(authService auth.AuthService) *AuthHandler {
-	return &AuthHandler{authService}
+func CreateAuthHandler(userService users.UserService, authService auth.AuthService) *AuthHandler {
+	return &AuthHandler{userService, authService}
 }
 
 func (h *AuthHandler) createHttpHandler() http.Handler {
@@ -71,13 +73,15 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := h.authService.GetUser(r.Context(), oauthUser)
+	user, err := h.userService.GetUserByEmail(r.Context(), oauthUser.Email)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	tokenString, err := h.authService.GenerateTokenString(user.ID)
+	// TODO: if user doesn't exist, create it
+
+	tokenString, err := h.authService.SignToken(h.authService.GenerateToken(user))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

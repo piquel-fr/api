@@ -119,6 +119,9 @@ func (s *realUserService) FormatAndValidateUsername(username string) (string, er
 	if slices.Contains(config.UsernameBlacklist, username) {
 		return "", fmt.Errorf("username %s is not legal", username)
 	}
+
+	// TODO: make sure no one already has the username
+
 	return username, nil
 }
 

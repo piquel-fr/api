@@ -26,7 +26,7 @@ func main() {
 	defer database.Connection.Close()
 
 	userService := users.NewRealUserService()
-	authService := auth.NewRealAuthService()
+	authService := auth.NewRealAuthService(userService)
 	emailService := email.NewRealEmailService()
 
 	config.UsernameBlacklist = userService.GetUsernameBlacklist()

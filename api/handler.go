@@ -29,7 +29,7 @@ func CreateRouter(userService users.UserService, authService auth.AuthService, e
 	// should be added to createProtectedRouter
 	router := http.NewServeMux()
 	router.HandleFunc("/{$}", rootHandler)
-	router.Handle("/auth/", http.StripPrefix("/auth", CreateAuthHandler(authService).createHttpHandler()))
+	router.Handle("/auth/", http.StripPrefix("/auth", CreateAuthHandler(userService, authService).createHttpHandler()))
 
 	configHandler, err := configHandler()
 	if err != nil {
@@ -39,8 +39,8 @@ func CreateRouter(userService users.UserService, authService auth.AuthService, e
 
 	handlers := []Handler{
 		CreateUserHandler(userService, authService),
-		CreateProfileHandler(authService),
-		CreateEmailHandler(authService, emailService),
+		CreateProfileHandler(userService, authService),
+		CreateEmailHandler(userService, authService, emailService),
 	}
 
 	for _, handler := range handlers {
@@ -55,7 +55,7 @@ func CreateRouter(userService users.UserService, authService auth.AuthService, e
 
 	// bind the protected router
 	protectedRouter := createProtectedRouter(handlers)
-	protectedRouter = middleware.AddMiddleware(protectedRouter, middleware.AuthMiddleware(authService))
+	protectedRouter = middleware.AddMiddleware(protectedRouter, authService.AuthMiddleware)
 	router.Handle("/", protectedRouter)
 
 	return middleware.AddMiddleware(router, middleware.CORSMiddleware), nil
