@@ -5,14 +5,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/piquel-fr/api/api"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
-	"github.com/piquel-fr/api/handlers"
 	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/services/docs"
 	"github.com/piquel-fr/api/services/email"
 	gh "github.com/piquel-fr/api/utils/github"
-	"github.com/piquel-fr/api/utils/middleware"
 	"github.com/piquel-fr/api/utils/oauth"
 )
 
@@ -26,19 +24,18 @@ func main() {
 	database.InitDatabase()
 	defer database.Connection.Close()
 
-	handler := handlers.Handler{
-		AuthService:  auth.NewRealAuthService(),
-		DocsService:  docs.NewRealDocsService(),
-		EmailService: email.NewRealEmailService(),
+	authService := auth.NewRealAuthService()
+	emailService := email.NewRealEmailService()
+
+	router, err := api.CreateRouter(authService, emailService)
+	if err != nil {
+		panic(err)
 	}
 
 	address := fmt.Sprintf("0.0.0.0:%s", config.Envs.Port)
-
 	server := http.Server{
-		Addr: address,
-		Handler: middleware.AddMiddleware(handler.CreateHttpHandler(),
-			middleware.CORSMiddleware,
-		),
+		Addr:    address,
+		Handler: router,
 	}
 
 	log.Printf("[Router] Starting router...\n")

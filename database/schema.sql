@@ -8,19 +8,6 @@ CREATE TABLE "users" (
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "docs_instances" (
-    "id" SERIAL PRIMARY KEY NOT NULL,
-    "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,
-    "name" TEXT NOT NULL UNIQUE,
-    "public" BOOLEAN NOT NULL DEFAULT FALSE,
-    
-    "repoOwner" TEXT NOT NULL,
-    "repoName" TEXT NOT NULL,
-    "repoRef" TEXT NOT NULL DEFAULT 'main',
-    
-    "root" TEXT NOT NULL DEFAULT 'index.md'
-);
-
 CREATE TABLE "mail_accounts" (
     "id" SERIAL PRIMARY KEY NOT NULL,
     "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,

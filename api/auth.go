@@ -1,20 +1,31 @@
-package handlers
+package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
-func (h *Handler) CreateAuthHandler() http.Handler {
+type AuthHandler struct {
+	authService auth.AuthService
+}
+
+func CreateAuthHandler(authService auth.AuthService) *AuthHandler {
+	return &AuthHandler{authService}
+}
+
+func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
+	handler.HandleFunc("GET /policy.json", h.policyHandler)
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
-	handler.HandleFunc("GET /{provider}/{callback}", h.handleAuthCallback)
+	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
@@ -22,9 +33,16 @@ func (h *Handler) CreateAuthHandler() http.Handler {
 	return handler
 }
 
-func (h *Handler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) policyHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(h.authService.GetPolicy()); err != nil {
+		errors.HandleError(w, r, err)
+	}
+}
+
+func (h *AuthHandler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	providerName := r.PathValue("provider")
-	provider, err := h.AuthService.GetProvider(providerName)
+	provider, err := h.authService.GetProvider(providerName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -33,9 +51,9 @@ func (h *Handler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, provider.AuthCodeURL(r.URL.Query().Get("redirectTo")), http.StatusTemporaryRedirect)
 }
 
-func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	providerName := r.PathValue("provider")
-	provider, err := h.AuthService.GetProvider(providerName)
+	provider, err := h.authService.GetProvider(providerName)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -53,13 +71,13 @@ func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.AuthService.GetUser(r.Context(), oauthUser)
+	user, err := h.authService.GetUser(r.Context(), oauthUser)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	tokenString, err := h.AuthService.GenerateTokenString(user.ID)
+	tokenString, err := h.authService.GenerateTokenString(user.ID)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -69,6 +87,6 @@ func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func (h *Handler) formatRedirectURL(redirectTo string, token string) string {
+func (h *AuthHandler) formatRedirectURL(redirectTo string, token string) string {
 	return fmt.Sprintf("%s?redirectTo=%s&token=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
 }

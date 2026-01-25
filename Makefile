@@ -1,3 +1,4 @@
+.PHONY: run
 run: build
 	@./bin/main
 

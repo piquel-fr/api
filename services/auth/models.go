@@ -7,23 +7,23 @@ import (
 )
 
 type PolicyConfiguration struct {
-	Permissions map[string]*Permission
-	Roles       Roles
+	Presets map[string]*Permission `json:"presets"`
+	Roles   Roles                  `json:"roles"`
 }
 
 type Permission struct {
-	Action     string
-	Conditions Conditions
-	Preset     string
+	Action     string     `json:"action"`
+	Conditions Conditions `json:"-"`
+	Preset     string     `json:"preset"`
 }
 
 type Conditions []func(request *Request) error
 
 type Roles map[string]*struct {
-	Name        string
-	Color       string
-	Permissions map[string][]*Permission
-	Parents     []string
+	Name        string                   `json:"name"`
+	Color       string                   `json:"color"`
+	Permissions map[string][]*Permission `json:"permissions"`
+	Parents     []string                 `json:"parents"`
 }
 
 type Request struct {
