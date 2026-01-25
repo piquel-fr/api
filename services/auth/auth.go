@@ -8,67 +8,65 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/oauth"
 )
 
 type AuthService interface {
-	GenerateTokenString(userId int32) (string, error)
-	GetToken(r *http.Request) (*jwt.Token, error)
-	GetUserId(r *http.Request) (int32, error)
-	GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error)
-	GetUserFromRequest(r *http.Request) (*repository.User, error)
-	GetUserFromUserId(ctx context.Context, userId int32) (*repository.User, error)
-	GetUserFromUsername(ctx context.Context, username string) (*repository.User, error)
-	Authorize(request *config.AuthRequest) error
-	GetProvider(name string) (oauth.Provider, error)
-
-	GetPolicy() *config.PolicyConfiguration
-}
-
-// TEMP: the new auth interface that will be made alongside the new user service
-type NewAuthService interface {
 	GetPolicy() *config.PolicyConfiguration
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
 	GenerateToken(user *repository.User) *jwt.Token // TODO: also save expiry and refresh
-	signToken(token *jwt.Token) (string, error)
+	SignToken(token *jwt.Token) (string, error)
 	getTokenFromRequest(r *http.Request) (*jwt.Token, error)
+	getUserFromToken(ctx context.Context, token *jwt.Token) (*repository.User, error)
 
 	// authentication
-	GetUserFromContext(ctx context.Context) (*repository.User, error) // gets user from context (should be saved there by auth middleware)
-	GetUserFromOAuthUser()
+	GetUserFromContext(ctx context.Context) (*repository.User, error)
 
 	// authorization
 	Authorize(request *config.AuthRequest) error
 	AuthMiddleware(next http.Handler) http.Handler
 }
 
-// auth service has no state
-type realAuthService struct{}
+var userKey = "user"
 
-func NewRealAuthService() *realAuthService {
-	return &realAuthService{}
+type realAuthService struct {
+	userService users.UserService
+}
+
+func NewRealAuthService(userService users.UserService) *realAuthService {
+	return &realAuthService{userService}
 }
 
 func (s *realAuthService) GetPolicy() *config.PolicyConfiguration { return &policy }
 
-func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
-	idString := strconv.Itoa(int(userId))
-	token := jwt.NewWithClaims(config.JWTSigningMethod,
+func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
+	provider, ok := oauth.Providers[name]
+	if !ok {
+		return nil, errors.NewError(fmt.Sprintf("provider %s does not exist", name), http.StatusBadRequest)
+	}
+	return provider, nil
+}
+
+// TODO: also save expiry and refresh
+func (s *realAuthService) GenerateToken(user *repository.User) *jwt.Token {
+	idString := strconv.Itoa(int(user.ID))
+	return jwt.NewWithClaims(config.JWTSigningMethod,
 		jwt.RegisteredClaims{
 			Subject: idString,
 		})
+}
 
+func (s *realAuthService) SignToken(token *jwt.Token) (string, error) {
 	return token.SignedString(config.Envs.JWTSigningSecret)
 }
 
-func (s *realAuthService) GetToken(r *http.Request) (*jwt.Token, error) {
+func (s *realAuthService) getTokenFromRequest(r *http.Request) (*jwt.Token, error) {
 	authHeader := r.Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
@@ -81,72 +79,48 @@ func (s *realAuthService) GetToken(r *http.Request) (*jwt.Token, error) {
 	})
 }
 
-func (s *realAuthService) GetUserId(r *http.Request) (int32, error) {
-	token, err := s.GetToken(r)
-	if err != nil {
-		return 0, err
-	}
-
+func (s *realAuthService) getUserFromToken(ctx context.Context, token *jwt.Token) (*repository.User, error) {
 	subject, err := token.Claims.GetSubject()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	id, err := strconv.Atoi(subject)
 	if err != nil {
-		return 0, err
-	}
-
-	return int32(id), nil
-}
-
-func (s *realAuthService) GetUserFromRequest(r *http.Request) (*repository.User, error) {
-	userId, err := s.GetUserId(r)
-	if err != nil {
 		return nil, err
 	}
 
-	user, err := database.Queries.GetUserById(r.Context(), userId)
-	return &user, err
+	return s.userService.GetUserById(ctx, int32(id))
 }
 
-func (s *realAuthService) GetUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
-	user, err := database.Queries.GetUserByEmail(ctx, inUser.Email)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return s.registerUser(ctx, inUser)
-		}
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) (*repository.User, error) {
-	params := repository.AddUserParams{}
-
-	params.Email = inUser.Email
-	params.Username = inUser.Username
-	params.Role = RoleDefault
-	params.Image = inUser.Image
-	params.Name = inUser.Name
-
-	user, err := database.Queries.AddUser(ctx, params)
-	return &user, err
-}
-
-func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
-	provider, ok := oauth.Providers[name]
+func (s *realAuthService) GetUserFromContext(ctx context.Context) (*repository.User, error) {
+	user, ok := ctx.Value(userKey).(*repository.User)
 	if !ok {
-		return nil, errors.NewError(fmt.Sprintf("provider %s does not exist", name), http.StatusBadRequest)
+		return nil, fmt.Errorf("user is not in context")
 	}
-	return provider, nil
+	return user, nil
 }
 
-// TODO: remove
-func (*realAuthService) GetUserFromUsername(context.Context, string) (*repository.User, error) {
-	return nil, nil
-}
-func (*realAuthService) GetUserFromUserId(context.Context, int32) (*repository.User, error) {
-	return nil, nil
+func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		token, err := s.getTokenFromRequest(r)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		user, err := s.getUserFromToken(r.Context(), token)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		newReq := r.WithContext(context.WithValue(r.Context(), userKey, user))
+		next.ServeHTTP(w, newReq)
+	})
 }
