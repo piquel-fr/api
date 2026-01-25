@@ -30,7 +30,7 @@ func CreateRouter(userService users.UserService, authService auth.AuthService, e
 	router.Handle("/auth/", http.StripPrefix("/auth", CreateAuthHandler(authService).createHttpHandler()))
 
 	handlers := []Handler{
-		CreateUserHandler(authService),
+		CreateUserHandler(userService, authService),
 		CreateProfileHandler(authService),
 		CreateEmailHandler(authService, emailService),
 	}
