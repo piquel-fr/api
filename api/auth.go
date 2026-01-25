@@ -35,7 +35,7 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 
 func (h *AuthHandler) policyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(auth.Policy); err != nil {
+	if err := json.NewEncoder(w).Encode(h.authService.GetPolicy()); err != nil {
 		errors.HandleError(w, r, err)
 	}
 }

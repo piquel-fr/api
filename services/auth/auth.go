@@ -26,6 +26,8 @@ type AuthService interface {
 	GetUserFromUsername(ctx context.Context, username string) (*repository.User, error)
 	Authorize(request *Request) error
 	GetProvider(name string) (oauth.Provider, error)
+
+	GetPolicy() *PolicyConfiguration
 }
 
 // auth service has no state
@@ -34,6 +36,8 @@ type realAuthService struct{}
 func NewRealAuthService() *realAuthService {
 	return &realAuthService{}
 }
+
+func (s *realAuthService) GetPolicy() *PolicyConfiguration { return &policy }
 
 func (s *realAuthService) GenerateTokenString(userId int32) (string, error) {
 	idString := strconv.Itoa(int(userId))
