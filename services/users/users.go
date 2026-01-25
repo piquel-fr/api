@@ -3,12 +3,14 @@ package users
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/utils"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 type UserService interface {
@@ -20,8 +22,8 @@ type UserService interface {
 	GetUserByEmail(ctx context.Context, email string) (*repository.User, error)
 
 	// managing users
-	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
-	UpdateUserAdmin(ctx context.Context, params repository.UpdateUserAdminParams) error
+	UpdateUser(ctx context.Context, id int32, username, name, image string) error
+	UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error
 	RegisterUser(ctx context.Context, email, username, name, image, role string) error
 	DeleteUser(ctx context.Context, id int32) error
 
@@ -33,7 +35,6 @@ type UserService interface {
 type realUserService struct{}
 
 func NewRealUserService() *realUserService {
-	config.UsernameBlacklist = []string{"self", "users", "admin", "system"} // TODO: add more
 	return &realUserService{}
 }
 
@@ -52,12 +53,25 @@ func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*re
 	return &user, err
 }
 
-func (s *realUserService) UpdateUser(ctx context.Context, params repository.UpdateUserParams) error {
-	return nil
+func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, name, image string) error {
+	username, err := s.ValidateAndFormatUsername(username)
+	if err != nil {
+		return err
+	}
+
+	return database.Queries.UpdateUser(ctx, repository.UpdateUserParams{ID: id, Username: username, Name: name, Image: image})
 }
 
-func (s *realUserService) UpdateUserAdmin(ctx context.Context, params repository.UpdateUserAdminParams) error {
-	return nil
+func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error {
+	username, err := s.ValidateAndFormatUsername(username)
+	if err != nil {
+		return err
+	}
+
+	if err := config.Policy.ValidateRole(role); err != nil {
+		return err
+	}
+	return database.Queries.UpdateUserAdmin(ctx, repository.UpdateUserAdminParams{ID: id, Username: username, Email: email, Name: name, Image: image, Role: role})
 }
 
 func (s *realUserService) RegisterUser(ctx context.Context, email, username, name, image, role string) error {

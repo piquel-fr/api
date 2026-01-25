@@ -2,8 +2,11 @@ package config
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 type PolicyConfiguration struct {
@@ -11,9 +14,12 @@ type PolicyConfiguration struct {
 	Roles   map[string]*Role       `json:"roles"`
 }
 
-func (p *PolicyConfiguration) ValidateRole(role string) bool {
+func (p *PolicyConfiguration) ValidateRole(role string) error {
 	_, ok := p.Roles[role]
-	return ok
+	if !ok {
+		return errors.NewError(fmt.Sprintf("role %s does not exist in current policy", role), http.StatusBadRequest)
+	}
+	return nil
 }
 
 type Permission struct {
