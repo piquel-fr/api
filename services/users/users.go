@@ -132,5 +132,5 @@ func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([
 }
 
 func (s *realUserService) GetUsernameBlacklist() []string {
-	return []string{"self", "users", "admin", "system"} // TODO: add more
+	return []string{"self", "root", "users", "admin", "system"} // TODO: add more
 }
