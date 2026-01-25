@@ -2,8 +2,12 @@ package users
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/utils"
 )
 
 type UserService interface {
@@ -19,13 +23,14 @@ type UserService interface {
 	DeleteUser(ctx context.Context, id int32) error
 
 	// other
-	ValidateUsername(username string) error
+	FormatAndValidateUsername(username string) (string, error)
 	ListUsers(ctx context.Context, offset, limit int) ([]repository.User, error)
 }
 
 type realUserService struct{}
 
 func NewRealUserService() *realUserService {
+	config.UsernameBlacklist = []string{"self", "users", "admin", "system"} // TODO: add more
 	return &realUserService{}
 }
 
@@ -58,8 +63,12 @@ func (s *realUserService) DeleteUser(ctx context.Context, id int32) error {
 	return nil
 }
 
-func (s *realUserService) ValidateUsername(username string) error {
-	return nil
+func (s *realUserService) ValidateAndFormatUsername(username string) (string, error) {
+	username = utils.FormatUsername(username)
+	if slices.Contains(config.UsernameBlacklist, username) {
+		return "", fmt.Errorf("username %s is not legal", username)
+	}
+	return username, nil
 }
 
 func (s *realUserService) ListUsers(ctx context.Context, offset, limit int) ([]repository.User, error) {
