@@ -9,6 +9,7 @@ require (
 	github.com/google/go-github/v74 v74.0.0
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
+	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/oauth2 v0.34.0
 )
 
