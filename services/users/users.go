@@ -36,15 +36,18 @@ func NewRealUserService() *realUserService {
 }
 
 func (s *realUserService) GetUserById(ctx context.Context, id int32) (*repository.User, error) {
-	return nil, nil
+	user, err := database.Queries.GetUserById(ctx, id)
+	return &user, err
 }
 
 func (s *realUserService) GetUserByUsername(ctx context.Context, username string) (*repository.User, error) {
-	return nil, nil
+	user, err := database.Queries.GetUserByUsername(ctx, username)
+	return &user, err
 }
 
 func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*repository.User, error) {
-	return nil, nil
+	user, err := database.Queries.GetUserByEmail(ctx, email)
+	return &user, err
 }
 
 func (s *realUserService) UpdateUser(ctx context.Context, params repository.UpdateUserParams) error {

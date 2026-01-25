@@ -136,20 +136,18 @@ func (s *realAuthService) registerUser(ctx context.Context, inUser *oauth.User) 
 	return &user, err
 }
 
-func (s *realAuthService) GetUserFromUsername(ctx context.Context, username string) (*repository.User, error) {
-	user, err := database.Queries.GetUserByUsername(ctx, username)
-	return &user, err
-}
-
-func (s *realAuthService) GetUserFromUserId(ctx context.Context, userId int32) (*repository.User, error) {
-	user, err := database.Queries.GetUserById(ctx, userId)
-	return &user, err
-}
-
 func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 	provider, ok := oauth.Providers[name]
 	if !ok {
 		return nil, errors.NewError(fmt.Sprintf("provider %s does not exist", name), http.StatusBadRequest)
 	}
 	return provider, nil
+}
+
+// TODO: remove
+func (*realAuthService) GetUserFromUsername(context.Context, string) (*repository.User, error) {
+	return nil, nil
+}
+func (*realAuthService) GetUserFromUserId(context.Context, int32) (*repository.User, error) {
+	return nil, nil
 }
