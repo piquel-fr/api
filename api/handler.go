@@ -86,6 +86,22 @@ func newSpecBase(handler Handler) Spec {
 		},
 	}
 
+	securitySchemeName := "bearerAuth"
+	spec.Components = &openapi3.Components{
+		SecuritySchemes: openapi3.SecuritySchemes{
+			securitySchemeName: &openapi3.SecuritySchemeRef{
+				Value: &openapi3.SecurityScheme{
+					Type:         "http",
+					Scheme:       "bearer",
+					BearerFormat: "JWT",
+					Description:  "Enter your bearer token in the format: Bearer <token>",
+				},
+			},
+		},
+	}
+
+	spec.Security = openapi3.SecurityRequirements{{securitySchemeName: []string{}}}
+
 	spec.AddServer(&openapi3.Server{
 		URL:         fmt.Sprintf("https://api.piquel.fr/%s", handler.getName()),
 		Description: "Main production endpoints",

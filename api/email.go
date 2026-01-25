@@ -40,12 +40,8 @@ func (h *EmailHandler) getSpec() Spec {
 		WithProperty("username", openapi3.NewStringSchema()).
 		WithProperty("password", openapi3.NewStringSchema())
 
-	spec.Components = &openapi3.Components{
-		Schemas: openapi3.Schemas{
-			"MailAccount":       &openapi3.SchemaRef{Value: accountSchema},
-			"AddAccountPayload": &openapi3.SchemaRef{Value: addAccountSchema},
-		},
-	}
+	spec.Components.Schemas["MailAccount"] = &openapi3.SchemaRef{Value: accountSchema}
+	spec.Components.Schemas["AddAccountPayload"] = &openapi3.SchemaRef{Value: addAccountSchema}
 
 	spec.AddOperation("/", http.MethodGet, &openapi3.Operation{
 		Tags:        []string{"email"},
