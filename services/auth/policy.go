@@ -23,6 +23,7 @@ const (
 	ActionDelete string = "delete"
 	ActionShare  string = "share"
 
+	ActionViewEmail         string = "view_email"
 	ActionListEmailAccounts string = "list_email_accounts"
 )
 
@@ -56,6 +57,7 @@ var policy = config.PolicyConfiguration{
 				repository.ResourceUser: {
 					{Action: ActionUpdate},
 					{Action: ActionDelete},
+					{Action: ActionViewEmail},
 				},
 				repository.ResourceMailAccount: {
 					{Action: ActionView},
@@ -108,6 +110,7 @@ var policy = config.PolicyConfiguration{
 				repository.ResourceUser: {
 					makeOwn(ActionUpdate),
 					makeOwn(ActionDelete),
+					makeOwn(ActionViewEmail),
 				},
 			},
 		},
