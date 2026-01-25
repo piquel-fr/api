@@ -29,6 +29,9 @@ func main() {
 	authService := auth.NewRealAuthService()
 	emailService := email.NewRealEmailService()
 
+	config.UsernameBlacklist = userService.GetUsernameBlacklist()
+	config.Policy = authService.GetPolicy()
+
 	router, err := api.CreateRouter(userService, authService, emailService)
 	if err != nil {
 		panic(err)

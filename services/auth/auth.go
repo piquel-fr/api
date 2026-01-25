@@ -53,7 +53,6 @@ type NewAuthService interface {
 type realAuthService struct{}
 
 func NewRealAuthService() *realAuthService {
-	config.Policy = &policy
 	return &realAuthService{}
 }
 

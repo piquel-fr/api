@@ -12,6 +12,8 @@ import (
 )
 
 type UserService interface {
+	GetUsernameBlacklist() []string
+
 	// getting the user
 	GetUserById(ctx context.Context, id int32) (*repository.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*repository.User, error)
@@ -79,4 +81,8 @@ func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([
 		limit = 200
 	}
 	return database.Queries.ListUsers(ctx, repository.ListUsersParams{Offset: offset, Limit: limit})
+}
+
+func (s *realUserService) GetUsernameBlacklist() []string {
+	return []string{"self", "users", "admin", "system"} // TODO: add more
 }
