@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/gogo/protobuf/test/data"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
@@ -24,7 +25,7 @@ type UserService interface {
 	// managing users
 	UpdateUser(ctx context.Context, id int32, username, name, image string) error
 	UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error
-	RegisterUser(ctx context.Context, email, username, name, image, role string) error
+	RegisterUser(ctx context.Context, username, email, name, image, role string) error
 	DeleteUser(ctx context.Context, id int32) error
 
 	// other
@@ -59,7 +60,13 @@ func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, na
 		return err
 	}
 
-	return database.Queries.UpdateUser(ctx, repository.UpdateUserParams{ID: id, Username: username, Name: name, Image: image})
+	params := repository.UpdateUserParams{
+		ID:       id,
+		Username: username,
+		Name:     name,
+		Image:    image,
+	}
+	return database.Queries.UpdateUser(ctx, params)
 }
 
 func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error {
@@ -71,11 +78,38 @@ func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, usernam
 	if err := config.Policy.ValidateRole(role); err != nil {
 		return err
 	}
-	return database.Queries.UpdateUserAdmin(ctx, repository.UpdateUserAdminParams{ID: id, Username: username, Email: email, Name: name, Image: image, Role: role})
+
+	params := repository.UpdateUserAdminParams{
+		ID:       id,
+		Username: username,
+		Email:    email,
+		Name:     name,
+		Image:    image,
+		Role:     role,
+	}
+	return database.Queries.UpdateUserAdmin(ctx, params)
 }
 
-func (s *realUserService) RegisterUser(ctx context.Context, email, username, name, image, role string) error {
-	return nil
+func (s *realUserService) RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error) {
+	username, err := s.ValidateAndFormatUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := config.Policy.ValidateRole(role); err != nil {
+		return nil, err
+	}
+
+	params := repository.AddUserParams{
+		Username: username,
+		Email:    email,
+		Name:     name,
+		Image:    image,
+		Role:     role,
+	}
+
+	user, err := database.Queries.AddUser(ctx, params)
+	return &user, err
 }
 
 func (s *realUserService) DeleteUser(ctx context.Context, id int32) error {
