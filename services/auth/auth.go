@@ -30,6 +30,25 @@ type AuthService interface {
 	GetPolicy() *PolicyConfiguration
 }
 
+// TEMP: the new auth interface that will be made alongside the new user service
+type NewAuthService interface {
+	GetPolicy() *PolicyConfiguration
+	GetProvider(name string) (oauth.Provider, error)
+
+	// token management
+	GenerateToken(user *repository.User) *jwt.Token // TODO: also save expiry and refresh
+	signToken(token *jwt.Token) (string, error)
+	getTokenFromRequest(r *http.Request) (*jwt.Token, error)
+
+	// authentication
+	GetUserFromContext(ctx context.Context) (*repository.User, error) // gets user from context (should be saved there by auth middleware)
+	GetUserFromOAuthUser()
+
+	// authorization
+	Authorize(request *Request) error
+	AuthMiddleware(next http.Handler) http.Handler
+}
+
 // auth service has no state
 type realAuthService struct{}
 
