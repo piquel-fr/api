@@ -13,3 +13,6 @@ SELECT * FROM "users" WHERE "email" = $1;
 
 -- name: UpdateUser :exec
 UPDATE "users" SET "username" = $2, "name" = $3, "image" = $4 WHERE "id" = $1;
+
+-- name: UpdateUserAdmin :exec
+UPDATE "users" SET "username" = $2, "email" = $3, "name" = $4, "image" = $5, "role" = $6 WHERE "id" = $1;
