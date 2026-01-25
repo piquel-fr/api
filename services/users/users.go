@@ -3,15 +3,12 @@ package users
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"slices"
 
-	"github.com/gogo/protobuf/test/data"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/utils"
-	"github.com/piquel-fr/api/utils/errors"
 )
 
 type UserService interface {
@@ -55,7 +52,7 @@ func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*re
 }
 
 func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, name, image string) error {
-	username, err := s.ValidateAndFormatUsername(username)
+	username, err := s.FormatAndValidateUsername(username)
 	if err != nil {
 		return err
 	}
@@ -70,7 +67,7 @@ func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, na
 }
 
 func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error {
-	username, err := s.ValidateAndFormatUsername(username)
+	username, err := s.FormatAndValidateUsername(username)
 	if err != nil {
 		return err
 	}
@@ -91,7 +88,7 @@ func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, usernam
 }
 
 func (s *realUserService) RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error) {
-	username, err := s.ValidateAndFormatUsername(username)
+	username, err := s.FormatAndValidateUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -113,10 +110,11 @@ func (s *realUserService) RegisterUser(ctx context.Context, username, email, nam
 }
 
 func (s *realUserService) DeleteUser(ctx context.Context, id int32) error {
+	// TODO: delete user
 	return nil
 }
 
-func (s *realUserService) ValidateAndFormatUsername(username string) (string, error) {
+func (s *realUserService) FormatAndValidateUsername(username string) (string, error) {
 	username = utils.FormatUsername(username)
 	if slices.Contains(config.UsernameBlacklist, username) {
 		return "", fmt.Errorf("username %s is not legal", username)
