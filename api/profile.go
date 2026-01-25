@@ -24,6 +24,7 @@ func (h *ProfileHandler) getName() string { return "profile" }
 
 func (h *ProfileHandler) getSpec() Spec {
 	spec := newSpecBase(h)
+	spec.Info.Description = "DEPRECATED " + spec.Info.Description
 
 	userSchema := openapi3.NewObjectSchema().
 		WithProperty("id", openapi3.NewInt32Schema()).
