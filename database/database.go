@@ -15,10 +15,12 @@ var Connection *pgxpool.Pool
 func InitDatabase() {
 	log.Printf("[Database] Attempting to connect to the database...\n")
 
-	Connection, err := pgxpool.New(context.Background(), config.Envs.DBURL)
+	conn, err := pgxpool.New(context.Background(), config.Envs.DBURL)
 	if err != nil {
 		panic(err)
 	}
+
+	Connection = conn
 
 	if err = Connection.Ping(context.Background()); err != nil {
 		panic(err)

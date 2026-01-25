@@ -40,7 +40,7 @@ func makeOwn(action string) *Permission {
 }
 
 var policy = PolicyConfiguration{
-	Permissions: map[string]*Permission{},
+	Presets: map[string]*Permission{},
 	Roles: Roles{
 		RoleSystem: {
 			Name:        "System",
