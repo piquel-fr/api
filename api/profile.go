@@ -97,8 +97,8 @@ func (h *ProfileHandler) getSpec() Spec {
 		},
 		Responses: openapi3.NewResponses(
 			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("User updated successfully")}),
-			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Invalid input or json")}),
-			openapi3.WithStatus(401, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Unauthorized")}),
+			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithContent(openapi3.NewContentWithSchema(openapi3.NewStringSchema(), []string{"text/plain"})).WithDescription("Invalid input or json")}),
+			openapi3.WithStatus(401, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithContent(openapi3.NewContentWithSchema(openapi3.NewStringSchema(), []string{"text/plain"})).WithDescription("Unauthorized")}),
 		),
 	})
 

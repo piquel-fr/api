@@ -99,7 +99,7 @@ func (h *EmailHandler) getSpec() Spec {
 		},
 		Responses: openapi3.NewResponses(
 			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Account created successfully")}),
-			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Invalid input")}),
+			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithContent(openapi3.NewContentWithSchema(openapi3.NewStringSchema(), []string{"text/plain"})).WithDescription("Invalid input")}),
 		),
 	})
 
