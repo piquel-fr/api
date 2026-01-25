@@ -20,7 +20,7 @@ type UserService interface {
 	// managing users
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
 	UpdateUserAdmin(ctx context.Context, params repository.UpdateUserAdminParams) error
-	RegisterUser(ctx context.Context, email, username, name, image, role string) error // does not validate the role
+	RegisterUser(ctx context.Context, email, username, name, image, role string) error
 	DeleteUser(ctx context.Context, id int32) error
 
 	// other
@@ -55,7 +55,6 @@ func (s *realUserService) UpdateUserAdmin(ctx context.Context, params repository
 	return nil
 }
 
-// does not validate the role
 func (s *realUserService) RegisterUser(ctx context.Context, email, username, name, image, role string) error {
 	return nil
 }

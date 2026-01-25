@@ -11,6 +11,11 @@ type PolicyConfiguration struct {
 	Roles   map[string]*Role       `json:"roles"`
 }
 
+func (p *PolicyConfiguration) ValidateRole(role string) bool {
+	_, ok := p.Roles[role]
+	return ok
+}
+
 type Permission struct {
 	Action     string     `json:"action"`
 	Conditions Conditions `json:"-"`
