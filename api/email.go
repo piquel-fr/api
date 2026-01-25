@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
@@ -248,7 +249,7 @@ func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request
 		user = requester
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      requester,
 		Ressource: user,
 		Context:   r.Context(),
@@ -335,7 +336,7 @@ func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &accountInfo,
 		Actions:   []string{auth.ActionView},
@@ -371,7 +372,7 @@ func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionDelete},
@@ -400,7 +401,7 @@ func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionShare},
@@ -441,7 +442,7 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionShare},

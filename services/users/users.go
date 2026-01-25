@@ -22,7 +22,7 @@ type UserService interface {
 	// managing users
 	UpdateUser(ctx context.Context, id int32, username, name, image string) error
 	UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error
-	RegisterUser(ctx context.Context, username, email, name, image, role string) error
+	RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error)
 	DeleteUser(ctx context.Context, id int32) error
 
 	// other

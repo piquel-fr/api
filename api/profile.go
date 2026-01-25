@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
@@ -181,7 +182,7 @@ func (h *ProfileHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	request := &auth.Request{
+	request := &config.AuthRequest{
 		User:      user,
 		Ressource: user,
 		Actions:   []string{auth.ActionUpdate},
