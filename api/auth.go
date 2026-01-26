@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/users"
@@ -74,12 +75,13 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 	}
 
 	user, err := h.userService.GetUserByEmail(r.Context(), oauthUser.Email)
+	if errors.Is(err, pgx.ErrNoRows) {
+		user, err = h.userService.RegisterUser(r.Context(), oauthUser.Username, oauthUser.Email, oauthUser.Name, oauthUser.Image, auth.RoleDefault)
+	}
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
-
-	// TODO: if user doesn't exist, create it
 
 	tokenString, err := h.authService.SignToken(h.authService.GenerateToken(user))
 	if err != nil {
