@@ -17,14 +17,15 @@ const (
 )
 
 const (
-	ActionView   string = "view"
-	ActionCreate string = "create"
-	ActionUpdate string = "update"
-	ActionDelete string = "delete"
-	ActionShare  string = "share"
+	ActionView   = "view"
+	ActionCreate = "create"
+	ActionUpdate = "update"
+	ActionDelete = "delete"
+	ActionShare  = "share"
 
-	ActionViewEmail         string = "view_email"
-	ActionListEmailAccounts string = "list_email_accounts"
+	ActionUpdateAdmin       = "update_admin"
+	ActionViewEmail         = "view_email"
+	ActionListEmailAccounts = "list_email_accounts"
 )
 
 func own(request *config.AuthRequest) error {
@@ -58,6 +59,7 @@ var policy = config.PolicyConfiguration{
 					{Action: ActionUpdate},
 					{Action: ActionDelete},
 					{Action: ActionViewEmail},
+					{Action: ActionUpdateAdmin},
 				},
 				repository.ResourceMailAccount: {
 					{Action: ActionView},
