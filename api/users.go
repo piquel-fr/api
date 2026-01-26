@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/errors"
@@ -164,7 +165,38 @@ func (h *UserHandler) handleGetSelf(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request)      {} // TODO: check for view email address permission, if false return empty email address
+func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("user")
+	user, err := h.userService.GetUserByUsername(r.Context(), username)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	requester, err := h.authService.GetUserFromContext(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	request := &config.AuthRequest{
+		User:      requester,
+		Ressource: user,
+		Actions:   []string{auth.ActionViewEmail},
+		Context:   r.Context(),
+	}
+
+	if err := h.authService.Authorize(request); err == errors.ErrorForbidden {
+		user.Email = ""
+	} else if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
 func (h *UserHandler) handlePutUser(w http.ResponseWriter, r *http.Request)      {} // TODO: implement loads of validation for username (like make blacklist)
 func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request)   {}
 func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request) {} // TODO: allow updating role and email
