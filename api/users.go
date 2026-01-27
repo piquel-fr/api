@@ -188,6 +188,7 @@ func (h *UserHandler) createHttpHandler() http.Handler {
 
 	handler.Handle("OPTIONS /self", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{user}", middleware.CreateOptionsHandler("GET", "PUT", "DELETE"))
+	handler.Handle("OPTIONS /{user}/admin", middleware.CreateOptionsHandler("PUT"))
 
 	return handler
 }
