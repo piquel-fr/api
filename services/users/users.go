@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
-	"github.com/piquel-fr/api/utils"
 )
 
 type UserService interface {
@@ -115,7 +115,7 @@ func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User)
 }
 
 func (s *realUserService) FormatAndValidateUsername(username string) (string, error) {
-	username = utils.FormatUsername(username)
+	username = strings.ReplaceAll(strings.ToLower(username), " ", "")
 	if slices.Contains(config.UsernameBlacklist, username) {
 		return "", fmt.Errorf("username %s is not legal", username)
 	}
