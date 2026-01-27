@@ -140,7 +140,7 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 	}
 
 	// regex
-	matched, err := regexp.MatchString("[a-z0-9]+", username)
+	matched, err := regexp.MatchString("^[a-z0-9]+$", username)
 	if !matched {
 		random = true
 		if !force {
