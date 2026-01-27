@@ -39,7 +39,6 @@ func CreateRouter(userService users.UserService, authService auth.AuthService, e
 
 	handlers := []Handler{
 		CreateUserHandler(userService, authService),
-		CreateProfileHandler(userService, authService),
 		CreateEmailHandler(userService, authService, emailService),
 	}
 
