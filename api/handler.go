@@ -2,13 +2,16 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/email"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
@@ -20,17 +23,24 @@ type Handler interface {
 	createHttpHandler() http.Handler
 }
 
-func CreateRouter(authService auth.AuthService, emailService email.EmailService) (http.Handler, error) {
+func CreateRouter(userService users.UserService, authService auth.AuthService, emailService email.EmailService) (http.Handler, error) {
 	// these routes are unauthenticated and should remail so.
 	// do not any other routes to this router. all other routes
 	// should be added to createProtectedRouter
 	router := http.NewServeMux()
 	router.HandleFunc("/{$}", rootHandler)
-	router.Handle("/auth/", http.StripPrefix("/auth", CreateAuthHandler(authService).createHttpHandler()))
+	router.Handle("/auth/", http.StripPrefix("/auth", CreateAuthHandler(userService, authService).createHttpHandler()))
+
+	configHandler, err := configHandler()
+	if err != nil {
+		return nil, err
+	}
+	router.HandleFunc("/config.json", configHandler)
 
 	handlers := []Handler{
-		CreateProfileHandler(authService),
-		CreateEmailHandler(authService, emailService),
+		CreateUserHandler(userService, authService),
+		CreateProfileHandler(userService, authService),
+		CreateEmailHandler(userService, authService, emailService),
 	}
 
 	for _, handler := range handlers {
@@ -45,7 +55,7 @@ func CreateRouter(authService auth.AuthService, emailService email.EmailService)
 
 	// bind the protected router
 	protectedRouter := createProtectedRouter(handlers)
-	protectedRouter = middleware.AddMiddleware(protectedRouter, middleware.AuthMiddleware(authService))
+	protectedRouter = middleware.AddMiddleware(protectedRouter, authService.AuthMiddleware)
 	router.Handle("/", protectedRouter)
 
 	return middleware.AddMiddleware(router, middleware.CORSMiddleware), nil
@@ -68,6 +78,18 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Welcome to the Piquel API! Visit the <a href=\"https://piquel.fr/docs\">API</a> for more information."))
 }
 
+func configHandler() (http.HandlerFunc, error) {
+	data, err := json.Marshal(config.GetPublicConfig())
+	if err != nil {
+		return nil, err
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.Write(data)
+	}, nil
+}
+
 func newSpecBase(handler Handler) Spec {
 	spec := &openapi3.T{
 		OpenAPI: "3.0.3",
@@ -85,6 +107,22 @@ func newSpecBase(handler Handler) Spec {
 			URL:         "https://piquel.fr",
 		},
 	}
+
+	securitySchemeName := "bearerAuth"
+	spec.Components = &openapi3.Components{
+		SecuritySchemes: openapi3.SecuritySchemes{
+			securitySchemeName: &openapi3.SecuritySchemeRef{
+				Value: &openapi3.SecurityScheme{
+					Type:         "http",
+					Scheme:       "bearer",
+					BearerFormat: "JWT",
+					Description:  "Enter your bearer token in the format: Bearer <token>",
+				},
+			},
+		},
+	}
+
+	spec.Security = openapi3.SecurityRequirements{{securitySchemeName: []string{}}}
 
 	spec.AddServer(&openapi3.Server{
 		URL:         fmt.Sprintf("https://api.piquel.fr/%s", handler.getName()),

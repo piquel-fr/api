@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
 	"golang.org/x/oauth2"
 )
@@ -55,7 +54,7 @@ func (gh *github) FetchUser(context context.Context, token *oauth2.Token) (*User
 		Name:     u.Name,
 		Email:    u.Email,
 		Image:    u.Picture,
-		Username: utils.FormatUsername(u.Login),
+		Username: u.Login, // will be formated by user service
 	}
 
 	if user.Email == "" {

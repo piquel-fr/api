@@ -3,10 +3,11 @@ package auth
 import (
 	"slices"
 
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/utils/errors"
 )
 
-func (s *realAuthService) Authorize(request *Request) error {
+func (s *realAuthService) Authorize(request *config.AuthRequest) error {
 	if request.User == nil || request.Ressource == nil {
 		return newRequestMalformedError(request)
 	}
@@ -35,16 +36,16 @@ func (s *realAuthService) Authorize(request *Request) error {
 	return errors.ErrorForbidden
 }
 
-func (s *realAuthService) authorize(request *Request, roleName, resourceName string, checkedRoles []string) (bool, error) {
+func (s *realAuthService) authorize(request *config.AuthRequest, roleName, resourceName string, checkedRoles []string) (bool, error) {
 	role, ok := policy.Roles[roleName]
 	if !ok {
 		return false, newRoleNotFoundError(roleName)
 	}
 
-	var permissions []*Permission
+	var permissions []*config.Permission
 
 	if role.Permissions == nil {
-		permissions = []*Permission{}
+		permissions = []*config.Permission{}
 	} else {
 		permissions = role.Permissions[resourceName]
 	}
@@ -65,7 +66,7 @@ func (s *realAuthService) authorize(request *Request, roleName, resourceName str
 			checkedRoles = append(checkedRoles, roleName)
 
 			for _, parent := range parents {
-				parentRequest := &Request{
+				parentRequest := &config.AuthRequest{
 					User:      request.User,
 					Ressource: request.Ressource,
 					Actions:   []string{action},
@@ -95,7 +96,7 @@ func (s *realAuthService) authorize(request *Request, roleName, resourceName str
 	return true, nil
 }
 
-func (s *realAuthService) validateAction(permissions []*Permission, action string, request *Request) (bool, error) {
+func (s *realAuthService) validateAction(permissions []*config.Permission, action string, request *config.AuthRequest) (bool, error) {
 	for _, permission := range permissions {
 
 		if permission.Preset != "" {
@@ -123,7 +124,7 @@ func (s *realAuthService) validateAction(permissions []*Permission, action strin
 	return false, nil
 }
 
-func (s *realAuthService) checkPermission(permission *Permission, request *Request) (bool, error) {
+func (s *realAuthService) checkPermission(permission *config.Permission, request *config.AuthRequest) (bool, error) {
 	if permission.Conditions == nil {
 		return true, nil
 	}

@@ -5,25 +5,28 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/services/auth"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
 type AuthHandler struct {
+	userService users.UserService
 	authService auth.AuthService
 }
 
-func CreateAuthHandler(authService auth.AuthService) *AuthHandler {
-	return &AuthHandler{authService}
+func CreateAuthHandler(userService users.UserService, authService auth.AuthService) *AuthHandler {
+	return &AuthHandler{userService, authService}
 }
 
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /policy.json", h.policyHandler)
+	handler.HandleFunc("GET /policy.json", h.policyHandler) // DEPRECATED TODO: remove
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
@@ -71,13 +74,16 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := h.authService.GetUser(r.Context(), oauthUser)
+	user, err := h.userService.GetUserByEmail(r.Context(), oauthUser.Email)
+	if errors.Is(err, pgx.ErrNoRows) {
+		user, err = h.userService.RegisterUser(r.Context(), oauthUser.Username, oauthUser.Email, oauthUser.Name, oauthUser.Image, auth.RoleDefault)
+	}
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	tokenString, err := h.authService.GenerateTokenString(user.ID)
+	tokenString, err := h.authService.SignToken(h.authService.GenerateToken(user))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
