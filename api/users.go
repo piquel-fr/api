@@ -47,7 +47,7 @@ func (h *UserHandler) getSpec() Spec {
 		WithProperty("username", openapi3.NewStringSchema()).
 		WithProperty("name", openapi3.NewStringSchema()).
 		WithProperty("image", openapi3.NewStringSchema()).
-		WithProperty("email", openapi3.NewStringSchema()).
+		WithProperty("email", openapi3.NewStringSchema().WithFormat("email")).
 		WithProperty("role", openapi3.NewStringSchema()).
 		WithRequired([]string{"username", "name", "image", "email", "role"})
 
