@@ -236,6 +236,129 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func (h *UserHandler) handlePutUser(w http.ResponseWriter, r *http.Request)      {} // TODO: implement loads of validation for username (like make blacklist)
-func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request)   {}
-func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request) {} // TODO: allow updating role and email
+func (h *UserHandler) handlePutUser(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("user")
+
+	user, err := h.userService.GetUserByUsername(r.Context(), username)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	requester, err := h.authService.GetUserFromContext(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	request := &config.AuthRequest{
+		User:      requester,
+		Ressource: user,
+		Actions:   []string{auth.ActionUpdate},
+		Context:   r.Context(),
+	}
+
+	if err := h.authService.Authorize(request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "please submit your creation request with the required json payload", http.StatusBadRequest)
+		return
+	}
+
+	params := repository.UpdateUserParams{}
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params.ID = user.ID
+
+	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("user")
+	user, err := h.userService.GetUserByUsername(r.Context(), username)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	requester, err := h.authService.GetUserFromContext(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	request := &config.AuthRequest{
+		User:      requester,
+		Ressource: user,
+		Actions:   []string{auth.ActionDelete},
+		Context:   r.Context(),
+	}
+
+	if err := h.authService.Authorize(request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.userService.DeleteUser(r.Context(), user); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("user")
+
+	user, err := h.userService.GetUserByUsername(r.Context(), username)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	requester, err := h.authService.GetUserFromContext(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	request := &config.AuthRequest{
+		User:      requester,
+		Ressource: user,
+		Actions:   []string{auth.ActionUpdateAdmin},
+		Context:   r.Context(),
+	}
+
+	if err := h.authService.Authorize(request); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "please submit your creation request with the required json payload", http.StatusBadRequest)
+		return
+	}
+
+	params := repository.UpdateUserAdminParams{}
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	params.ID = user.ID
+
+	if err := database.Queries.UpdateUserAdmin(r.Context(), params); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
