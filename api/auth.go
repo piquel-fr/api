@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -26,7 +25,6 @@ func CreateAuthHandler(userService users.UserService, authService auth.AuthServi
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /policy.json", h.policyHandler) // DEPRECATED TODO: remove
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
@@ -34,13 +32,6 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
 	return handler
-}
-
-func (h *AuthHandler) policyHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(h.authService.GetPolicy()); err != nil {
-		errors.HandleError(w, r, err)
-	}
 }
 
 func (h *AuthHandler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
