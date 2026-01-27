@@ -117,6 +117,7 @@ func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User)
 
 // @param force: if the validation can fail. When creating a new user through OAuth, user creation cannot fail. We will thus create a random one
 func (s *realUserService) formatAndValidateUsername(ctx context.Context, username string, force bool) (string, error) {
+	// check if username actually changing
 	user, err := s.GetUserFromContext(ctx)
 	if err != nil {
 		return "", err
@@ -126,18 +127,11 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 		return username, nil
 	}
 
-	log.Printf("formatting %s", username)
+	// formatting
 	random := false
 	username = strings.ReplaceAll(strings.ToLower(username), " ", "")
 
-	matched, err := regexp.MatchString("[a-z0-9]+", username)
-	if !matched {
-		random = true
-		if !force {
-			return "", errors.NewError(fmt.Sprintf("username %s contains illegal characters. only letters and numbers are allowed", username), http.StatusBadRequest)
-		}
-	}
-
+	// blacklist
 	if slices.Contains(config.UsernameBlacklist, username) {
 		random = true
 		if !force {
@@ -145,6 +139,22 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 		}
 	}
 
+	// regex
+	matched, err := regexp.MatchString("[a-z0-9]+", username)
+	if !matched {
+		random = true
+		if !force {
+			return "", errors.NewError(fmt.Sprintf("username %s contains illegal characters. only letters and numbers are allowed", username), http.StatusBadRequest)
+		}
+	}
+	if err != nil {
+		random = true
+		if !force {
+			return "", fmt.Errorf("error matching regex in username validation")
+		}
+	}
+
+	// already existing users
 	names, err := database.Queries.ListUserNames(ctx)
 	if err != nil {
 		random = true
@@ -160,6 +170,7 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 		}
 	}
 
+	// random generation
 	if random {
 		username = rand.Text()
 		username, err = s.formatAndValidateUsername(ctx, username, true)
