@@ -3,9 +3,6 @@ package middleware
 import (
 	"net/http"
 	"strings"
-
-	"github.com/piquel-fr/api/services/auth"
-	"github.com/piquel-fr/api/utils/errors"
 )
 
 type Middleware func(http.Handler) http.Handler
@@ -40,24 +37,6 @@ func CORSMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-func AuthMiddleware(auth auth.AuthService) Middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodOptions {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			_, err := auth.GetToken(r)
-			if err != nil {
-				errors.HandleError(w, r, err)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	}
 }
 
 func CreateOptionsHandler(methods ...string) http.Handler {

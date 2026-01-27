@@ -2,9 +2,11 @@ package auth
 
 import (
 	"fmt"
+
+	"github.com/piquel-fr/api/config"
 )
 
-func newRequestMalformedError(request *Request) error {
+func newRequestMalformedError(request *config.AuthRequest) error {
 	return fmt.Errorf("Request is malformed: %v", request)
 }
 

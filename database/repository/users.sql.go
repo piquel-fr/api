@@ -100,6 +100,67 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	return i, err
 }
 
+const listUserNames = `-- name: ListUserNames :many
+SELECT "username" FROM "users"
+`
+
+func (q *Queries) ListUserNames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listUserNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, username, name, image, email, role, "createdAt" FROM "users" ORDER BY "id" ASC LIMIT $1 OFFSET $2
+`
+
+type ListUsersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Name,
+			&i.Image,
+			&i.Email,
+			&i.Role,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE "users" SET "username" = $2, "name" = $3, "image" = $4 WHERE "id" = $1
 `
@@ -117,6 +178,31 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.Username,
 		arg.Name,
 		arg.Image,
+	)
+	return err
+}
+
+const updateUserAdmin = `-- name: UpdateUserAdmin :exec
+UPDATE "users" SET "username" = $2, "email" = $3, "name" = $4, "image" = $5, "role" = $6 WHERE "id" = $1
+`
+
+type UpdateUserAdminParams struct {
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Image    string `json:"image"`
+	Role     string `json:"role"`
+}
+
+func (q *Queries) UpdateUserAdmin(ctx context.Context, arg UpdateUserAdminParams) error {
+	_, err := q.db.Exec(ctx, updateUserAdmin,
+		arg.ID,
+		arg.Username,
+		arg.Email,
+		arg.Name,
+		arg.Image,
+		arg.Role,
 	)
 	return err
 }

@@ -29,6 +29,10 @@ func (e *Error) Error() string {
 	return e.message
 }
 
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}
+
 func getError(err error) *Error {
 	if err == nil {
 		panic("nil error being handled")
