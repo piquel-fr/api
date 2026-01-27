@@ -14,6 +14,9 @@ SELECT * FROM "users" WHERE "email" = $1;
 -- name: ListUsers :many
 SELECT * FROM "users" ORDER BY "id" ASC LIMIT $1 OFFSET $2;
 
+-- name: ListUserNames :many
+SELECT "username" FROM "users";
+
 -- name: UpdateUser :exec
 UPDATE "users" SET "username" = $2, "name" = $3, "image" = $4 WHERE "id" = $1;
 

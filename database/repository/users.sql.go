@@ -100,6 +100,30 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	return i, err
 }
 
+const listUserNames = `-- name: ListUserNames :many
+SELECT "username" FROM "users"
+`
+
+func (q *Queries) ListUserNames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listUserNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id, username, name, image, email, role, "createdAt" FROM "users" ORDER BY "id" ASC LIMIT $1 OFFSET $2
 `
