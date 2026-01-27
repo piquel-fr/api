@@ -31,6 +31,8 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
+	// TODO: refresh system
+
 	return handler
 }
 
