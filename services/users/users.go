@@ -158,7 +158,7 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 	if err != nil {
 		random = true
 		if !force {
-			return "", nil
+			return "", err
 		}
 	}
 
