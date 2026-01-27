@@ -6,6 +6,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
+	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/errors"
@@ -42,9 +44,18 @@ func (h *UserHandler) getSpec() Spec {
 		WithProperty("image", openapi3.NewStringSchema()).
 		WithRequired([]string{"username", "name", "image"})
 
+	updateUserAdminSchema := openapi3.NewObjectSchema().
+		WithProperty("username", openapi3.NewStringSchema()).
+		WithProperty("name", openapi3.NewStringSchema()).
+		WithProperty("image", openapi3.NewStringSchema()).
+		WithProperty("email", openapi3.NewStringSchema()).
+		WithProperty("role", openapi3.NewStringSchema()).
+		WithRequired([]string{"username", "name", "image", "email", "role"})
+
 	spec.Components.Schemas = openapi3.Schemas{
-		"User":             &openapi3.SchemaRef{Value: userSchema},
-		"UpdateUserParams": &openapi3.SchemaRef{Value: updateUserSchema},
+		"User":                  &openapi3.SchemaRef{Value: userSchema},
+		"UpdateUserParams":      &openapi3.SchemaRef{Value: updateUserSchema},
+		"UpdateUserAdminParams": &openapi3.SchemaRef{Value: updateUserAdminSchema},
 	}
 
 	spec.AddOperation("/self", http.MethodGet, &openapi3.Operation{
@@ -134,6 +145,36 @@ func (h *UserHandler) getSpec() Spec {
 		),
 	})
 
+	spec.AddOperation("/{user}/admin", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"users", "admin"},
+		Summary:     "Update user",
+		Description: "Update the profile of the specified user",
+		OperationID: "update-user-admin",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "path",
+					Required:    true,
+					Description: "The username to update",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		RequestBody: &openapi3.RequestBodyRef{
+			Value: &openapi3.RequestBody{
+				Required: true,
+				Content: openapi3.NewContentWithJSONSchemaRef(
+					openapi3.NewSchemaRef("#/components/schemas/UpdateUserAdminParams", updateUserAdminSchema),
+				),
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("User updated successfully")}),
+			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithContent(openapi3.NewContentWithSchema(openapi3.NewStringSchema(), []string{"text/plain"})).WithDescription("Invalid input or json")}),
+		),
+	})
+
 	return spec
 }
 
@@ -144,8 +185,6 @@ func (h *UserHandler) createHttpHandler() http.Handler {
 	handler.HandleFunc("GET /{user}", h.handleGetUser)
 	handler.HandleFunc("PUT /{user}", h.handlePutUser)
 	handler.HandleFunc("DELETE /{user}", h.handleDeleteUser)
-
-	// TODO: add spec entry
 	handler.HandleFunc("PUT /{user}/admin", h.handlePutUserAdmin)
 
 	handler.Handle("OPTIONS /self", middleware.CreateOptionsHandler("GET"))
