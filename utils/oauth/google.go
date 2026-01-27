@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/piquel-fr/api/utils"
 	"golang.org/x/oauth2"
 )
 
@@ -48,7 +47,7 @@ func (gg *google) FetchUser(context context.Context, token *oauth2.Token) (*User
 		Name:     u.Name,
 		Email:    u.Email,
 		Image:    u.Picture,
-		Username: utils.FormatUsername(u.Name),
+		Username: u.Name, // will be formated by the users service
 	}
 
 	return user, nil

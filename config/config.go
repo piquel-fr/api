@@ -28,9 +28,23 @@ type EnvsConfig struct {
 	ImapPort string
 }
 
+type PublicConfig struct {
+	Policy            *PolicyConfiguration `json:"policy"`
+	UsernameBlacklist []string             `json:"username_blacklist"`
+}
+
+func GetPublicConfig() PublicConfig {
+	return PublicConfig{Policy, UsernameBlacklist}
+}
+
 var Envs EnvsConfig
 var MaxDocsInstanceCount int64 = 3
 var JWTSigningMethod jwt.SigningMethod = jwt.SigningMethodHS256
+var UserContextKey = "user"
+
+// these are populated by external services
+var UsernameBlacklist []string
+var Policy *PolicyConfiguration
 
 func LoadConfig() {
 	godotenv.Load()

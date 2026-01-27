@@ -6,21 +6,24 @@ import (
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/email"
+	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/middleware"
 )
 
 type EmailHandler struct {
+	userService  users.UserService
 	authService  auth.AuthService
 	emailService email.EmailService
 }
 
-func CreateEmailHandler(authService auth.AuthService, emailService email.EmailService) *EmailHandler {
-	return &EmailHandler{authService, emailService}
+func CreateEmailHandler(userService users.UserService, authService auth.AuthService, emailService email.EmailService) *EmailHandler {
+	return &EmailHandler{userService, authService, emailService}
 }
 
 func (h *EmailHandler) getName() string { return "email" }
@@ -40,11 +43,9 @@ func (h *EmailHandler) getSpec() Spec {
 		WithProperty("username", openapi3.NewStringSchema()).
 		WithProperty("password", openapi3.NewStringSchema())
 
-	spec.Components = &openapi3.Components{
-		Schemas: openapi3.Schemas{
-			"MailAccount":       &openapi3.SchemaRef{Value: accountSchema},
-			"AddAccountPayload": &openapi3.SchemaRef{Value: addAccountSchema},
-		},
+	spec.Components.Schemas = openapi3.Schemas{
+		"MailAccount":       &openapi3.SchemaRef{Value: accountSchema},
+		"AddAccountPayload": &openapi3.SchemaRef{Value: addAccountSchema},
 	}
 
 	spec.AddOperation("/", http.MethodGet, &openapi3.Operation{
@@ -235,7 +236,7 @@ func (h *EmailHandler) createHttpHandler() http.Handler {
 }
 
 func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
-	requester, err := h.authService.GetUserFromRequest(r)
+	requester, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -243,7 +244,7 @@ func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request
 
 	var user *repository.User
 	if username := r.URL.Query().Get("user"); username != "" {
-		user, err = h.authService.GetUserFromUsername(r.Context(), username)
+		user, err = h.userService.GetUserByUsername(r.Context(), username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -252,7 +253,7 @@ func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request
 		user = requester
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      requester,
 		Ressource: user,
 		Context:   r.Context(),
@@ -296,7 +297,7 @@ func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request
 }
 
 func (h *EmailHandler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromRequest(r)
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -321,7 +322,7 @@ func (h *EmailHandler) handleAddAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromRequest(r)
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -339,7 +340,7 @@ func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &accountInfo,
 		Actions:   []string{auth.ActionView},
@@ -363,7 +364,7 @@ func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromRequest(r)
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -375,7 +376,7 @@ func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionDelete},
@@ -392,7 +393,7 @@ func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromRequest(r)
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -404,7 +405,7 @@ func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionShare},
@@ -414,7 +415,7 @@ func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	sharingUser, err := h.authService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
+	sharingUser, err := h.userService.GetUserByUsername(r.Context(), r.URL.Query().Get("user"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -433,7 +434,7 @@ func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request
 }
 
 func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromRequest(r)
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -445,7 +446,7 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if err := h.authService.Authorize(&auth.Request{
+	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
 		Ressource: &account,
 		Actions:   []string{auth.ActionShare},
@@ -455,7 +456,7 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	sharingUser, err := h.authService.GetUserFromUsername(r.Context(), r.URL.Query().Get("user"))
+	sharingUser, err := h.userService.GetUserByUsername(r.Context(), r.URL.Query().Get("user"))
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
