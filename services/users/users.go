@@ -68,8 +68,8 @@ func (s *realUserService) UpdateUser(ctx context.Context, params repository.Upda
 	if err != nil {
 		return err
 	}
-
 	params.Username = username
+
 	return database.Queries.UpdateUser(ctx, params)
 }
 
@@ -78,12 +78,12 @@ func (s *realUserService) UpdateUserAdmin(ctx context.Context, params repository
 	if err != nil {
 		return err
 	}
+	params.Username = username
 
 	if err := config.Policy.ValidateRole(params.Role); err != nil {
 		return err
 	}
 
-	params.Username = username
 	return database.Queries.UpdateUserAdmin(ctx, params)
 }
 
@@ -149,7 +149,7 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 	if err != nil {
 		random = true
 		if !force {
-			return "", fmt.Errorf("error matching regex in username validation")
+			return "", fmt.Errorf("error matching regex in username validation: %w", err)
 		}
 	}
 
