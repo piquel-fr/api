@@ -23,7 +23,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, id int32, username, name, image string) error
 	UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error
 	RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error)
-	DeleteUser(ctx context.Context, id int32) error
+	DeleteUser(ctx context.Context, user *repository.User) error
 
 	// other
 	FormatAndValidateUsername(username string) (string, error)
@@ -109,7 +109,7 @@ func (s *realUserService) RegisterUser(ctx context.Context, username, email, nam
 	return &user, err
 }
 
-func (s *realUserService) DeleteUser(ctx context.Context, id int32) error {
+func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User) error {
 	// TODO: delete user
 	return nil
 }
