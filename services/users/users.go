@@ -117,6 +117,15 @@ func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User)
 
 // @param force: if the validation can fail. When creating a new user through OAuth, user creation cannot fail. We will thus create a random one
 func (s *realUserService) formatAndValidateUsername(ctx context.Context, username string, force bool) (string, error) {
+	user, err := s.GetUserFromContext(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	if user.Username == username {
+		return username, nil
+	}
+
 	log.Printf("formatting %s", username)
 	random := false
 	username = strings.ReplaceAll(strings.ToLower(username), " ", "")
