@@ -6,7 +6,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/users"
@@ -206,7 +205,7 @@ func (h *ProfileHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Requ
 
 	params.ID = user.ID
 
-	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
+	if err := h.userService.UpdateUser(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
