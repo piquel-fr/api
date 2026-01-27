@@ -40,6 +40,7 @@ func GetPublicConfig() PublicConfig {
 var Envs EnvsConfig
 var MaxDocsInstanceCount int64 = 3
 var JWTSigningMethod jwt.SigningMethod = jwt.SigningMethodHS256
+var UserContextKey = "user"
 
 // these are populated by external services
 var UsernameBlacklist []string

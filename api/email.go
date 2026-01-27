@@ -236,7 +236,7 @@ func (h *EmailHandler) createHttpHandler() http.Handler {
 }
 
 func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request) {
-	requester, err := h.authService.GetUserFromContext(r.Context())
+	requester, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -297,7 +297,7 @@ func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request
 }
 
 func (h *EmailHandler) handleAddAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromContext(r.Context())
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -322,7 +322,7 @@ func (h *EmailHandler) handleAddAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromContext(r.Context())
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -364,7 +364,7 @@ func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromContext(r.Context())
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -393,7 +393,7 @@ func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromContext(r.Context())
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -434,7 +434,7 @@ func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request
 }
 
 func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromContext(r.Context())
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

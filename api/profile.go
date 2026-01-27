@@ -150,7 +150,7 @@ func (h *ProfileHandler) handleGetProfile(w http.ResponseWriter, r *http.Request
 func (h *ProfileHandler) handleGetProfileQuery(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		user, err := h.authService.GetUserFromContext(r.Context())
+		user, err := h.userService.GetUserFromContext(r.Context())
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return

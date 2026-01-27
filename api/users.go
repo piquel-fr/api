@@ -193,7 +193,7 @@ func (h *UserHandler) createHttpHandler() http.Handler {
 }
 
 func (h *UserHandler) handleGetSelf(w http.ResponseWriter, r *http.Request) {
-	user, err := h.authService.GetUserFromContext(r.Context())
+	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -211,7 +211,7 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requester, err := h.authService.GetUserFromContext(r.Context())
+	requester, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -244,7 +244,7 @@ func (h *UserHandler) handlePutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requester, err := h.authService.GetUserFromContext(r.Context())
+	requester, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -290,7 +290,7 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requester, err := h.authService.GetUserFromContext(r.Context())
+	requester, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -324,7 +324,7 @@ func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	requester, err := h.authService.GetUserFromContext(r.Context())
+	requester, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return

@@ -23,6 +23,7 @@ type UserService interface {
 	GetUserById(ctx context.Context, id int32) (*repository.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*repository.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*repository.User, error)
+	GetUserFromContext(ctx context.Context) (*repository.User, error)
 
 	// managing users
 	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
@@ -53,6 +54,14 @@ func (s *realUserService) GetUserByUsername(ctx context.Context, username string
 func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*repository.User, error) {
 	user, err := database.Queries.GetUserByEmail(ctx, email)
 	return &user, err
+}
+
+func (s *realUserService) GetUserFromContext(ctx context.Context) (*repository.User, error) {
+	user, ok := ctx.Value(config.UserContextKey).(*repository.User)
+	if !ok {
+		return nil, fmt.Errorf("user is not in context")
+	}
+	return user, nil
 }
 
 func (s *realUserService) UpdateUser(ctx context.Context, params repository.UpdateUserParams) error {

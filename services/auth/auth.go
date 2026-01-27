@@ -25,15 +25,10 @@ type AuthService interface {
 	getTokenFromRequest(r *http.Request) (*jwt.Token, error)
 	getUserFromToken(ctx context.Context, token *jwt.Token) (*repository.User, error)
 
-	// authentication
-	GetUserFromContext(ctx context.Context) (*repository.User, error)
-
 	// authorization
 	Authorize(request *config.AuthRequest) error
 	AuthMiddleware(next http.Handler) http.Handler
 }
-
-var userKey = "user"
 
 type realAuthService struct {
 	userService users.UserService
@@ -93,14 +88,6 @@ func (s *realAuthService) getUserFromToken(ctx context.Context, token *jwt.Token
 	return s.userService.GetUserById(ctx, int32(id))
 }
 
-func (s *realAuthService) GetUserFromContext(ctx context.Context) (*repository.User, error) {
-	user, ok := ctx.Value(userKey).(*repository.User)
-	if !ok {
-		return nil, fmt.Errorf("user is not in context")
-	}
-	return user, nil
-}
-
 func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
@@ -120,7 +107,7 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		newReq := r.WithContext(context.WithValue(r.Context(), userKey, user))
+		newReq := r.WithContext(context.WithValue(r.Context(), config.UserContextKey, user))
 		next.ServeHTTP(w, newReq)
 	})
 }
