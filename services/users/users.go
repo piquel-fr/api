@@ -2,13 +2,18 @@ package users
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
+	"log"
+	"net/http"
+	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/utils/errors"
 )
 
 type UserService interface {
@@ -26,7 +31,6 @@ type UserService interface {
 	DeleteUser(ctx context.Context, user *repository.User) error
 
 	// other
-	FormatAndValidateUsername(username string) (string, error)
 	ListUsers(ctx context.Context, offset, limit int32) ([]repository.User, error)
 }
 
@@ -52,7 +56,7 @@ func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*re
 }
 
 func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, name, image string) error {
-	username, err := s.FormatAndValidateUsername(username)
+	username, err := s.formatAndValidateUsername(ctx, username, false)
 	if err != nil {
 		return err
 	}
@@ -67,7 +71,7 @@ func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, na
 }
 
 func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error {
-	username, err := s.FormatAndValidateUsername(username)
+	username, err := s.formatAndValidateUsername(ctx, username, false)
 	if err != nil {
 		return err
 	}
@@ -88,7 +92,7 @@ func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, usernam
 }
 
 func (s *realUserService) RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error) {
-	username, err := s.FormatAndValidateUsername(username)
+	username, err := s.formatAndValidateUsername(ctx, username, true)
 	if err != nil {
 		return nil, err
 	}
@@ -114,13 +118,49 @@ func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User)
 	return nil
 }
 
-func (s *realUserService) FormatAndValidateUsername(username string) (string, error) {
+// @param force: if the validation can fail. When creating a new user through OAuth, user creation cannot fail. We will thus create a random one
+func (s *realUserService) formatAndValidateUsername(ctx context.Context, username string, force bool) (string, error) {
+	log.Printf("formatting %s", username)
+	random := false
 	username = strings.ReplaceAll(strings.ToLower(username), " ", "")
-	if slices.Contains(config.UsernameBlacklist, username) {
-		return "", fmt.Errorf("username %s is not legal", username)
+
+	matched, err := regexp.MatchString("[a-z0-9]+", username)
+	if !matched {
+		random = true
+		if !force {
+			return "", errors.NewError(fmt.Sprintf("username %s contains illegal characters. only letters and numbers are allowed", username), http.StatusBadRequest)
+		}
 	}
 
-	// TODO: make sure no one already has the username
+	if slices.Contains(config.UsernameBlacklist, username) {
+		random = true
+		if !force {
+			return "", errors.NewError(fmt.Sprintf("username %s is not legal", username), http.StatusBadRequest)
+		}
+	}
+
+	names, err := database.Queries.ListUserNames(ctx)
+	if err != nil {
+		random = true
+		if !force {
+			return "", nil
+		}
+	}
+
+	if slices.Contains(names, username) {
+		random = true
+		if !force {
+			return "", errors.NewError(fmt.Sprintf("username %s is already taken", username), http.StatusBadRequest)
+		}
+	}
+
+	if random {
+		username = rand.Text()
+		username, err = s.formatAndValidateUsername(ctx, username, true)
+		if err != nil {
+			return "", fmt.Errorf("something terrible happened in username validation:\n\tusername: %s\n\terror: %w", username, err)
+		}
+	}
 
 	return username, nil
 }
