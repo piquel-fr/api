@@ -6,7 +6,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/users"
@@ -276,7 +275,7 @@ func (h *UserHandler) handlePutUser(w http.ResponseWriter, r *http.Request) {
 
 	params.ID = user.ID
 
-	if err := database.Queries.UpdateUser(r.Context(), params); err != nil {
+	if err := h.userService.UpdateUser(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
@@ -356,7 +355,7 @@ func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request)
 
 	params.ID = user.ID
 
-	if err := database.Queries.UpdateUserAdmin(r.Context(), params); err != nil {
+	if err := h.userService.UpdateUserAdmin(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

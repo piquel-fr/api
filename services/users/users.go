@@ -25,8 +25,8 @@ type UserService interface {
 	GetUserByEmail(ctx context.Context, email string) (*repository.User, error)
 
 	// managing users
-	UpdateUser(ctx context.Context, id int32, username, name, image string) error
-	UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error
+	UpdateUser(ctx context.Context, params repository.UpdateUserParams) error
+	UpdateUserAdmin(ctx context.Context, params repository.UpdateUserAdminParams) error
 	RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error)
 	DeleteUser(ctx context.Context, user *repository.User) error
 
@@ -55,39 +55,27 @@ func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*re
 	return &user, err
 }
 
-func (s *realUserService) UpdateUser(ctx context.Context, id int32, username, name, image string) error {
-	username, err := s.formatAndValidateUsername(ctx, username, false)
+func (s *realUserService) UpdateUser(ctx context.Context, params repository.UpdateUserParams) error {
+	username, err := s.formatAndValidateUsername(ctx, params.Username, false)
 	if err != nil {
 		return err
 	}
 
-	params := repository.UpdateUserParams{
-		ID:       id,
-		Username: username,
-		Name:     name,
-		Image:    image,
-	}
+	params.Username = username
 	return database.Queries.UpdateUser(ctx, params)
 }
 
-func (s *realUserService) UpdateUserAdmin(ctx context.Context, id int32, username, email, name, image, role string) error {
-	username, err := s.formatAndValidateUsername(ctx, username, false)
+func (s *realUserService) UpdateUserAdmin(ctx context.Context, params repository.UpdateUserAdminParams) error {
+	username, err := s.formatAndValidateUsername(ctx, params.Username, false)
 	if err != nil {
 		return err
 	}
 
-	if err := config.Policy.ValidateRole(role); err != nil {
+	if err := config.Policy.ValidateRole(params.Role); err != nil {
 		return err
 	}
 
-	params := repository.UpdateUserAdminParams{
-		ID:       id,
-		Username: username,
-		Email:    email,
-		Name:     name,
-		Image:    image,
-		Role:     role,
-	}
+	params.Username = username
 	return database.Queries.UpdateUserAdmin(ctx, params)
 }
 
