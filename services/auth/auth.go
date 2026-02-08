@@ -20,6 +20,11 @@ import (
 	"github.com/piquel-fr/api/utils/oauth"
 )
 
+const (
+	refreshKey = "refresh_token"
+	accessKey  = "access_token"
+)
+
 type JwtClaims struct {
 	User *repository.User `json:"user"`
 	jwt.RegisteredClaims
@@ -80,21 +85,50 @@ func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w h
 		return err
 	}
 
-	// 4. write access_token & refresh_token to cookies
-	w.Header().Add("Set-Cookie", utils.GenerateSetCookie("refresh_token", refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
-	w.Header().Add("Set-Cookie", utils.GenerateSetCookie("access_token", accessTokenString, config.Envs.Domain, "/", "Lax", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", refreshExpiry))
 	return nil
 }
 
 func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error {
-	// TODO
-	// 1. hash refresh_token
-	// 2. get session from hash (return 404 if not in DB)
-	// 3. verify expiry
-	// 4. generate new refresh_token
-	// 5. generate new access_token
-	// 6. update the DB session (update HASH & push back expiry
-	// 7. write access_token & refresh_token to cookies
+	ipAddress := strings.Split(r.RemoteAddr, ":")[0]
+	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
+
+	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
+	session, err := database.Queries.GetSessionFromHash(r.Context(), hash)
+	if err != nil {
+		return err
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		return errors.ErrorNotAuthenticated
+	}
+
+	refreshExpiry := time.Hour * 24 * 30 // 30 days
+	refreshToken, refreshHash := s.generateRefreshToken(ipAddress)
+
+	user, err := s.userService.GetUserById(r.Context(), session.UserId)
+	if err != nil {
+		return err
+	}
+	accessExpiry := time.Minute * 5 // 5 minutes
+	accessToken := s.generateAccessToken(user, time.Now().Add(accessExpiry))
+	accessTokenString, err := s.signToken(accessToken)
+	if err != nil {
+		return err
+	}
+
+	updateSessionParams := repository.UpdateSessionParams{
+		UserId:    user.ID,
+		TokenHash: refreshHash,
+		ExpiresAt: time.Now().Add(refreshExpiry),
+	}
+	if err := database.Queries.UpdateSession(r.Context(), updateSessionParams); err != nil {
+		return err
+	}
+
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", refreshExpiry))
 	return nil
 }
 
