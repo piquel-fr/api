@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -100,9 +101,15 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	if s.verifyRefreshToken(cookies[refreshKey], ipAddress, hash) || time.Now().After(session.ExpiresAt) {
+	log.Printf("here")
+	if time.Now().After(session.ExpiresAt) {
 		return errors.ErrorNotAuthenticated
 	}
+	log.Printf("expired")
+	if !s.verifyRefreshToken(cookies[refreshKey], ipAddress, hash) {
+		return errors.ErrorNotAuthenticated
+	}
+	log.Printf("hash")
 
 	refreshExpiry := time.Hour * 24 * 30 // 30 days
 	refreshToken, refreshHash := s.generateRefreshToken(ipAddress)
