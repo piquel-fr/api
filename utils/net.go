@@ -13,3 +13,15 @@ func GenerateSetCookie(name, value, domain, path, sameSite string, age time.Dura
 	}
 	return fmt.Sprintf("%s=%s; Domain=%s; Path=%s; Max-Age=%d; SameSite=%s; Secure; HttpOnly", name, value, domain, path, int(age.Seconds()), sameSite)
 }
+
+func GetCookiesFromStr(cookieStr string) map[string]string {
+	pairs := strings.Split(cookieStr, "; ")
+
+	cookies := map[string]string{}
+	for _, pair := range pairs {
+		split := strings.SplitN(pair, "=", 2)
+		cookies[split[0]] = split[1]
+	}
+
+	return cookies
+}
