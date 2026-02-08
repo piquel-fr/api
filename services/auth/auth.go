@@ -195,6 +195,14 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		if expiration, err := token.Claims.GetExpirationTime(); err != nil {
+			errors.HandleError(w, r, err)
+			return
+		} else if time.Now().After(expiration.Time) {
+			errors.HandleError(w, r, errors.ErrorNotAuthenticated)
+			return
+		}
+
 		user, err := s.getUserFromToken(token)
 		if err != nil {
 			errors.HandleError(w, r, err)
