@@ -26,7 +26,8 @@ type AuthService interface {
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
-	Refresh(user *repository.User, r *http.Request, w http.ResponseWriter) error // refreshes the user's tokens
+	FinishAuth(user *repository.User, w http.ResponseWriter) error // sets the users refresh & access tokens
+	Refresh(w http.ResponseWriter, r *http.Request) error          // refreshes the user's tokens
 
 	// authorization
 	Authorize(request *config.AuthRequest) error
@@ -51,7 +52,11 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 	return provider, nil
 }
 
-func (s *realAuthService) Refresh(user *repository.User, r *http.Request, w http.ResponseWriter) error {
+func (s *realAuthService) FinishAuth(user *repository.User, w http.ResponseWriter) error {
+	return nil
+}
+
+func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
@@ -60,6 +65,7 @@ func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token 
 	idString := strconv.Itoa(int(user.ID))
 	return jwt.NewWithClaims(config.JWTSigningMethod,
 		JwtClaims{
+			User: user,
 			RegisteredClaims: jwt.RegisteredClaims{
 				Subject: idString,
 			},

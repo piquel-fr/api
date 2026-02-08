@@ -25,7 +25,7 @@ func CreateAuthHandler(userService users.UserService, authService auth.AuthServi
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.Handle("POST /refresh", h.handleRefresh())
+	handler.HandleFunc("POST /refresh", h.handleRefresh)
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
@@ -36,19 +36,11 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	return handler
 }
 
-func (h *AuthHandler) handleRefresh() http.Handler {
-	return h.authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := h.userService.GetUserFromContext(r.Context())
-		if err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-
-		if err := h.authService.Refresh(user, r, w); err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-	}))
+func (h *AuthHandler) handleRefresh(w http.ResponseWriter, r *http.Request) {
+	if err := h.authService.Refresh(w, r); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
 }
 
 func (h *AuthHandler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +83,7 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.authService.WriteResponseTokens(user, w); err != nil {
+	if err := h.authService.FinishAuth(user, w); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
