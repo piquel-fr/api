@@ -57,22 +57,22 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 
 func (s *realAuthService) FinishAuth(user *repository.User, w http.ResponseWriter) error {
 	// TODO
-	// 1. create session
-	// 2. save session to DB
-	// 3. generate refresh_token
-	// 4. generate access_token
-	// 5. write access_token & refresh_token to cookies
+	// 1. generate refresh_token
+	// 2. create session & save to DB
+	// 3. generate access_token
+	// 4. write access_token & refresh_token to cookies
 	return nil
 }
 
 func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error {
 	// TODO
-	// 1. calculate the refresh token hash
-	// 2. verify with the stored information in DB
-	// 3. generate new refresh_token
-	// 4. generate new access_token
-	// 5. update the DB session
-	// 6. write access_token & refresh_token to cookies
+	// 1. hash refresh_token
+	// 2. get session from hash (return 404 if not in DB)
+	// 3. verify expiry
+	// 4. generate new refresh_token
+	// 5. generate new access_token
+	// 6. update the DB session (update HASH & push back expiry
+	// 7. write access_token & refresh_token to cookies
 	return nil
 }
 
@@ -88,17 +88,18 @@ func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token 
 		})
 }
 
-func (s *realAuthService) generateRefreshToken(userId int32) string {
+// returns token, hash
+func (s *realAuthService) generateRefreshToken() (string, string) {
 	token := utils.GenerateSecureToken(32)
-	return s.hashRefreshToken(token, userId)
+	return token, s.hashRefreshToken(token)
 }
 
-func (s *realAuthService) verifyRefreshToken(token string, userId int32, hash string) bool {
-	return s.hashRefreshToken(token, userId) == hash
+func (s *realAuthService) verifyRefreshToken(token string, hash string) bool {
+	return s.hashRefreshToken(token) == hash
 }
 
-func (s *realAuthService) hashRefreshToken(token string, userId int32) string {
-	hash := sha256.Sum256(binary.AppendVarint([]byte(token), int64(userId)))
+func (s *realAuthService) hashRefreshToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
 	return base64.URLEncoding.EncodeToString(hash[:])
 }
 
