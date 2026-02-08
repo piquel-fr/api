@@ -25,12 +25,7 @@ type AuthService interface {
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
-	WriteResponseTokens(user *repository.User, w http.ResponseWriter) error // writes access_token and refresh_token to cookie headers
-	generateAccessToken(user *repository.User) *jwt.Token
-	generateRefreshToken(user *repository.User) (string, error)
-	signToken(token *jwt.Token) (string, error)
-	getTokenFromRequest(r *http.Request) (*jwt.Token, error)
-	getUserFromToken(ctx context.Context, token *jwt.Token) (*repository.User, error)
+	WriteTokens(user *repository.User, w http.ResponseWriter) error // writes access_token and refresh_token to cookie headers
 
 	// authorization
 	Authorize(request *config.AuthRequest) error
@@ -41,7 +36,7 @@ type realAuthService struct {
 	userService users.UserService
 }
 
-func NewRealAuthService(userService users.UserService) *realAuthService {
+func NewRealAuthService(userService users.UserService) AuthService {
 	return &realAuthService{userService}
 }
 
@@ -55,8 +50,12 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 	return provider, nil
 }
 
+func (s *realAuthService) WriteTokens(user *repository.User, w http.ResponseWriter) error {
+	return nil
+}
+
 // TODO: also save expiry and refresh
-func (s *realAuthService) GenerateToken(user *repository.User) *jwt.Token {
+func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token {
 	idString := strconv.Itoa(int(user.ID))
 	return jwt.NewWithClaims(config.JWTSigningMethod,
 		JwtClaims{
@@ -66,7 +65,11 @@ func (s *realAuthService) GenerateToken(user *repository.User) *jwt.Token {
 		})
 }
 
-func (s *realAuthService) SignToken(token *jwt.Token) (string, error) {
+func (s *realAuthService) generateRefreshToken(user *repository.User) (string, error) {
+	return "", nil
+}
+
+func (s *realAuthService) signToken(token *jwt.Token) (string, error) {
 	return token.SignedString(config.Envs.JWTSigningSecret)
 }
 
