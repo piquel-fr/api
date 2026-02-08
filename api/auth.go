@@ -84,7 +84,7 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.authService.FinishAuth(user, w); err != nil {
+	if err := h.authService.FinishAuth(user, r, w); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

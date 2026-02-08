@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/piquel-fr/api/config"
+	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
@@ -28,8 +30,8 @@ type AuthService interface {
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
-	FinishAuth(user *repository.User, w http.ResponseWriter) error // sets the users refresh & access tokens
-	Refresh(w http.ResponseWriter, r *http.Request) error          // refreshes the user's tokens
+	FinishAuth(user *repository.User, r *http.Request, w http.ResponseWriter) error // sets the users refresh & access tokens
+	Refresh(w http.ResponseWriter, r *http.Request) error                           // refreshes the user's tokens
 
 	// authorization
 	Authorize(request *config.AuthRequest) error
@@ -54,12 +56,33 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 	return provider, nil
 }
 
-func (s *realAuthService) FinishAuth(user *repository.User, w http.ResponseWriter) error {
-	// TODO
-	// 1. generate refresh_token
-	// 2. create session & save to DB
-	// 3. generate access_token
+func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w http.ResponseWriter) error {
+	ipAddress := strings.Split(r.RemoteAddr, ":")[0]
+
+	refreshExpiry := time.Hour * 24 * 30 // 30 days
+	refreshToken, refreshHash := s.generateRefreshToken(ipAddress)
+
+	accessExpiry := time.Minute * 5 // 5 minutes
+	accessToken := s.generateAccessToken(user, time.Now().Add(accessExpiry))
+	accessTokenString, err := s.signToken(accessToken)
+	if err != nil {
+		return err
+	}
+
+	sessionParams := repository.AddSessionParams{
+		UserId:    user.ID,
+		TokenHash: refreshHash,
+		UserAgent: r.Header.Get("User-Agent"),
+		IpAdress:  ipAddress,
+		ExpiresAt: time.Now().Add(refreshExpiry), // one month
+	}
+	if _, err := database.Queries.AddSession(r.Context(), sessionParams); err != nil {
+		return err
+	}
+
 	// 4. write access_token & refresh_token to cookies
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie("refresh_token", refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie("access_token", accessTokenString, config.Envs.Domain, "/", "Lax", refreshExpiry))
 	return nil
 }
 
@@ -75,30 +98,31 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
-// TODO: also save expiry and refresh
-func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token {
+func (s *realAuthService) generateAccessToken(user *repository.User, expiresAt time.Time) *jwt.Token {
 	idString := strconv.Itoa(int(user.ID))
 	return jwt.NewWithClaims(config.JWTSigningMethod,
 		JwtClaims{
 			User: user,
 			RegisteredClaims: jwt.RegisteredClaims{
-				Subject: idString,
+				Subject:   idString,
+				ExpiresAt: jwt.NewNumericDate(expiresAt),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
 			},
 		})
 }
 
 // returns token, hash
-func (s *realAuthService) generateRefreshToken() (string, string) {
+func (s *realAuthService) generateRefreshToken(ipAdress string) (string, string) {
 	token := utils.GenerateSecureToken(32)
-	return token, s.hashRefreshToken(token)
+	return token, s.hashRefreshToken(token, ipAdress)
 }
 
-func (s *realAuthService) verifyRefreshToken(token string, hash string) bool {
-	return s.hashRefreshToken(token) == hash
+func (s *realAuthService) verifyRefreshToken(token, ipAdress, hash string) bool {
+	return s.hashRefreshToken(token, ipAdress) == hash
 }
 
-func (s *realAuthService) hashRefreshToken(token string) string {
-	hash := sha256.Sum256([]byte(token))
+func (s *realAuthService) hashRefreshToken(token, ipAdress string) string {
+	hash := sha256.Sum256(fmt.Appendf([]byte(token), "-%s", ipAdress))
 	return base64.URLEncoding.EncodeToString(hash[:])
 }
 
