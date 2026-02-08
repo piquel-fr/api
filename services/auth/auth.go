@@ -164,22 +164,16 @@ func (s *realAuthService) signToken(token *jwt.Token) (string, error) {
 	return token.SignedString(config.Envs.JWTSigningSecret)
 }
 
-func (s *realAuthService) getTokenFromRequest(r *http.Request) (*jwt.Token, error) {
+func (s *realAuthService) getTokenFromRequest(r *http.Request) (*jwt.Token, *JwtClaims, error) {
 	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
 	tokenString := cookies[accessKey]
 
-	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
+	claims := &JwtClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
 		return config.Envs.JWTSigningSecret, nil
 	})
-}
 
-func (s *realAuthService) getUserFromToken(token *jwt.Token) (*repository.User, error) {
-	claims, ok := token.Claims.(JwtClaims)
-	if !ok {
-		return nil, fmt.Errorf("claims not of JwtClaims type")
-	}
-
-	return claims.User, nil
+	return token, claims, err
 }
 
 func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
@@ -189,7 +183,7 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := s.getTokenFromRequest(r)
+		token, claims, err := s.getTokenFromRequest(r)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
@@ -203,13 +197,7 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := s.getUserFromToken(token)
-		if err != nil {
-			errors.HandleError(w, r, err)
-			return
-		}
-
-		newReq := r.WithContext(context.WithValue(r.Context(), config.UserContextKey, user))
+		newReq := r.WithContext(context.WithValue(r.Context(), config.UserContextKey, claims.User))
 		next.ServeHTTP(w, newReq)
 	})
 }
