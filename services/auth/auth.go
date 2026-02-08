@@ -15,6 +15,11 @@ import (
 	"github.com/piquel-fr/api/utils/oauth"
 )
 
+type JwtClaims struct {
+	User *repository.User `json:"user"`
+	jwt.RegisteredClaims
+}
+
 type AuthService interface {
 	GetPolicy() *config.PolicyConfiguration
 	GetProvider(name string) (oauth.Provider, error)
@@ -52,8 +57,10 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 func (s *realAuthService) GenerateToken(user *repository.User) *jwt.Token {
 	idString := strconv.Itoa(int(user.ID))
 	return jwt.NewWithClaims(config.JWTSigningMethod,
-		jwt.RegisteredClaims{
-			Subject: idString,
+		JwtClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Subject: idString,
+			},
 		})
 }
 
