@@ -100,7 +100,7 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	if time.Now().After(session.ExpiresAt) {
+	if s.verifyRefreshToken(cookies[refreshKey], ipAddress, hash) || time.Now().After(session.ExpiresAt) {
 		return errors.ErrorNotAuthenticated
 	}
 
