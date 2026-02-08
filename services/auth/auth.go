@@ -173,18 +173,13 @@ func (s *realAuthService) getTokenFromRequest(r *http.Request) (*jwt.Token, erro
 	})
 }
 
-func (s *realAuthService) getUserFromToken(ctx context.Context, token *jwt.Token) (*repository.User, error) {
-	subject, err := token.Claims.GetSubject()
-	if err != nil {
-		return nil, err
+func (s *realAuthService) getUserFromToken(token *jwt.Token) (*repository.User, error) {
+	claims, ok := token.Claims.(JwtClaims)
+	if !ok {
+		return nil, fmt.Errorf("claims not of JwtClaims type")
 	}
 
-	id, err := strconv.Atoi(subject)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.userService.GetUserById(ctx, int32(id))
+	return claims.User, nil
 }
 
 func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
@@ -200,7 +195,7 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := s.getUserFromToken(r.Context(), token)
+		user, err := s.getUserFromToken(token)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
