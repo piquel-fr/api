@@ -86,7 +86,7 @@ func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w h
 	}
 
 	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
-	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", accessExpiry))
 	return nil
 }
 
@@ -128,7 +128,7 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
-	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", accessExpiry))
 	return nil
 }
 
