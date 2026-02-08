@@ -5,11 +5,9 @@ import (
 	"encoding/base64"
 )
 
-func GenerateSecureToken(length int) (string, error) {
+func GenerateSecureToken(length int) string {
 	bytes := make([]byte, length)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return base64.URLEncoding.EncodeToString(bytes), nil
+	rand.Read(bytes)
+	return base64.URLEncoding.EncodeToString(bytes)
 }
 

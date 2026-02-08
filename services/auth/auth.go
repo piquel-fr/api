@@ -2,16 +2,19 @@ package auth
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/users"
+	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
 	"github.com/piquel-fr/api/utils/oauth"
 )
@@ -85,9 +88,18 @@ func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token 
 		})
 }
 
-func (s *realAuthService) generateRefreshTokenHash(token string, userId int32, expiry time.Time) (string, error) {
-	// TODO: hash all of this
-	return "", nil
+func (s *realAuthService) generateRefreshToken(userId int32) string {
+	token := utils.GenerateSecureToken(32)
+	return s.hashRefreshToken(token, userId)
+}
+
+func (s *realAuthService) verifyRefreshToken(token string, userId int32, hash string) bool {
+	return s.hashRefreshToken(token, userId) == hash
+}
+
+func (s *realAuthService) hashRefreshToken(token string, userId int32) string {
+	hash := sha256.Sum256(binary.AppendVarint([]byte(token), int64(userId)))
+	return base64.URLEncoding.EncodeToString(hash[:])
 }
 
 func (s *realAuthService) signToken(token *jwt.Token) (string, error) {
