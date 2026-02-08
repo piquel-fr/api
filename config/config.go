@@ -11,6 +11,7 @@ import (
 type EnvsConfig struct {
 	AuthCallbackUrl string
 	Url             string
+	Domain          string
 	Port            string
 	DBURL           string
 	GithubApiToken  string
@@ -54,6 +55,7 @@ func LoadConfig() {
 	Envs = EnvsConfig{
 		AuthCallbackUrl:    getEnv("AUTH_CALLBACK"),
 		Url:                getEnv("URL"),
+		Domain:             getEnv("DOMAIN"),
 		Port:               getDefaultEnv("PORT", "80"),
 		DBURL:              getEnv("DB_URL"),
 		GoogleClientID:     getEnv("AUTH_GOOGLE_CLIENT_ID"),
