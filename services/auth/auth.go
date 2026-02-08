@@ -25,8 +25,10 @@ type AuthService interface {
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
-	GenerateToken(user *repository.User) *jwt.Token // TODO: also save expiry and refresh
-	SignToken(token *jwt.Token) (string, error)
+	WriteResponseTokens(user *repository.User, w http.ResponseWriter) error // writes access_token and refresh_token to cookie headers
+	generateAccessToken(user *repository.User) *jwt.Token
+	generateRefreshToken(user *repository.User) (string, error)
+	signToken(token *jwt.Token) (string, error)
 	getTokenFromRequest(r *http.Request) (*jwt.Token, error)
 	getUserFromToken(ctx context.Context, token *jwt.Token) (*repository.User, error)
 
