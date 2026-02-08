@@ -26,6 +26,7 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("POST /refresh", h.handleRefresh)
+	// TODO: logout route that clears the cookie and removes the session from DB
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
