@@ -44,7 +44,7 @@ func (h *AuthHandler) handleRefresh() http.Handler {
 			return
 		}
 
-		if err := h.authService.WriteTokens(user, w); err != nil {
+		if err := h.authService.Refresh(user, r, w); err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}

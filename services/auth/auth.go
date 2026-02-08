@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/piquel-fr/api/config"
@@ -25,7 +26,7 @@ type AuthService interface {
 	GetProvider(name string) (oauth.Provider, error)
 
 	// token management
-	WriteTokens(user *repository.User, w http.ResponseWriter) error // writes access_token and refresh_token to cookie headers
+	Refresh(user *repository.User, r *http.Request, w http.ResponseWriter) error // refreshes the user's tokens
 
 	// authorization
 	Authorize(request *config.AuthRequest) error
@@ -50,7 +51,7 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 	return provider, nil
 }
 
-func (s *realAuthService) WriteTokens(user *repository.User, w http.ResponseWriter) error {
+func (s *realAuthService) Refresh(user *repository.User, r *http.Request, w http.ResponseWriter) error {
 	return nil
 }
 
@@ -65,8 +66,7 @@ func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token 
 		})
 }
 
-func (s *realAuthService) generateRefreshToken(user *repository.User) (string, error) {
-	return "", nil
+func (s *realAuthService) generateRefreshTokenHash(token string, userId int32, expiry time.Time) {
 }
 
 func (s *realAuthService) signToken(token *jwt.Token) (string, error) {
