@@ -165,12 +165,8 @@ func (s *realAuthService) signToken(token *jwt.Token) (string, error) {
 }
 
 func (s *realAuthService) getTokenFromRequest(r *http.Request) (*jwt.Token, error) {
-	authHeader := r.Header.Get("Authorization")
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return nil, errors.ErrorNotAuthenticated
-	}
-	tokenString := parts[1]
+	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
+	tokenString := cookies[accessKey]
 
 	return jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		return config.Envs.JWTSigningSecret, nil
