@@ -53,10 +53,23 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 }
 
 func (s *realAuthService) FinishAuth(user *repository.User, w http.ResponseWriter) error {
+	// TODO
+	// 1. create session
+	// 2. save session to DB
+	// 3. generate refresh_token
+	// 4. generate access_token
+	// 5. write access_token & refresh_token to cookies
 	return nil
 }
 
 func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error {
+	// TODO
+	// 1. calculate the refresh token hash
+	// 2. verify with the stored information in DB
+	// 3. generate new refresh_token
+	// 4. generate new access_token
+	// 5. update the DB session
+	// 6. write access_token & refresh_token to cookies
 	return nil
 }
 
@@ -72,7 +85,9 @@ func (s *realAuthService) generateAccessToken(user *repository.User) *jwt.Token 
 		})
 }
 
-func (s *realAuthService) generateRefreshTokenHash(token string, userId int32, expiry time.Time) {
+func (s *realAuthService) generateRefreshTokenHash(token string, userId int32, expiry time.Time) (string, error) {
+	// TODO: hash all of this
+	return "", nil
 }
 
 func (s *realAuthService) signToken(token *jwt.Token) (string, error) {
