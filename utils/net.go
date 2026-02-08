@@ -15,6 +15,10 @@ func GenerateSetCookie(name, value, domain, path, sameSite string, age time.Dura
 }
 
 func GetCookiesFromStr(cookieStr string) map[string]string {
+	if cookieStr == "" {
+		return nil
+	}
+
 	pairs := strings.Split(cookieStr, "; ")
 
 	cookies := map[string]string{}
