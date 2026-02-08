@@ -8,6 +8,16 @@ CREATE TABLE "users" (
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE "user_sessions" (
+    "id" SERIAL PRIMARY KEY NOT NULL,
+    "userId" INTEGER REFERENCES "users" ("id") NOT NULL,
+    "tokenHash" VARCHAR(255) NOT NULL,
+    "userAgent" TEXT NOT NULL,
+    "ipAdress" VARCHAR(45) NOT NULL,
+    "expiresAt" TIMESTAMPTZ NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE "mail_accounts" (
     "id" SERIAL PRIMARY KEY NOT NULL,
     "ownerId" SERIAL REFERENCES "users" ("id") NOT NULL,
