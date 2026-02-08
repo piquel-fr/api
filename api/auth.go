@@ -25,15 +25,30 @@ func CreateAuthHandler(userService users.UserService, authService auth.AuthServi
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
+	handler.Handle("POST /refresh", h.handleRefresh())
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
+	handler.Handle("OPTIONS /refresh", middleware.CreateOptionsHandler("POST"))
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
-	// TODO: refresh system
-
 	return handler
+}
+
+func (h *AuthHandler) handleRefresh() http.Handler {
+	return h.authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := h.userService.GetUserFromContext(r.Context())
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+
+		if err := h.authService.WriteResponseTokens(user, w); err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+	}))
 }
 
 func (h *AuthHandler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
@@ -76,16 +91,15 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	tokenString, err := h.authService.SignToken(h.authService.GenerateToken(user))
-	if err != nil {
+	if err := h.authService.WriteResponseTokens(user, w); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	redirectUrl := h.formatRedirectURL(r.URL.Query().Get("state"), tokenString)
+	redirectUrl := h.formatRedirectURL(r.URL.Query().Get("state"))
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func (h *AuthHandler) formatRedirectURL(redirectTo string, token string) string {
-	return fmt.Sprintf("%s?redirectTo=%s&token=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
+func (h *AuthHandler) formatRedirectURL(redirectTo string) string {
+	return fmt.Sprintf("%s?redirectTo=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo))
 }
