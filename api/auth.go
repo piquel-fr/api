@@ -94,5 +94,5 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *AuthHandler) formatRedirectURL(redirectTo string) string {
-	return fmt.Sprintf("%s?redirectTo=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo))
+	return fmt.Sprintf("%s%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo))
 }
