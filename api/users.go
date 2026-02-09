@@ -186,6 +186,65 @@ func (h *UserHandler) getSpec() Spec {
 		),
 	})
 
+	spec.AddOperation("/{user}/sessions", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"users", "sessions"},
+		Summary:     "Get user sessions",
+		Description: "Get the active sessions for the specified user",
+		OperationID: "get-user-sessions",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "path",
+					Required:    true,
+					Description: "The username",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().
+					WithDescription("User sessions found").
+					WithJSONSchemaRef(openapi3.NewSchemaRef("", openapi3.NewArraySchema().WithItems(userSessionSchema))),
+			}),
+			openapi3.WithStatus(401, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Unauthorized")}),
+			openapi3.WithStatus(403, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Forbidden")}),
+		),
+	})
+
+	spec.AddOperation("/{user}/sessions", http.MethodDelete, &openapi3.Operation{
+		Tags:        []string{"users", "sessions"},
+		Summary:     "Delete user sessions",
+		Description: "Delete all sessions for the user, or a specific one if 'id' query param is provided",
+		OperationID: "delete-user-sessions",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "user",
+					In:          "path",
+					Required:    true,
+					Description: "The username",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "id",
+					In:          "query",
+					Required:    false,
+					Description: "Specific session ID to delete",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewInt32Schema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Session(s) deleted successfully")}),
+			openapi3.WithStatus(400, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Invalid input")}),
+			openapi3.WithStatus(401, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Unauthorized")}),
+		),
+	})
+
 	return spec
 }
 
