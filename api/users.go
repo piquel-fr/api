@@ -378,14 +378,15 @@ func (h *UserHandler) handleGetUserSessions(w http.ResponseWriter, r *http.Reque
 	}
 
 	var user *repository.User
-	if username := r.URL.Query().Get("user"); username != "" {
+	username := r.PathValue("user")
+	if username == requester.Username {
+		user = requester
+	} else {
 		user, err = h.userService.GetUserByUsername(r.Context(), username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
-	} else {
-		user = requester
 	}
 
 	if err := h.authService.Authorize(&config.AuthRequest{
@@ -427,14 +428,15 @@ func (h *UserHandler) handleDeleteUserSessions(w http.ResponseWriter, r *http.Re
 	}
 
 	var user *repository.User
-	if username := r.URL.Query().Get("user"); username != "" {
+	username := r.PathValue("user")
+	if username == requester.Username {
+		user = requester
+	} else {
 		user, err = h.userService.GetUserByUsername(r.Context(), username)
 		if err != nil {
 			errors.HandleError(w, r, err)
 			return
 		}
-	} else {
-		user = requester
 	}
 
 	if err := h.authService.Authorize(&config.AuthRequest{
