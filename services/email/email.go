@@ -29,7 +29,6 @@ type Folder struct {
 	Name        string
 	NumMessages uint32
 	NumUnread   uint32
-	Flags       []string
 }
 
 type EmailService interface {
@@ -46,11 +45,8 @@ type EmailService interface {
 	RemoveShare(ctx context.Context, params repository.DeleteShareParams) error
 	GetAccountShares(ctx context.Context, account int32) ([]int32, error)
 
-	// NEW
 	// email stuff
 	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
-
-	// implementing
 
 	// folder management
 	ListFolders(account *repository.MailAccount) ([]Folder, error) // with STATUS method
@@ -105,9 +101,78 @@ func (r *realEmailService) SendEmail(destination []string, from *repository.Mail
 	return nil
 }
 
+func (r *realEmailService) ListFolders(account *repository.MailAccount) ([]Folder, error) {
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer client.Logout()
+
+	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return nil, err
+	}
+
+	mailboxes, err := client.List("", "*", nil).Collect()
+	if err != nil {
+		return nil, err
+	}
+
+	folders := []Folder{}
+	for _, mailbox := range mailboxes {
+		folders = append(folders, Folder{
+			Name:        mailbox.Mailbox,
+			NumMessages: *mailbox.Status.NumMessages,
+			NumUnread:   *mailbox.Status.NumUnseen,
+		})
+	}
+
+	return folders, nil
+}
+
+func (r *realEmailService) CreateFolder(account *repository.MailAccount, name string) error {
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	if err != nil {
+		return err
+	}
+	defer client.Logout()
+
+	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return err
+	}
+
+	return client.Create(name, nil).Wait()
+}
+
+func (r *realEmailService) DeleteFolder(account *repository.MailAccount, name string) error {
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	if err != nil {
+		return err
+	}
+	defer client.Logout()
+
+	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return err
+	}
+
+	return client.Delete(name).Wait()
+}
+
+func (r *realEmailService) RenameFolder(account *repository.MailAccount, name, newName string) error {
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	if err != nil {
+		return err
+	}
+	defer client.Logout()
+
+	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return err
+	}
+
+	return client.Rename(name, newName, nil).Wait()
+}
+
 func (r *realEmailService) getEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*EmailHead, error) {
-	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
-	client, err := imapclient.DialTLS(addr, nil)
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
 	if err != nil {
 		return nil, err
 	}
