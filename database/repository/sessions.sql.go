@@ -53,12 +53,21 @@ func (q *Queries) ClearUserSessions(ctx context.Context, userid int32) error {
 	return err
 }
 
-const deleteSession = `-- name: DeleteSession :exec
+const deleteSessionByHash = `-- name: DeleteSessionByHash :exec
+DELETE FROM "user_sessions" WHERE "tokenHash" = $1
+`
+
+func (q *Queries) DeleteSessionByHash(ctx context.Context, tokenhash string) error {
+	_, err := q.db.Exec(ctx, deleteSessionByHash, tokenhash)
+	return err
+}
+
+const deleteSessionById = `-- name: DeleteSessionById :exec
 DELETE FROM "user_sessions" WHERE "id" = $1
 `
 
-func (q *Queries) DeleteSession(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteSession, id)
+func (q *Queries) DeleteSessionById(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteSessionById, id)
 	return err
 }
 

@@ -8,8 +8,11 @@ SELECT * FROM "user_sessions" WHERE "tokenHash" = $1;
 -- name: UpdateSession :exec
 UPDATE "user_sessions" SET "tokenHash" = $2, "expiresAt" = $3 WHERE "userId" = $1;
 
--- name: DeleteSession :exec
+-- name: DeleteSessionById :exec
 DELETE FROM "user_sessions" WHERE "id" = $1;
+
+-- name: DeleteSessionByHash :exec
+DELETE FROM "user_sessions" WHERE "tokenHash" = $1;
 
 -- name: GetUserSessions :many
 SELECT * FROM "user_sessions" WHERE "userId" = $1 ORDER BY "id" ASC;
