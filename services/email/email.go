@@ -12,11 +12,24 @@ import (
 	"github.com/wneessen/go-mail"
 )
 
-type Email struct {
+type EmailHead struct {
+	Id int32
 	To, Cc, Bcc,
 	From, Sender []string
 	Date    time.Time
 	Subject string
+}
+
+type Email struct {
+	Head EmailHead
+	Body string
+}
+
+type Folder struct {
+	Name        string
+	NumMessages uint32
+	NumUnread   uint32
+	Flags       []string
 }
 
 type EmailService interface {
@@ -33,10 +46,24 @@ type EmailService interface {
 	RemoveShare(ctx context.Context, params repository.DeleteShareParams) error
 	GetAccountShares(ctx context.Context, account int32) ([]int32, error)
 
+	// NEW
 	// email stuff
 	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
-	CountEmailsForAccount(account *repository.MailAccount) (int, error)
-	GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error)
+
+	// implementing
+
+	// folder management
+	ListFolders(account *repository.MailAccount) ([]Folder, error) // with STATUS method
+	CreateFolder(account *repository.MailAccount, name string) error
+	DeleteFolder(account *repository.MailAccount, name string) error
+	RenameFolder(account *repository.MailAccount, name, newName string) error
+
+	// unimplemented
+
+	// email management
+	GetFolderEmails(account *repository.MailAccount, folder string, offset, limit int) ([]*EmailHead, error) // get ENVELOPE FLAGS UID
+	GetEmail(account *repository.MailAccount, id int32) (Email, error)
+	DeleteEmail(account *repository.MailAccount, id int32) error
 }
 
 type realEmailService struct {
@@ -45,9 +72,7 @@ type realEmailService struct {
 
 func NewRealEmailService() *realEmailService {
 	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
-	return &realEmailService{
-		imapAddr: addr,
-	}
+	return &realEmailService{imapAddr: addr}
 }
 
 func (r *realEmailService) SendEmail(destination []string, from *repository.MailAccount, subject, content string) error {
@@ -80,11 +105,7 @@ func (r *realEmailService) SendEmail(destination []string, from *repository.Mail
 	return nil
 }
 
-func (r *realEmailService) CountEmailsForAccount(account *repository.MailAccount) (int, error) {
-	return 0, nil
-}
-
-func (r *realEmailService) GetEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*Email, error) {
+func (r *realEmailService) getEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*EmailHead, error) {
 	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
 	client, err := imapclient.DialTLS(addr, nil)
 	if err != nil {
@@ -115,9 +136,9 @@ func (r *realEmailService) GetEmailsForAccount(account *repository.MailAccount, 
 		return nil, err
 	}
 
-	emails := []*Email{}
+	emails := []*EmailHead{}
 	for _, msg := range messages {
-		email := Email{}
+		email := EmailHead{}
 
 		for _, to := range msg.Envelope.To {
 			if to.IsGroupEnd() || to.IsGroupStart() {
