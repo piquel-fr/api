@@ -129,7 +129,6 @@ func (h *EmailHandler) getSpec() Spec {
 		),
 	})
 
-	// 6. Operation: Remove Account (DELETE /{email})
 	spec.AddOperation("/{email}", http.MethodDelete, &openapi3.Operation{
 		Tags:        []string{"email"},
 		Summary:     "Remove account",
@@ -151,7 +150,6 @@ func (h *EmailHandler) getSpec() Spec {
 		),
 	})
 
-	// 7. Operation: Share Account (PUT /{email}/share)
 	spec.AddOperation("/{email}/share", http.MethodPut, &openapi3.Operation{
 		Tags:        []string{"email"},
 		Summary:     "Share account",
@@ -181,7 +179,6 @@ func (h *EmailHandler) getSpec() Spec {
 		),
 	})
 
-	// 8. Operation: Remove Share (DELETE /{email}/share)
 	spec.AddOperation("/{email}/share", http.MethodDelete, &openapi3.Operation{
 		Tags:        []string{"email"},
 		Summary:     "Remove share",
