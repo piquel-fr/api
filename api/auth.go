@@ -43,9 +43,6 @@ func (h *AuthHandler) handleRefresh(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
-
-	redirectUrl := h.formatRedirectURL("/")
-	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
 func (h *AuthHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +50,9 @@ func (h *AuthHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
 		errors.HandleError(w, r, err)
 		return
 	}
+
+	redirectUrl := h.formatRedirectURL("/")
+	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
 func (h *AuthHandler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
