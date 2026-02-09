@@ -17,13 +17,21 @@ const (
 )
 
 const (
+	// global actions
 	ActionView   = "view"
 	ActionCreate = "create"
 	ActionUpdate = "update"
 	ActionDelete = "delete"
 	ActionShare  = "share"
 
-	ActionUpdateAdmin       = "update_admin"
+	// admin stuff
+	ActionUpdateAdmin = "update_admin"
+
+	// sessions
+	ActionViewUserSessions   = "view_user_sessions"
+	ActionDeleteUserSessions = "delete_user_sessions"
+
+	// email
 	ActionViewEmail         = "view_email"
 	ActionListEmailAccounts = "list_email_accounts"
 )
@@ -60,6 +68,8 @@ var policy = config.PolicyConfiguration{
 					{Action: ActionDelete},
 					{Action: ActionViewEmail},
 					{Action: ActionUpdateAdmin},
+					{Action: ActionViewUserSessions},
+					{Action: ActionDeleteUserSessions},
 				},
 				repository.ResourceMailAccount: {
 					{Action: ActionView},
@@ -113,6 +123,8 @@ var policy = config.PolicyConfiguration{
 					makeOwn(ActionUpdate),
 					makeOwn(ActionDelete),
 					makeOwn(ActionViewEmail),
+					makeOwn(ActionViewUserSessions),
+					makeOwn(ActionDeleteUserSessions),
 				},
 			},
 		},
