@@ -45,7 +45,7 @@ type AuthService interface {
 
 	// session management
 	GetUserSessions(ctx context.Context, userId int32) ([]repository.UserSession, error)
-	DeleteUserSession(ctx context.Context, id int32) error
+	DeleteUserSession(ctx context.Context, userId, id int32) error
 	DeleteUserSessions(ctx context.Context, userId int32) error
 }
 
@@ -229,8 +229,8 @@ func (s *realAuthService) GetUserSessions(ctx context.Context, userId int32) ([]
 	return database.Queries.GetUserSessions(ctx, userId)
 }
 
-func (s *realAuthService) DeleteUserSession(ctx context.Context, id int32) error {
-	return database.Queries.DeleteSessionById(ctx, id)
+func (s *realAuthService) DeleteUserSession(ctx context.Context, userId, id int32) error {
+	return database.Queries.DeleteSessionById(ctx, repository.DeleteSessionByIdParams{UserId: userId, ID: id})
 }
 
 func (s *realAuthService) DeleteUserSessions(ctx context.Context, userId int32) error {

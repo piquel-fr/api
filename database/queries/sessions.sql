@@ -9,7 +9,7 @@ SELECT * FROM "user_sessions" WHERE "tokenHash" = $1;
 UPDATE "user_sessions" SET "tokenHash" = $2, "expiresAt" = $3 WHERE "userId" = $1;
 
 -- name: DeleteSessionById :exec
-DELETE FROM "user_sessions" WHERE "id" = $1;
+DELETE FROM "user_sessions" WHERE "userId" = $1 AND "id" = $2;
 
 -- name: DeleteSessionByHash :exec
 DELETE FROM "user_sessions" WHERE "tokenHash" = $1;
