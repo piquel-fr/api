@@ -280,9 +280,9 @@ func (h *EmailHandler) handleListAccounts(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	for _, account := range accounts {
-		account.Username = ""
-		account.Password = ""
+	for i := range accounts {
+		accounts[i].Username = ""
+		accounts[i].Password = ""
 	}
 
 	data, err := json.Marshal(accounts)
