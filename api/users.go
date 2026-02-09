@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/config"
@@ -369,7 +371,99 @@ func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *UserHandler) handleGetUserSessions(w http.ResponseWriter, r *http.Request) {
+	requester, err := h.userService.GetUserFromContext(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	var user *repository.User
+	if username := r.URL.Query().Get("user"); username != "" {
+		user, err = h.userService.GetUserByUsername(r.Context(), username)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+	} else {
+		user = requester
+	}
+
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      requester,
+		Ressource: user,
+		Actions:   []string{auth.ActionViewUserSessions},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	sessions, err := h.authService.GetUserSessions(r.Context(), user.ID)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	// hide the token hash for security reasons
+	for i := range sessions {
+		sessions[i].TokenHash = ""
+	}
+
+	data, err := json.Marshal(sessions)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func (h *UserHandler) handleDeleteUserSessions(w http.ResponseWriter, r *http.Request) {
+	requester, err := h.userService.GetUserFromContext(r.Context())
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	var user *repository.User
+	if username := r.URL.Query().Get("user"); username != "" {
+		user, err = h.userService.GetUserByUsername(r.Context(), username)
+		if err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+	} else {
+		user = requester
+	}
+
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      requester,
+		Ressource: user,
+		Actions:   []string{auth.ActionDeleteUserSessions},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if idStr := r.URL.Query().Get("id"); idStr != "" {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			errors.HandleError(w, r, errors.NewError(fmt.Sprintf("id %s is not valid integer %s", idStr, err.Error()), http.StatusBadRequest))
+			return
+		}
+		if err := h.authService.DeleteUserSession(r.Context(), user.ID, int32(id)); err != nil {
+			errors.HandleError(w, r, err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if err := h.authService.DeleteUserSessions(r.Context(), user.ID); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
