@@ -86,7 +86,7 @@ func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w h
 		return err
 	}
 
-	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth", "Strict", refreshExpiry))
 	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", accessExpiry))
 	return nil
 }
@@ -134,7 +134,7 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
+	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth", "Strict", refreshExpiry))
 	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", accessExpiry))
 	return nil
 }
@@ -143,7 +143,7 @@ func (s *realAuthService) Logout(w http.ResponseWriter, r *http.Request) error {
 	ipAddress := utils.GetIpAddress(r)
 	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
 
-	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(refreshKey, config.Envs.Domain, "/auth/refresh"))
+	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(refreshKey, config.Envs.Domain, "/auth"))
 	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(accessKey, config.Envs.Domain, "/"))
 
 	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
