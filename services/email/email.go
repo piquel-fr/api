@@ -174,6 +174,10 @@ func (r *realEmailService) RenameFolder(account *repository.MailAccount, name, n
 }
 
 func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, folder string, offset, limit uint32) ([]*EmailHead, error) {
+	if limit > config.MaxLimit {
+		limit = config.MaxLimit
+	}
+
 	client, err := imapclient.DialTLS(r.imapAddr, nil)
 	if err != nil {
 		return nil, err

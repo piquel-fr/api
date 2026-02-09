@@ -32,10 +32,11 @@ type EnvsConfig struct {
 type PublicConfig struct {
 	Policy            *PolicyConfiguration `json:"policy"`
 	UsernameBlacklist []string             `json:"username_blacklist"`
+	MaxLimit          uint32               `json:"max_limit"` // the maximum limit for pagination
 }
 
 func GetPublicConfig() PublicConfig {
-	return PublicConfig{Policy, UsernameBlacklist}
+	return PublicConfig{Policy, UsernameBlacklist, MaxLimit}
 }
 
 var Envs EnvsConfig
@@ -46,6 +47,8 @@ var UserContextKey = "user"
 // these are populated by external services
 var UsernameBlacklist []string
 var Policy *PolicyConfiguration
+
+const MaxLimit = 200
 
 func LoadConfig() {
 	godotenv.Load()
