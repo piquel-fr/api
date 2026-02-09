@@ -26,11 +26,12 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("POST /refresh", h.handleRefresh)
-	// TODO: logout route that clears the cookie and removes the session from DB
+	handler.HandleFunc("POST /logout", h.handleLogout)
 	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
 	handler.Handle("OPTIONS /refresh", middleware.CreateOptionsHandler("POST"))
+	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("POST"))
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
@@ -39,6 +40,13 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 
 func (h *AuthHandler) handleRefresh(w http.ResponseWriter, r *http.Request) {
 	if err := h.authService.Refresh(w, r); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+}
+
+func (h *AuthHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
+	if err := h.authService.Logout(w, r); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

@@ -39,6 +39,7 @@ type AuthService interface {
 	// token management
 	FinishAuth(user *repository.User, r *http.Request, w http.ResponseWriter) error // sets the users refresh & access tokens
 	Refresh(w http.ResponseWriter, r *http.Request) error                           // refreshes the user's tokens
+	Logout(w http.ResponseWriter, r *http.Request) error
 
 	// authorization
 	Authorize(request *config.AuthRequest) error
@@ -143,6 +144,16 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 
 	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(refreshKey, refreshToken, config.Envs.Domain, "/auth/refresh", "Strict", refreshExpiry))
 	w.Header().Add("Set-Cookie", utils.GenerateSetCookie(accessKey, accessTokenString, config.Envs.Domain, "/", "Lax", accessExpiry))
+	return nil
+}
+
+func (s *realAuthService) Logout(w http.ResponseWriter, r *http.Request) error {
+	// TODO
+	// 1. hash the token
+	// 2. clear the token from the database
+
+	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(refreshKey, config.Envs.Domain, "/auth/refresh"))
+	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(accessKey, config.Envs.Domain, "/"))
 	return nil
 }
 
