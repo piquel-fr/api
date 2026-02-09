@@ -58,7 +58,7 @@ type EmailService interface {
 	RenameFolder(account *repository.MailAccount, name, newName string) error
 
 	// email management
-	GetFolderEmails(account *repository.MailAccount, folder string, offset, limit int) ([]*EmailHead, error)
+	GetFolderEmails(account *repository.MailAccount, folder string, offset, limit uint32) ([]*EmailHead, error)
 	GetEmail(account *repository.MailAccount, id uint32) (Email, error)
 	DeleteEmail(account *repository.MailAccount, id uint32) error
 }
@@ -174,7 +174,7 @@ func (r *realEmailService) RenameFolder(account *repository.MailAccount, name, n
 	return client.Rename(name, newName, nil).Wait()
 }
 
-func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, folder string, offset, limit int) ([]*EmailHead, error) {
+func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, folder string, offset, limit uint32) ([]*EmailHead, error) {
 	client, err := imapclient.DialTLS(r.imapAddr, nil)
 	if err != nil {
 		return nil, err
@@ -185,12 +185,7 @@ func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, fold
 		return nil, err
 	}
 
-	mailbox, err := client.Select(folder, nil).Wait()
-	if err != nil {
-		return nil, err
-	}
-
-	seqSet := imap.SeqSet{{Start: 1, Stop: mailbox.NumMessages}}
+	seqSet := imap.SeqSet{{Start: offset, Stop: offset + limit}}
 	fetchOptions := &imap.FetchOptions{
 		Flags:    true,
 		Envelope: true,
