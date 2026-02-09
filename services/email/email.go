@@ -19,7 +19,7 @@ type EmailService interface {
 
 	// sharing
 	AddShare(ctx context.Context, params repository.AddShareParams) error
-	RemoveShare(ctx context.Context, params repository.RemoveShareParams) error
+	RemoveShare(ctx context.Context, params repository.DeleteShareParams) error
 	GetAccountShares(ctx context.Context, account int32) ([]int32, error)
 }
 

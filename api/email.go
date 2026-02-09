@@ -462,7 +462,7 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	params := repository.RemoveShareParams{
+	params := repository.DeleteShareParams{
 		UserId:  sharingUser.ID,
 		Account: account.ID,
 	}

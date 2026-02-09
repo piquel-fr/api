@@ -5,10 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
