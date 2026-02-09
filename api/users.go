@@ -191,7 +191,9 @@ func (h *UserHandler) createHttpHandler() http.Handler {
 	handler.HandleFunc("PUT /{user}/admin", h.handlePutUserAdmin)
 	handler.Handle("OPTIONS /{user}/admin", middleware.CreateOptionsHandler("PUT"))
 
-	// TODO: session management endpoints
+	handler.HandleFunc("GET /{user}/sessions", h.handleGetUserSessions)
+	handler.HandleFunc("DELETE /{user}/sessions", h.handleDeleteUserSessions)
+	handler.Handle("OPTIONS /{user}/sessions", middleware.CreateOptionsHandler("GET", "DELETE"))
 
 	return handler
 }
@@ -364,4 +366,10 @@ func (h *UserHandler) handlePutUserAdmin(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *UserHandler) handleGetUserSessions(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *UserHandler) handleDeleteUserSessions(w http.ResponseWriter, r *http.Request) {
 }
