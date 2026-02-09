@@ -25,13 +25,36 @@ func CreateAuthHandler(userService users.UserService, authService auth.AuthServi
 func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
-	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
-	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
+	handler.HandleFunc("POST /refresh", h.handleRefresh)
+	handler.Handle("OPTIONS /refresh", middleware.CreateOptionsHandler("POST"))
 
+	handler.HandleFunc("GET /logout", h.handleLogout)
+	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("GET"))
+
+	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
+
+	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
 	return handler
+}
+
+func (h *AuthHandler) handleRefresh(w http.ResponseWriter, r *http.Request) {
+	if err := h.authService.Refresh(w, r); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+}
+
+func (h *AuthHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
+	if err := h.authService.Logout(w, r); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	redirectUrl := h.formatRedirectURL("/")
+	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
 func (h *AuthHandler) handleProviderLogin(w http.ResponseWriter, r *http.Request) {
@@ -74,16 +97,15 @@ func (h *AuthHandler) handleAuthCallback(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	tokenString, err := h.authService.SignToken(h.authService.GenerateToken(user))
-	if err != nil {
+	if err := h.authService.FinishAuth(user, r, w); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	redirectUrl := h.formatRedirectURL(r.URL.Query().Get("state"), tokenString)
+	redirectUrl := h.formatRedirectURL(r.URL.Query().Get("state"))
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func (h *AuthHandler) formatRedirectURL(redirectTo string, token string) string {
-	return fmt.Sprintf("%s?redirectTo=%s&token=%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo), token)
+func (h *AuthHandler) formatRedirectURL(redirectTo string) string {
+	return fmt.Sprintf("%s%s", config.Envs.AuthCallbackUrl, utils.FormatLocalPathString(redirectTo))
 }

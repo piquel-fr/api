@@ -38,7 +38,7 @@ func (r *realEmailService) AddAccount(ctx context.Context, params repository.Add
 
 func (r *realEmailService) RemoveAccount(ctx context.Context, accountId int32) error {
 	// TODO: remove the shares as well
-	return database.Queries.RemoveMailAccount(ctx, accountId)
+	return database.Queries.DeleteMailAccount(ctx, accountId)
 }
 
 func (r *realEmailService) GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error) {
@@ -93,8 +93,8 @@ func (r *realEmailService) AddShare(ctx context.Context, params repository.AddSh
 	return database.Queries.AddShare(ctx, params)
 }
 
-func (r *realEmailService) RemoveShare(ctx context.Context, params repository.RemoveShareParams) error {
-	return database.Queries.RemoveShare(ctx, params)
+func (r *realEmailService) RemoveShare(ctx context.Context, params repository.DeleteShareParams) error {
+	return database.Queries.DeleteShare(ctx, params)
 }
 
 func (r *realEmailService) GetAccountShares(ctx context.Context, account int32) ([]int32, error) {
