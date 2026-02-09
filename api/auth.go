@@ -31,7 +31,7 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 
 	handler.Handle("OPTIONS /refresh", middleware.CreateOptionsHandler("POST"))
-	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("POST"))
+	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
