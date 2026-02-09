@@ -44,9 +44,9 @@ type AuthService interface {
 	AuthMiddleware(next http.Handler) http.Handler
 
 	// session management
-	GetUserSessions(userId string) ([]repository.UserSession, error)
-	DeleteUserSession(userId string, id int32) error
-	DeleteUserSessions(userId string) error
+	GetUserSessions(ctx context.Context, userId int32) ([]repository.UserSession, error)
+	DeleteUserSession(ctx context.Context, id int32) error
+	DeleteUserSessions(ctx context.Context, userId int32) error
 }
 
 type realAuthService struct {
