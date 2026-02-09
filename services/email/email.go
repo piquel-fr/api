@@ -12,8 +12,11 @@ import (
 	"github.com/wneessen/go-mail"
 )
 
+const TrashFolder = "Trash" // TODO: save it in the mail account
+
 type EmailHead struct {
-	Id int32
+	Id    uint32
+	Flags []string
 	To, Cc, Bcc,
 	From, Sender []string
 	Date    time.Time
@@ -22,7 +25,7 @@ type EmailHead struct {
 
 type Email struct {
 	Head EmailHead
-	Body string
+	Body []byte
 }
 
 type Folder struct {
@@ -49,17 +52,15 @@ type EmailService interface {
 	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
 
 	// folder management
-	ListFolders(account *repository.MailAccount) ([]Folder, error) // with STATUS method
+	ListFolders(account *repository.MailAccount) ([]Folder, error)
 	CreateFolder(account *repository.MailAccount, name string) error
 	DeleteFolder(account *repository.MailAccount, name string) error
 	RenameFolder(account *repository.MailAccount, name, newName string) error
 
-	// unimplemented
-
 	// email management
-	GetFolderEmails(account *repository.MailAccount, folder string, offset, limit int) ([]*EmailHead, error) // get ENVELOPE FLAGS UID
-	GetEmail(account *repository.MailAccount, id int32) (Email, error)
-	DeleteEmail(account *repository.MailAccount, id int32) error
+	GetFolderEmails(account *repository.MailAccount, folder string, offset, limit int) ([]*EmailHead, error)
+	GetEmail(account *repository.MailAccount, id uint32) (Email, error)
+	DeleteEmail(account *repository.MailAccount, id uint32) error
 }
 
 type realEmailService struct {
@@ -154,6 +155,8 @@ func (r *realEmailService) DeleteFolder(account *repository.MailAccount, name st
 		return err
 	}
 
+	// TODO: validation (can't delete Trash or INBOX)
+
 	return client.Delete(name).Wait()
 }
 
@@ -171,7 +174,7 @@ func (r *realEmailService) RenameFolder(account *repository.MailAccount, name, n
 	return client.Rename(name, newName, nil).Wait()
 }
 
-func (r *realEmailService) getEmailsForAccount(account *repository.MailAccount, offset, limit int) ([]*EmailHead, error) {
+func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, folder string, offset, limit int) ([]*EmailHead, error) {
 	client, err := imapclient.DialTLS(r.imapAddr, nil)
 	if err != nil {
 		return nil, err
@@ -182,14 +185,14 @@ func (r *realEmailService) getEmailsForAccount(account *repository.MailAccount, 
 		return nil, err
 	}
 
-	// Select INBOX
-	mailbox, err := client.Select("INBOX", nil).Wait()
+	mailbox, err := client.Select(folder, nil).Wait()
 	if err != nil {
 		return nil, err
 	}
 
 	seqSet := imap.SeqSet{{Start: 1, Stop: mailbox.NumMessages}}
 	fetchOptions := &imap.FetchOptions{
+		Flags:    true,
 		Envelope: true,
 		BodySection: []*imap.FetchItemBodySection{
 			{Specifier: imap.PartSpecifierHeader},
@@ -203,48 +206,63 @@ func (r *realEmailService) getEmailsForAccount(account *repository.MailAccount, 
 
 	emails := []*EmailHead{}
 	for _, msg := range messages {
-		email := EmailHead{}
-
-		for _, to := range msg.Envelope.To {
-			if to.IsGroupEnd() || to.IsGroupStart() {
-				continue
-			}
-			email.To = append(email.To, to.Addr())
-		}
-
-		for _, cc := range msg.Envelope.Cc {
-			if cc.IsGroupEnd() || cc.IsGroupStart() {
-				continue
-			}
-			email.Cc = append(email.Cc, cc.Addr())
-		}
-
-		for _, bcc := range msg.Envelope.Bcc {
-			if bcc.IsGroupEnd() || bcc.IsGroupStart() {
-				continue
-			}
-			email.Bcc = append(email.Bcc, bcc.Addr())
-		}
-
-		for _, from := range msg.Envelope.From {
-			if from.IsGroupEnd() || from.IsGroupStart() {
-				continue
-			}
-			email.From = append(email.From, from.Addr())
-		}
-
-		for _, sender := range msg.Envelope.Sender {
-			if sender.IsGroupEnd() || sender.IsGroupStart() {
-				continue
-			}
-			email.Sender = append(email.Sender, sender.Addr())
-		}
-
-		email.Date = msg.Envelope.Date
-		email.Subject = msg.Envelope.Subject
-
-		emails = append(emails, &email)
+		emails = append(emails, makeMailhead(msg))
 	}
 
 	return emails, nil
+}
+
+func (r *realEmailService) GetEmail(account *repository.MailAccount, id uint32) (Email, error) {
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	if err != nil {
+		return Email{}, err
+	}
+	defer client.Logout()
+
+	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return Email{}, err
+	}
+
+	bodySection := &imap.FetchItemBodySection{Specifier: imap.PartSpecifierText}
+	uidSet := imap.UIDSet{{Start: imap.UID(id), Stop: imap.UID(id)}}
+	fetchOptions := &imap.FetchOptions{
+		Flags:    true,
+		Envelope: true,
+		BodySection: []*imap.FetchItemBodySection{
+			{Specifier: imap.PartSpecifierHeader},
+			bodySection,
+		},
+	}
+
+	messages, err := client.Fetch(uidSet, fetchOptions).Collect()
+	if err != nil {
+		return Email{}, err
+	}
+
+	emails := []*Email{}
+	for _, msg := range messages {
+		email := &Email{
+			Head: *makeMailhead(msg),
+			Body: msg.FindBodySection(bodySection),
+		}
+		emails = append(emails, email)
+	}
+
+	return Email{}, nil
+}
+
+func (r *realEmailService) DeleteEmail(account *repository.MailAccount, id uint32) error {
+	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	if err != nil {
+		return err
+	}
+	defer client.Logout()
+
+	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return err
+	}
+
+	uidSet := imap.UIDSet{{Start: imap.UID(id), Stop: imap.UID(id)}}
+	_, err = client.Move(uidSet, TrashFolder).Wait()
+	return err
 }
