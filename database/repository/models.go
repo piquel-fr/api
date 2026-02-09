@@ -32,3 +32,13 @@ type User struct {
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"createdAt"`
 }
+
+type UserSession struct {
+	ID        int32     `json:"id"`
+	UserId    int32     `json:"userId"`
+	TokenHash string    `json:"tokenHash"`
+	UserAgent string    `json:"userAgent"`
+	IpAdress  string    `json:"ipAdress"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	CreatedAt time.Time `json:"createdAt"`
+}

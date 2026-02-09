@@ -69,6 +69,31 @@ func (q *Queries) CountUserMailAccounts(ctx context.Context, ownerid int32) (int
 	return count, err
 }
 
+const deleteMailAccount = `-- name: DeleteMailAccount :exec
+DELETE FROM "mail_accounts" 
+WHERE "id" = $1
+`
+
+func (q *Queries) DeleteMailAccount(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteMailAccount, id)
+	return err
+}
+
+const deleteShare = `-- name: DeleteShare :exec
+DELETE FROM "mail_share"
+WHERE "userId" = $1 AND "account" = $2
+`
+
+type DeleteShareParams struct {
+	UserId  int32 `json:"userId"`
+	Account int32 `json:"account"`
+}
+
+func (q *Queries) DeleteShare(ctx context.Context, arg DeleteShareParams) error {
+	_, err := q.db.Exec(ctx, deleteShare, arg.UserId, arg.Account)
+	return err
+}
+
 const getMailAccountByEmail = `-- name: GetMailAccountByEmail :one
 SELECT m.id, m."ownerId", m.email, m.name, m.username, m.password FROM "mail_accounts" m
 LEFT JOIN "mail_share" s ON m."id" = s."account"
@@ -168,29 +193,4 @@ func (q *Queries) ListUserMailAccounts(ctx context.Context, ownerid int32) ([]Ma
 		return nil, err
 	}
 	return items, nil
-}
-
-const removeMailAccount = `-- name: RemoveMailAccount :exec
-DELETE FROM "mail_accounts" 
-WHERE "id" = $1
-`
-
-func (q *Queries) RemoveMailAccount(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, removeMailAccount, id)
-	return err
-}
-
-const removeShare = `-- name: RemoveShare :exec
-DELETE FROM "mail_share"
-WHERE "userId" = $1 AND "account" = $2
-`
-
-type RemoveShareParams struct {
-	UserId  int32 `json:"userId"`
-	Account int32 `json:"account"`
-}
-
-func (q *Queries) RemoveShare(ctx context.Context, arg RemoveShareParams) error {
-	_, err := q.db.Exec(ctx, removeShare, arg.UserId, arg.Account)
-	return err
 }

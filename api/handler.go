@@ -107,15 +107,15 @@ func newSpecBase(handler Handler) Spec {
 		},
 	}
 
-	securitySchemeName := "bearerAuth"
+	securitySchemeName := "cookieAuth"
 	spec.Components = &openapi3.Components{
 		SecuritySchemes: openapi3.SecuritySchemes{
 			securitySchemeName: &openapi3.SecuritySchemeRef{
 				Value: &openapi3.SecurityScheme{
-					Type:         "http",
-					Scheme:       "bearer",
-					BearerFormat: "JWT",
-					Description:  "Enter your bearer token in the format: Bearer <token>",
+					Type:        "apiKey",
+					In:          "cookie",
+					Name:        "access_token",
+					Description: "Authentication via access_token cookie. The API also uses a refresh_token cookie for token renewal.",
 				},
 			},
 		},
