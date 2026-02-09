@@ -53,10 +53,20 @@ func (h *UserHandler) getSpec() Spec {
 		WithProperty("role", openapi3.NewStringSchema()).
 		WithRequired([]string{"username", "name", "image", "email", "role"})
 
+	userSessionSchema := openapi3.NewObjectSchema().
+		WithProperty("id", openapi3.NewInt32Schema()).
+		WithProperty("userId", openapi3.NewInt32Schema()).
+		WithProperty("userAgent", openapi3.NewStringSchema()).
+		WithProperty("ipAdress", openapi3.NewStringSchema()).
+		WithProperty("expiresAt", openapi3.NewDateTimeSchema()).
+		WithProperty("createdAt", openapi3.NewDateTimeSchema()).
+		WithRequired([]string{"id", "userId", "userAgent", "ipAdress", "expiresAt", "createdAt"})
+
 	spec.Components.Schemas = openapi3.Schemas{
 		"User":                  &openapi3.SchemaRef{Value: userSchema},
 		"UpdateUserParams":      &openapi3.SchemaRef{Value: updateUserSchema},
 		"UpdateUserAdminParams": &openapi3.SchemaRef{Value: updateUserAdminSchema},
+		"UserSession":           &openapi3.SchemaRef{Value: userSessionSchema},
 	}
 
 	spec.AddOperation("/self", http.MethodGet, &openapi3.Operation{
