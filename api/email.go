@@ -43,9 +43,26 @@ func (h *EmailHandler) getSpec() Spec {
 		WithProperty("username", openapi3.NewStringSchema()).
 		WithProperty("password", openapi3.NewStringSchema())
 
+	folderSchema := openapi3.NewObjectSchema().
+		WithProperty("name", openapi3.NewStringSchema())
+
+	emailMessageSchema := openapi3.NewObjectSchema().
+		WithProperty("id", openapi3.NewStringSchema()).
+		WithProperty("subject", openapi3.NewStringSchema()).
+		WithProperty("from", openapi3.NewStringSchema()).
+		WithProperty("body", openapi3.NewStringSchema())
+
+	sendEmailPayloadSchema := openapi3.NewObjectSchema().
+		WithProperty("to", openapi3.NewStringSchema().WithFormat("email")).
+		WithProperty("subject", openapi3.NewStringSchema()).
+		WithProperty("body", openapi3.NewStringSchema())
+
 	spec.Components.Schemas = openapi3.Schemas{
 		"MailAccount":       &openapi3.SchemaRef{Value: accountSchema},
 		"AddAccountPayload": &openapi3.SchemaRef{Value: addAccountSchema},
+		"Folder":            &openapi3.SchemaRef{Value: folderSchema},
+		"EmailMessage":      &openapi3.SchemaRef{Value: emailMessageSchema},
+		"SendEmailPayload":  &openapi3.SchemaRef{Value: sendEmailPayloadSchema},
 	}
 
 	spec.AddOperation("/", http.MethodGet, &openapi3.Operation{
@@ -129,6 +146,34 @@ func (h *EmailHandler) getSpec() Spec {
 		),
 	})
 
+	spec.AddOperation("/{email}", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Send email",
+		Description: "Send an email from this account",
+		OperationID: "send-email",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		RequestBody: &openapi3.RequestBodyRef{
+			Value: &openapi3.RequestBody{
+				Required: true,
+				Content: openapi3.NewContentWithJSONSchemaRef(
+					openapi3.NewSchemaRef("#/components/schemas/SendEmailPayload", sendEmailPayloadSchema),
+				),
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Email sent successfully")}),
+		),
+	})
+
 	spec.AddOperation("/{email}", http.MethodDelete, &openapi3.Operation{
 		Tags:        []string{"email"},
 		Summary:     "Remove account",
@@ -205,6 +250,250 @@ func (h *EmailHandler) getSpec() Spec {
 		},
 		Responses: openapi3.NewResponses(
 			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Share removed successfully")}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "List folders",
+		Description: "Get a list of folders for the email account",
+		OperationID: "list-folders",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().
+					WithDescription("List of folders").
+					WithJSONSchemaRef(openapi3.NewSchemaRef("", openapi3.NewArraySchema().WithItems(folderSchema))),
+			}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Create folder",
+		Description: "Create a new folder",
+		OperationID: "create-folder",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "name",
+					In:          "query",
+					Required:    true,
+					Description: "The name of the folder to create",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Folder created successfully")}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder/{folder}", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "List emails",
+		Description: "List emails within a specific folder with pagination",
+		OperationID: "list-folder-emails",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "folder",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "offset",
+					In:          "query",
+					Required:    false,
+					Description: "The number of items to skip before starting to collect the result set",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewInt32Schema().WithMin(0)},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "limit",
+					In:          "query",
+					Required:    false,
+					Description: "The numbers of items to return (max 200)",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewInt32Schema().WithMin(1).WithMax(200)},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().
+					WithDescription("List of emails").
+					WithJSONSchemaRef(openapi3.NewSchemaRef("", openapi3.NewArraySchema().WithItems(emailMessageSchema))),
+			}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder/{folder}", http.MethodDelete, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Delete folder",
+		Description: "Delete a folder",
+		OperationID: "delete-folder",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "folder",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Folder deleted successfully")}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder/{folder}", http.MethodPut, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Rename folder",
+		Description: "Rename a specific folder",
+		OperationID: "rename-folder",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "folder",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:        "name",
+					In:          "query",
+					Required:    true,
+					Description: "The new name for the folder",
+					Schema:      &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Folder renamed successfully")}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder/{folder}/{id}", http.MethodGet, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Get email",
+		Description: "Get a specific email message",
+		OperationID: "get-email",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "folder",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "id",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{
+				Value: openapi3.NewResponse().
+					WithDescription("Email details").
+					WithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/EmailMessage", emailMessageSchema)),
+			}),
+		),
+	})
+
+	spec.AddOperation("/{email}/folder/{folder}/{id}", http.MethodDelete, &openapi3.Operation{
+		Tags:        []string{"email"},
+		Summary:     "Delete email",
+		Description: "Delete a specific email message",
+		OperationID: "delete-email",
+		Parameters: openapi3.Parameters{
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "email",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "folder",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+			&openapi3.ParameterRef{
+				Value: &openapi3.Parameter{
+					Name:     "id",
+					In:       "path",
+					Required: true,
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+				},
+			},
+		},
+		Responses: openapi3.NewResponses(
+			openapi3.WithStatus(200, &openapi3.ResponseRef{Value: openapi3.NewResponse().WithDescription("Email deleted successfully")}),
 		),
 	})
 
@@ -512,7 +801,8 @@ func (h *EmailHandler) handleGetFolderEmails(w http.ResponseWriter, r *http.Requ
 	// 1. get account from path
 	// 2. verify permissions
 	// 3. get folder from path
-	// 4. GetFolderEmails
+	// 4. get limit & offset from query
+	// 5. GetFolderEmails
 }
 
 func (h *EmailHandler) handleDeleteFolder(w http.ResponseWriter, r *http.Request) {
