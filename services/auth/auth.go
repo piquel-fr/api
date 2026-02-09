@@ -65,7 +65,7 @@ func (s *realAuthService) GetProvider(name string) (oauth.Provider, error) {
 }
 
 func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w http.ResponseWriter) error {
-	ipAddress := strings.Split(r.RemoteAddr, ":")[0]
+	ipAddress := utils.GetIpAddress(r)
 
 	refreshExpiry := time.Hour * 24 * 30 // 30 days
 	refreshToken, refreshHash := s.generateRefreshToken(ipAddress)
@@ -94,7 +94,7 @@ func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w h
 }
 
 func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error {
-	ipAddress := strings.Split(r.RemoteAddr, ":")[0]
+	ipAddress := utils.GetIpAddress(r)
 	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
 
 	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
@@ -106,15 +106,9 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	log.Printf("here")
-	if time.Now().After(session.ExpiresAt) {
+	if time.Now().After(session.ExpiresAt) || !s.verifyRefreshToken(cookies[refreshKey], ipAddress, hash) {
 		return errors.ErrorNotAuthenticated
 	}
-	log.Printf("expired")
-	if !s.verifyRefreshToken(cookies[refreshKey], ipAddress, hash) {
-		return errors.ErrorNotAuthenticated
-	}
-	log.Printf("hash")
 
 	refreshExpiry := time.Hour * 24 * 30 // 30 days
 	refreshToken, refreshHash := s.generateRefreshToken(ipAddress)
@@ -148,13 +142,14 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *realAuthService) Logout(w http.ResponseWriter, r *http.Request) error {
-	// TODO
-	// 1. hash the token
-	// 2. clear the token from the database
+	ipAddress := utils.GetIpAddress(r)
+	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
 
 	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(refreshKey, config.Envs.Domain, "/auth/refresh"))
 	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(accessKey, config.Envs.Domain, "/"))
-	return nil
+
+	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
+	return database.Queries.DeleteSessionByHash(r.Context(), hash)
 }
 
 func (s *realAuthService) generateAccessToken(user *repository.User, expiresAt time.Time) *jwt.Token {
