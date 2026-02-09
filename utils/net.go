@@ -14,6 +14,10 @@ func GenerateSetCookie(name, value, domain, path, sameSite string, age time.Dura
 	return fmt.Sprintf("%s=%s; Domain=%s; Path=%s; Max-Age=%d; SameSite=%s; Secure; HttpOnly", name, value, domain, path, int(age.Seconds()), sameSite)
 }
 
+func GenerateClearCookie(name, domain, path string) string {
+	return fmt.Sprintf("%s=; Max-Age=0; Domain=%s; Path=%s", name, domain, path)
+}
+
 func GetCookiesFromStr(cookieStr string) map[string]string {
 	if cookieStr == "" {
 		return nil
