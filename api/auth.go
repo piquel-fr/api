@@ -26,13 +26,15 @@ func (h *AuthHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("POST /refresh", h.handleRefresh)
-	handler.HandleFunc("GET /logout", h.handleLogout)
-	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
-	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
-
 	handler.Handle("OPTIONS /refresh", middleware.CreateOptionsHandler("POST"))
+
+	handler.HandleFunc("GET /logout", h.handleLogout)
 	handler.Handle("OPTIONS /logout", middleware.CreateOptionsHandler("GET"))
+
+	handler.HandleFunc("GET /{provider}", h.handleProviderLogin)
 	handler.Handle("OPTIONS /{provider}", middleware.CreateOptionsHandler("GET"))
+
+	handler.HandleFunc("GET /{provider}/callback", h.handleAuthCallback)
 	handler.Handle("OPTIONS /{provider}/callback", middleware.CreateOptionsHandler("GET"))
 
 	return handler

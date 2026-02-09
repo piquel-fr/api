@@ -220,16 +220,15 @@ func (h *EmailHandler) createHttpHandler() http.Handler {
 	// accounts
 	handler.HandleFunc("GET /", h.handleListAccounts)
 	handler.HandleFunc("PUT /", h.handleAddAccount)
+	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET", "PUT"))
+
 	handler.HandleFunc("GET /{email}", h.handleAccountInfo)
 	handler.HandleFunc("DELETE /{email}", h.handleRemoveAccount)
+	handler.Handle("OPTIONS /{email}", middleware.CreateOptionsHandler("GET", "DELETE"))
 
 	// sharing
 	handler.HandleFunc("PUT /{email}/share", h.handleShareAccount)
 	handler.HandleFunc("DELETE /{email}/share", h.handleRemoveAccountShare)
-
-	// OPTIONS handlers
-	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET", "PUT"))
-	handler.Handle("OPTIONS /{email}", middleware.CreateOptionsHandler("GET", "DELETE"))
 	handler.Handle("OPTIONS /{email}/share", middleware.CreateOptionsHandler("PUT", "DELETE"))
 
 	return handler

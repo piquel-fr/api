@@ -181,13 +181,14 @@ func (h *UserHandler) createHttpHandler() http.Handler {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("GET /self", h.handleGetSelf)
+	handler.Handle("OPTIONS /self", middleware.CreateOptionsHandler("GET"))
+
 	handler.HandleFunc("GET /{user}", h.handleGetUser)
 	handler.HandleFunc("PUT /{user}", h.handlePutUser)
 	handler.HandleFunc("DELETE /{user}", h.handleDeleteUser)
-	handler.HandleFunc("PUT /{user}/admin", h.handlePutUserAdmin)
-
-	handler.Handle("OPTIONS /self", middleware.CreateOptionsHandler("GET"))
 	handler.Handle("OPTIONS /{user}", middleware.CreateOptionsHandler("GET", "PUT", "DELETE"))
+
+	handler.HandleFunc("PUT /{user}/admin", h.handlePutUserAdmin)
 	handler.Handle("OPTIONS /{user}/admin", middleware.CreateOptionsHandler("PUT"))
 
 	// TODO: session management endpoints
