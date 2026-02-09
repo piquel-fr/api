@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
@@ -97,6 +98,9 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 
 	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
 	session, err := database.Queries.GetSessionFromHash(r.Context(), hash)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return errors.ErrorNotAuthenticated
+	}
 	if err != nil {
 		return err
 	}
@@ -115,6 +119,9 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 	refreshToken, refreshHash := s.generateRefreshToken(ipAddress)
 
 	user, err := s.userService.GetUserById(r.Context(), session.UserId)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return errors.ErrorNotAuthenticated
+	}
 	if err != nil {
 		return err
 	}
