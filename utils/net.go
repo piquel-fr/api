@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -32,4 +33,8 @@ func GetCookiesFromStr(cookieStr string) map[string]string {
 	}
 
 	return cookies
+}
+
+func GetIpAddress(r *http.Request) string {
+	return strings.Split(r.RemoteAddr, ":")[0]
 }
