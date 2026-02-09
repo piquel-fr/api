@@ -48,7 +48,6 @@ type EmailService interface {
 	RemoveShare(ctx context.Context, params repository.DeleteShareParams) error
 	GetAccountShares(ctx context.Context, account int32) ([]int32, error)
 
-	// email stuff
 	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
 
 	// folder management
@@ -155,7 +154,7 @@ func (r *realEmailService) DeleteFolder(account *repository.MailAccount, name st
 		return err
 	}
 
-	// TODO: validation (can't delete Trash or INBOX)
+	// TODO: validation (can't delete Trash, INBOX, Sent)
 
 	return client.Delete(name).Wait()
 }

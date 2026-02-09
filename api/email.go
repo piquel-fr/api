@@ -220,14 +220,29 @@ func (h *EmailHandler) createHttpHandler() http.Handler {
 	handler.Handle("OPTIONS /", middleware.CreateOptionsHandler("GET", "PUT"))
 
 	handler.HandleFunc("GET /{email}", h.handleAccountInfo)
+	handler.HandleFunc("PUT /{email}", h.handleSendEmail)
 	handler.HandleFunc("DELETE /{email}", h.handleRemoveAccount)
-	handler.Handle("OPTIONS /{email}", middleware.CreateOptionsHandler("GET", "DELETE"))
+	handler.Handle("OPTIONS /{email}", middleware.CreateOptionsHandler("GET", "PUT", "DELETE"))
 
 	// sharing
 	handler.HandleFunc("PUT /{email}/share", h.handleShareAccount)
 	handler.HandleFunc("DELETE /{email}/share", h.handleRemoveAccountShare)
 	handler.Handle("OPTIONS /{email}/share", middleware.CreateOptionsHandler("PUT", "DELETE"))
 
+	handler.HandleFunc("GET /{email}/folder", h.handleGetFolders)
+	handler.HandleFunc("PUT /{email}/folder", h.handleCreateFolder)
+	handler.Handle("OPTIONS /{email}/folder", middleware.CreateOptionsHandler("GET", "PUT"))
+
+	handler.HandleFunc("GET /{email}/folder/{folder}", h.handleGetFolderEmails)
+	handler.HandleFunc("DELETE /{email}/folder/{folder}", h.handleDeleteFolder)
+	handler.HandleFunc("PUT /{email}/folder/{folder}", h.handleRenameFolder)
+	handler.Handle("OPTIONS /{email}/folder/{folder}", middleware.CreateOptionsHandler("GET", "DELETE", "PUT"))
+
+	handler.HandleFunc("GET /{email}/folder/{folder}/{id}", h.handleGetEmail)
+	handler.HandleFunc("DELETE /{email}/folder/{folder}/{id}", h.handleDeleteEmail)
+	handler.Handle("OPTIONS /{email}/folder/{folder}/{id}", middleware.CreateOptionsHandler("GET", "DELETE"))
+
+	// emails
 	return handler
 }
 
@@ -359,6 +374,14 @@ func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request)
 	w.Write(data)
 }
 
+// TODO
+func (h *EmailHandler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. send the email
+}
+
 func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Request) {
 	user, err := h.userService.GetUserFromContext(r.Context())
 	if err != nil {
@@ -467,4 +490,62 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 		errors.HandleError(w, r, err)
 		return
 	}
+}
+
+func (h *EmailHandler) handleGetFolders(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. ListFolders
+}
+
+func (h *EmailHandler) handleCreateFolder(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. get name from query
+	// 4. CreateFolder
+}
+
+func (h *EmailHandler) handleGetFolderEmails(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. get folder from path
+	// 4. GetFolderEmails
+}
+
+func (h *EmailHandler) handleDeleteFolder(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. get folder from path
+	// 4. DeleteFolder
+}
+
+func (h *EmailHandler) handleRenameFolder(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. get folder from path
+	// 4. get new name from query
+	// 5. RenameFolder
+}
+
+func (h *EmailHandler) handleGetEmail(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. get folder from path
+	// 4. get email id from path
+	// 5. GetEmail
+}
+
+func (h *EmailHandler) handleDeleteEmail(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	// 1. get account from path
+	// 2. verify permissions
+	// 3. get folder from path
+	// 4. get email id from path
+	// 5. DeleteEmail
 }
