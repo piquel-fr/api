@@ -28,7 +28,7 @@ FROM "mail_accounts"
 LEFT JOIN "mail_share" ON "mail_accounts"."id" = "mail_share"."account"
 WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1;
 
--- name: RemoveMailAccount :exec
+-- name: DeleteMailAccount :exec
 DELETE FROM "mail_accounts" 
 WHERE "id" = $1;
 
@@ -38,7 +38,7 @@ INSERT INTO "mail_share" (
 )
 VALUES ($1, $2, $3);
 
--- name: RemoveShare :exec
+-- name: DeleteShare :exec
 DELETE FROM "mail_share"
 WHERE "userId" = $1 AND "account" = $2;
 
