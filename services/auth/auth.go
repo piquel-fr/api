@@ -34,7 +34,7 @@ type AuthService interface {
 	GetPolicy() *config.PolicyConfiguration
 	GetProvider(name string) (oauth.Provider, error)
 
-	// token management
+	// auth flows
 	FinishAuth(user *repository.User, r *http.Request, w http.ResponseWriter) error // sets the users refresh & access tokens
 	Refresh(w http.ResponseWriter, r *http.Request) error                           // refreshes the user's tokens
 	Logout(w http.ResponseWriter, r *http.Request) error
@@ -42,6 +42,11 @@ type AuthService interface {
 	// authorization
 	Authorize(request *config.AuthRequest) error
 	AuthMiddleware(next http.Handler) http.Handler
+
+	// session management
+	GetUserSessions(userId string) ([]repository.UserSession, error)
+	DeleteUserSession(userId string, id int32) error
+	DeleteUserSessions(userId string) error
 }
 
 type realAuthService struct {
@@ -218,4 +223,16 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 		newReq := r.WithContext(context.WithValue(r.Context(), config.UserContextKey, claims.User))
 		next.ServeHTTP(w, newReq)
 	})
+}
+
+func (s *realAuthService) GetUserSessions(ctx context.Context, userId int32) ([]repository.UserSession, error) {
+	return database.Queries.GetUserSessions(ctx, userId)
+}
+
+func (s *realAuthService) DeleteUserSession(ctx context.Context, id int32) error {
+	return database.Queries.DeleteSessionById(ctx, id)
+}
+
+func (s *realAuthService) DeleteUserSessions(ctx context.Context, userId int32) error {
+	return database.Queries.ClearUserSessions(ctx, userId)
 }
