@@ -12,6 +12,7 @@ sql:
         emit_interface: true
         emit_result_struct_pointers: true
         emit_pointers_for_null_types: true
+        query_parameter_limit: 2
         overrides:
           - db_type: "timestamptz"
             go_type:

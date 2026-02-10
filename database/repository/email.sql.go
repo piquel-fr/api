@@ -84,13 +84,8 @@ DELETE FROM "mail_share"
 WHERE "userId" = $1 AND "account" = $2
 `
 
-type DeleteShareParams struct {
-	UserId  int32 `json:"userId"`
-	Account int32 `json:"account"`
-}
-
-func (q *Queries) DeleteShare(ctx context.Context, arg DeleteShareParams) error {
-	_, err := q.db.Exec(ctx, deleteShare, arg.UserId, arg.Account)
+func (q *Queries) DeleteShare(ctx context.Context, userId int32, account int32) error {
+	_, err := q.db.Exec(ctx, deleteShare, userId, account)
 	return err
 }
 

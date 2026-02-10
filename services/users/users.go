@@ -181,7 +181,7 @@ func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([
 	if limit > 200 {
 		limit = 200
 	}
-	return database.Queries.ListUsers(ctx, repository.ListUsersParams{Offset: offset, Limit: limit})
+	return database.Queries.ListUsers(ctx, offset, limit)
 }
 
 func (s *realUserService) GetUsernameBlacklist() []string {

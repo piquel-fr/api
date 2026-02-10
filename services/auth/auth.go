@@ -230,7 +230,7 @@ func (s *realAuthService) GetUserSessions(ctx context.Context, userId int32) ([]
 }
 
 func (s *realAuthService) DeleteUserSession(ctx context.Context, userId, id int32) error {
-	return database.Queries.DeleteSessionById(ctx, repository.DeleteSessionByIdParams{UserId: userId, ID: id})
+	return database.Queries.DeleteSessionById(ctx, userId, id)
 }
 
 func (s *realAuthService) DeleteUserSessions(ctx context.Context, userId int32) error {

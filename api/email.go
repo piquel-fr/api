@@ -461,12 +461,7 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	params := repository.DeleteShareParams{
-		UserId:  sharingUser.ID,
-		Account: account.ID,
-	}
-
-	if err := h.emailService.RemoveShare(r.Context(), params); err != nil {
+	if err := h.emailService.RemoveShare(r.Context(), sharingUser.ID, account.ID); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

@@ -66,13 +66,8 @@ const deleteSessionById = `-- name: DeleteSessionById :exec
 DELETE FROM "user_sessions" WHERE "userId" = $1 AND "id" = $2
 `
 
-type DeleteSessionByIdParams struct {
-	UserId int32 `json:"userId"`
-	ID     int32 `json:"id"`
-}
-
-func (q *Queries) DeleteSessionById(ctx context.Context, arg DeleteSessionByIdParams) error {
-	_, err := q.db.Exec(ctx, deleteSessionById, arg.UserId, arg.ID)
+func (q *Queries) DeleteSessionById(ctx context.Context, userId int32, iD int32) error {
+	_, err := q.db.Exec(ctx, deleteSessionById, userId, iD)
 	return err
 }
 

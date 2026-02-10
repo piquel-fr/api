@@ -17,8 +17,8 @@ type Querier interface {
 	CountUserMailAccounts(ctx context.Context, ownerid int32) (int64, error)
 	DeleteMailAccount(ctx context.Context, id int32) error
 	DeleteSessionByHash(ctx context.Context, tokenhash string) error
-	DeleteSessionById(ctx context.Context, arg DeleteSessionByIdParams) error
-	DeleteShare(ctx context.Context, arg DeleteShareParams) error
+	DeleteSessionById(ctx context.Context, userId int32, iD int32) error
+	DeleteShare(ctx context.Context, userId int32, account int32) error
 	GetMailAccountByEmail(ctx context.Context, email string) (*MailAccount, error)
 	GetMailAccountById(ctx context.Context, id int32) (*MailAccount, error)
 	GetSessionFromHash(ctx context.Context, tokenhash string) (*UserSession, error)
@@ -29,7 +29,7 @@ type Querier interface {
 	ListAccountShares(ctx context.Context, account int32) ([]int32, error)
 	ListUserMailAccounts(ctx context.Context, ownerid int32) ([]*MailAccount, error)
 	ListUserNames(ctx context.Context) ([]string, error)
-	ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error)
+	ListUsers(ctx context.Context, limit int32, offset int32) ([]*User, error)
 	UpdateSession(ctx context.Context, arg UpdateSessionParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserAdmin(ctx context.Context, arg UpdateUserAdminParams) error
