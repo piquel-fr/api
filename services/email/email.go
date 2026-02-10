@@ -34,6 +34,12 @@ type Folder struct {
 	NumUnread   uint32
 }
 
+type EmailSendParams struct {
+	Destinations []string `json:"destinations"`
+	Subject      string   `json:"subject"`
+	Content      string   `json:"content"`
+}
+
 type EmailService interface {
 	// account stuff
 	GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error)
@@ -48,7 +54,7 @@ type EmailService interface {
 	RemoveShare(ctx context.Context, params repository.DeleteShareParams) error
 	GetAccountShares(ctx context.Context, account int32) ([]int32, error)
 
-	SendEmail(destination []string, from *repository.MailAccount, subject, content string) error
+	SendEmail(from *repository.MailAccount, params EmailSendParams) error
 
 	// folder management
 	ListFolders(account *repository.MailAccount) ([]Folder, error)
@@ -71,20 +77,20 @@ func NewRealEmailService() *realEmailService {
 	return &realEmailService{imapAddr: addr}
 }
 
-func (r *realEmailService) SendEmail(destination []string, from *repository.MailAccount, subject, content string) error {
+func (r *realEmailService) SendEmail(from *repository.MailAccount, params EmailSendParams) error {
 	message := mail.NewMsg()
 	if err := message.From(from.Email); err != nil {
 		return fmt.Errorf("failed to add FROM address %s: %w", from.Email, err)
 	}
 
-	for _, to := range destination {
+	for _, to := range params.Destinations {
 		if err := message.AddTo(to); err != nil {
 			return fmt.Errorf("failed to add TO address %s: %w", to, err)
 		}
 	}
 
-	message.Subject(subject)
-	message.SetBodyString(mail.TypeTextHTML, content)
+	message.Subject(params.Subject)
+	message.SetBodyString(mail.TypeTextHTML, params.Content)
 
 	// Deliver the mails via SMTP
 	client, err := mail.NewClient(config.Envs.SmtpHost,
