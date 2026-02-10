@@ -22,7 +22,7 @@ type AddUserParams struct {
 	Role     string `json:"role"`
 }
 
-func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (User, error) {
+func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (*User, error) {
 	row := q.db.QueryRow(ctx, addUser,
 		arg.Username,
 		arg.Name,
@@ -40,14 +40,14 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (User, error) 
 		&i.Role,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, username, name, image, email, role, "createdAt" FROM "users" WHERE "email" = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
@@ -59,14 +59,14 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Role,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUserById = `-- name: GetUserById :one
 SELECT id, username, name, image, email, role, "createdAt" FROM "users" WHERE "id" = $1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUserById(ctx context.Context, id int32) (*User, error) {
 	row := q.db.QueryRow(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
@@ -78,14 +78,14 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 		&i.Role,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT id, username, name, image, email, role, "createdAt" FROM "users" WHERE "username" = $1
 `
 
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User, error) {
 	row := q.db.QueryRow(ctx, getUserByUsername, username)
 	var i User
 	err := row.Scan(
@@ -97,7 +97,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Role,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listUserNames = `-- name: ListUserNames :many
@@ -133,13 +133,13 @@ type ListUsersParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error) {
 	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []*User
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(
@@ -153,7 +153,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

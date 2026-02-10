@@ -101,7 +101,7 @@ WHERE m."email" = $1
 LIMIT 1
 `
 
-func (q *Queries) GetMailAccountByEmail(ctx context.Context, email string) (MailAccount, error) {
+func (q *Queries) GetMailAccountByEmail(ctx context.Context, email string) (*MailAccount, error) {
 	row := q.db.QueryRow(ctx, getMailAccountByEmail, email)
 	var i MailAccount
 	err := row.Scan(
@@ -112,7 +112,7 @@ func (q *Queries) GetMailAccountByEmail(ctx context.Context, email string) (Mail
 		&i.Username,
 		&i.Password,
 	)
-	return i, err
+	return &i, err
 }
 
 const getMailAccountById = `-- name: GetMailAccountById :one
@@ -122,7 +122,7 @@ WHERE m."id" = $1
 LIMIT 1
 `
 
-func (q *Queries) GetMailAccountById(ctx context.Context, id int32) (MailAccount, error) {
+func (q *Queries) GetMailAccountById(ctx context.Context, id int32) (*MailAccount, error) {
 	row := q.db.QueryRow(ctx, getMailAccountById, id)
 	var i MailAccount
 	err := row.Scan(
@@ -133,7 +133,7 @@ func (q *Queries) GetMailAccountById(ctx context.Context, id int32) (MailAccount
 		&i.Username,
 		&i.Password,
 	)
-	return i, err
+	return &i, err
 }
 
 const listAccountShares = `-- name: ListAccountShares :many
@@ -168,13 +168,13 @@ WHERE "mail_accounts"."ownerId" = $1 OR "mail_share"."userId" = $1
 ORDER BY "mail_accounts"."id"
 `
 
-func (q *Queries) ListUserMailAccounts(ctx context.Context, ownerid int32) ([]MailAccount, error) {
+func (q *Queries) ListUserMailAccounts(ctx context.Context, ownerid int32) ([]*MailAccount, error) {
 	rows, err := q.db.Query(ctx, listUserMailAccounts, ownerid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MailAccount
+	var items []*MailAccount
 	for rows.Next() {
 		var i MailAccount
 		if err := rows.Scan(
@@ -187,7 +187,7 @@ func (q *Queries) ListUserMailAccounts(ctx context.Context, ownerid int32) ([]Ma
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

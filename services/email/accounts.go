@@ -20,11 +20,11 @@ type AccountInfo struct {
 	Shares    []string  `json:"shares"`
 }
 
-func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error) {
+func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (*repository.MailAccount, error) {
 	return database.Queries.GetMailAccountByEmail(ctx, email)
 }
 
-func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]repository.MailAccount, error) {
+func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]*repository.MailAccount, error) {
 	return database.Queries.ListUserMailAccounts(ctx, userId)
 }
 

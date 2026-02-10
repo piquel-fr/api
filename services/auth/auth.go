@@ -44,7 +44,7 @@ type AuthService interface {
 	AuthMiddleware(next http.Handler) http.Handler
 
 	// session management
-	GetUserSessions(ctx context.Context, userId int32) ([]repository.UserSession, error)
+	GetUserSessions(ctx context.Context, userId int32) ([]*repository.UserSession, error)
 	DeleteUserSession(ctx context.Context, userId, id int32) error
 	DeleteUserSessions(ctx context.Context, userId int32) error
 }
@@ -225,7 +225,7 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (s *realAuthService) GetUserSessions(ctx context.Context, userId int32) ([]repository.UserSession, error) {
+func (s *realAuthService) GetUserSessions(ctx context.Context, userId int32) ([]*repository.UserSession, error) {
 	return database.Queries.GetUserSessions(ctx, userId)
 }
 

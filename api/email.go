@@ -333,7 +333,7 @@ func (h *EmailHandler) handleAccountInfo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	accountInfo, err := h.emailService.GetAccountInfo(r.Context(), &account)
+	accountInfo, err := h.emailService.GetAccountInfo(r.Context(), account)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
@@ -377,7 +377,7 @@ func (h *EmailHandler) handleRemoveAccount(w http.ResponseWriter, r *http.Reques
 
 	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
-		Ressource: &account,
+		Ressource: account,
 		Actions:   []string{auth.ActionDelete},
 		Context:   r.Context(),
 	}); err != nil {
@@ -406,7 +406,7 @@ func (h *EmailHandler) handleShareAccount(w http.ResponseWriter, r *http.Request
 
 	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
-		Ressource: &account,
+		Ressource: account,
 		Actions:   []string{auth.ActionShare},
 		Context:   r.Context(),
 	}); err != nil {
@@ -447,7 +447,7 @@ func (h *EmailHandler) handleRemoveAccountShare(w http.ResponseWriter, r *http.R
 
 	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
-		Ressource: &account,
+		Ressource: account,
 		Actions:   []string{auth.ActionShare},
 		Context:   r.Context(),
 	}); err != nil {

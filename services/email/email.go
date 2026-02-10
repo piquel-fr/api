@@ -10,8 +10,8 @@ import (
 
 type EmailService interface {
 	// account stuff
-	GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error)
-	ListAccounts(ctx context.Context, userId int32) ([]repository.MailAccount, error)
+	GetAccountByEmail(ctx context.Context, email string) (*repository.MailAccount, error)
+	ListAccounts(ctx context.Context, userId int32) ([]*repository.MailAccount, error)
 	CountAccounts(ctx context.Context, userId int32) (int64, error)
 	AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error)
 	RemoveAccount(ctx context.Context, accountId int32) error
