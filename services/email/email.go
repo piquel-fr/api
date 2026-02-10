@@ -64,15 +64,15 @@ type EmailService interface {
 
 	// email management
 	GetFolderEmails(account *repository.MailAccount, folder string, offset, limit uint32) ([]*EmailHead, error)
-	GetEmail(account *repository.MailAccount, id uint32) (Email, error)
-	DeleteEmail(account *repository.MailAccount, id uint32) error
+	GetEmail(account *repository.MailAccount, folder string, id uint32) (Email, error)
+	DeleteEmail(account *repository.MailAccount, folder string, id uint32) error
 }
 
 type realEmailService struct {
 	imapAddr string
 }
 
-func NewRealEmailService() *realEmailService {
+func NewRealEmailService() EmailService {
 	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
 	return &realEmailService{imapAddr: addr}
 }
@@ -216,7 +216,7 @@ func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, fold
 	return emails, nil
 }
 
-func (r *realEmailService) GetEmail(account *repository.MailAccount, id uint32) (Email, error) {
+func (r *realEmailService) GetEmail(account *repository.MailAccount, folder string, id uint32) (Email, error) {
 	client, err := imapclient.DialTLS(r.imapAddr, nil)
 	if err != nil {
 		return Email{}, err
@@ -224,6 +224,10 @@ func (r *realEmailService) GetEmail(account *repository.MailAccount, id uint32) 
 	defer client.Logout()
 
 	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return Email{}, err
+	}
+
+	if _, err := client.Select(folder, nil).Wait(); err != nil {
 		return Email{}, err
 	}
 
@@ -255,7 +259,7 @@ func (r *realEmailService) GetEmail(account *repository.MailAccount, id uint32) 
 	return Email{}, nil
 }
 
-func (r *realEmailService) DeleteEmail(account *repository.MailAccount, id uint32) error {
+func (r *realEmailService) DeleteEmail(account *repository.MailAccount, folder string, id uint32) error {
 	client, err := imapclient.DialTLS(r.imapAddr, nil)
 	if err != nil {
 		return err
@@ -263,6 +267,10 @@ func (r *realEmailService) DeleteEmail(account *repository.MailAccount, id uint3
 	defer client.Logout()
 
 	if err := client.Login(account.Username, account.Password).Wait(); err != nil {
+		return err
+	}
+
+	if _, err := client.Select(folder, nil).Wait(); err != nil {
 		return err
 	}
 
