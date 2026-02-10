@@ -23,7 +23,7 @@ type AddSessionParams struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func (q *Queries) AddSession(ctx context.Context, arg AddSessionParams) (UserSession, error) {
+func (q *Queries) AddSession(ctx context.Context, arg AddSessionParams) (*UserSession, error) {
 	row := q.db.QueryRow(ctx, addSession,
 		arg.UserId,
 		arg.TokenHash,
@@ -41,7 +41,7 @@ func (q *Queries) AddSession(ctx context.Context, arg AddSessionParams) (UserSes
 		&i.ExpiresAt,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const clearUserSessions = `-- name: ClearUserSessions :exec
@@ -66,13 +66,8 @@ const deleteSessionById = `-- name: DeleteSessionById :exec
 DELETE FROM "user_sessions" WHERE "userId" = $1 AND "id" = $2
 `
 
-type DeleteSessionByIdParams struct {
-	UserId int32 `json:"userId"`
-	ID     int32 `json:"id"`
-}
-
-func (q *Queries) DeleteSessionById(ctx context.Context, arg DeleteSessionByIdParams) error {
-	_, err := q.db.Exec(ctx, deleteSessionById, arg.UserId, arg.ID)
+func (q *Queries) DeleteSessionById(ctx context.Context, userId int32, iD int32) error {
+	_, err := q.db.Exec(ctx, deleteSessionById, userId, iD)
 	return err
 }
 
@@ -80,7 +75,7 @@ const getSessionFromHash = `-- name: GetSessionFromHash :one
 SELECT id, "userId", "tokenHash", "userAgent", "ipAdress", "expiresAt", "createdAt" FROM "user_sessions" WHERE "tokenHash" = $1
 `
 
-func (q *Queries) GetSessionFromHash(ctx context.Context, tokenhash string) (UserSession, error) {
+func (q *Queries) GetSessionFromHash(ctx context.Context, tokenhash string) (*UserSession, error) {
 	row := q.db.QueryRow(ctx, getSessionFromHash, tokenhash)
 	var i UserSession
 	err := row.Scan(
@@ -92,20 +87,20 @@ func (q *Queries) GetSessionFromHash(ctx context.Context, tokenhash string) (Use
 		&i.ExpiresAt,
 		&i.CreatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUserSessions = `-- name: GetUserSessions :many
 SELECT id, "userId", "tokenHash", "userAgent", "ipAdress", "expiresAt", "createdAt" FROM "user_sessions" WHERE "userId" = $1 ORDER BY "id" ASC
 `
 
-func (q *Queries) GetUserSessions(ctx context.Context, userid int32) ([]UserSession, error) {
+func (q *Queries) GetUserSessions(ctx context.Context, userid int32) ([]*UserSession, error) {
 	rows, err := q.db.Query(ctx, getUserSessions, userid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UserSession
+	var items []*UserSession
 	for rows.Next() {
 		var i UserSession
 		if err := rows.Scan(
@@ -119,7 +114,7 @@ func (q *Queries) GetUserSessions(ctx context.Context, userid int32) ([]UserSess
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

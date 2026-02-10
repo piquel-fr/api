@@ -31,7 +31,7 @@ type UserService interface {
 	DeleteUser(ctx context.Context, user *repository.User) error
 
 	// other
-	ListUsers(ctx context.Context, offset, limit int32) ([]repository.User, error)
+	ListUsers(ctx context.Context, offset, limit int32) ([]*repository.User, error)
 }
 
 type realUserService struct{}
@@ -41,18 +41,15 @@ func NewRealUserService() *realUserService {
 }
 
 func (s *realUserService) GetUserById(ctx context.Context, id int32) (*repository.User, error) {
-	user, err := database.Queries.GetUserById(ctx, id)
-	return &user, err
+	return database.Queries.GetUserById(ctx, id)
 }
 
 func (s *realUserService) GetUserByUsername(ctx context.Context, username string) (*repository.User, error) {
-	user, err := database.Queries.GetUserByUsername(ctx, username)
-	return &user, err
+	return database.Queries.GetUserByUsername(ctx, username)
 }
 
 func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*repository.User, error) {
-	user, err := database.Queries.GetUserByEmail(ctx, email)
-	return &user, err
+	return database.Queries.GetUserByEmail(ctx, email)
 }
 
 func (s *realUserService) GetUserFromContext(ctx context.Context) (*repository.User, error) {
@@ -105,8 +102,7 @@ func (s *realUserService) RegisterUser(ctx context.Context, username, email, nam
 		Role:     role,
 	}
 
-	user, err := database.Queries.AddUser(ctx, params)
-	return &user, err
+	return database.Queries.AddUser(ctx, params)
 }
 
 func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User) error {
@@ -181,11 +177,11 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 	return username, nil
 }
 
-func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([]repository.User, error) {
+func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([]*repository.User, error) {
 	if limit > 200 {
 		limit = 200
 	}
-	return database.Queries.ListUsers(ctx, repository.ListUsersParams{Offset: offset, Limit: limit})
+	return database.Queries.ListUsers(ctx, offset, limit)
 }
 
 func (s *realUserService) GetUsernameBlacklist() []string {
