@@ -20,11 +20,11 @@ type AccountInfo struct {
 	Shares    []string  `json:"shares"`
 }
 
-func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (repository.MailAccount, error) {
+func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (*repository.MailAccount, error) {
 	return database.Queries.GetMailAccountByEmail(ctx, email)
 }
 
-func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]repository.MailAccount, error) {
+func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]*repository.MailAccount, error) {
 	return database.Queries.ListUserMailAccounts(ctx, userId)
 }
 
@@ -93,8 +93,8 @@ func (r *realEmailService) AddShare(ctx context.Context, params repository.AddSh
 	return database.Queries.AddShare(ctx, params)
 }
 
-func (r *realEmailService) RemoveShare(ctx context.Context, params repository.DeleteShareParams) error {
-	return database.Queries.DeleteShare(ctx, params)
+func (r *realEmailService) RemoveShare(ctx context.Context, userId, accountId int32) error {
+	return database.Queries.DeleteShare(ctx, userId, accountId)
 }
 
 func (r *realEmailService) GetAccountShares(ctx context.Context, account int32) ([]int32, error) {
