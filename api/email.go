@@ -678,7 +678,7 @@ func (h *EmailHandler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.authService.Authorize(&config.AuthRequest{
 		User:      user,
-		Ressource: &account,
+		Ressource: account,
 		Actions:   []string{auth.ActionSendEmail},
 		Context:   r.Context(),
 	}); err != nil {
