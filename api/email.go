@@ -43,15 +43,18 @@ func (h *EmailHandler) getSpec() Spec {
 		WithProperty("username", openapi3.NewStringSchema()).
 		WithProperty("password", openapi3.NewStringSchema())
 
+	// TODO: update
 	folderSchema := openapi3.NewObjectSchema().
 		WithProperty("name", openapi3.NewStringSchema())
 
+	// TODO: update
 	emailMessageSchema := openapi3.NewObjectSchema().
 		WithProperty("id", openapi3.NewStringSchema()).
 		WithProperty("subject", openapi3.NewStringSchema()).
 		WithProperty("from", openapi3.NewStringSchema()).
 		WithProperty("body", openapi3.NewStringSchema())
 
+	// TODO: update
 	sendEmailPayloadSchema := openapi3.NewObjectSchema().
 		WithProperty("to", openapi3.NewStringSchema().WithFormat("email")).
 		WithProperty("subject", openapi3.NewStringSchema()).
@@ -448,7 +451,7 @@ func (h *EmailHandler) getSpec() Spec {
 					Name:     "id",
 					In:       "path",
 					Required: true,
-					Schema:   &openapi3.SchemaRef{Value: openapi3.NewStringSchema()},
+					Schema:   &openapi3.SchemaRef{Value: openapi3.NewInt32Schema()},
 				},
 			},
 		},
@@ -822,9 +825,30 @@ func (h *EmailHandler) handleGetFolders(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. ListFolders
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	folders, err := h.emailService.ListFolders(account)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	data, err := json.Marshal(folders)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func (h *EmailHandler) handleCreateFolder(w http.ResponseWriter, r *http.Request) {
@@ -840,10 +864,21 @@ func (h *EmailHandler) handleCreateFolder(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. get name from query
-	// 4. CreateFolder
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.emailService.CreateFolder(account, r.URL.Query().Get("name")); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *EmailHandler) handleGetFolderEmails(w http.ResponseWriter, r *http.Request) {
@@ -859,11 +894,44 @@ func (h *EmailHandler) handleGetFolderEmails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. get folder from path
-	// 4. get limit & offset from query
-	// 5. GetFolderEmails
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	limit, offset := config.MaxLimit, 0
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			limit = config.MaxLimit
+		}
+	}
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			offset = 0
+		}
+	}
+
+	emails, err := h.emailService.GetFolderEmails(account, r.PathValue("folder"), uint32(offset), uint32(limit))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	data, err := json.Marshal(emails)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func (h *EmailHandler) handleDeleteFolder(w http.ResponseWriter, r *http.Request) {
@@ -879,10 +947,21 @@ func (h *EmailHandler) handleDeleteFolder(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. get folder from path
-	// 4. DeleteFolder
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.emailService.DeleteFolder(account, r.PathValue("folder")); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *EmailHandler) handleRenameFolder(w http.ResponseWriter, r *http.Request) {
@@ -898,11 +977,21 @@ func (h *EmailHandler) handleRenameFolder(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. get folder from path
-	// 4. get new name from query
-	// 5. RenameFolder
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.emailService.RenameFolder(account, r.PathValue("folder"), r.URL.Query().Get("name")); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *EmailHandler) handleGetEmail(w http.ResponseWriter, r *http.Request) {
@@ -918,11 +1007,36 @@ func (h *EmailHandler) handleGetEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. get folder from path
-	// 4. get email id from path
-	// 5. GetEmail
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	email, err := h.emailService.GetEmail(account, r.PathValue("folder"), uint32(id))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	data, err := json.Marshal(email)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func (h *EmailHandler) handleDeleteEmail(w http.ResponseWriter, r *http.Request) {
@@ -938,9 +1052,25 @@ func (h *EmailHandler) handleDeleteEmail(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// TODO
-	// 2. verify permissions
-	// 3. get folder from path
-	// 4. get email id from path
-	// 5. DeleteEmail
+	if err := h.authService.Authorize(&config.AuthRequest{
+		User:      user,
+		Ressource: account,
+		Actions:   []string{auth.ActionView},
+		Context:   r.Context(),
+	}); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if err := h.emailService.DeleteEmail(account, r.PathValue("folder"), uint32(id)); err != nil {
+		errors.HandleError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
