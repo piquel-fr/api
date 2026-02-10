@@ -29,9 +29,9 @@ type Email struct {
 }
 
 type Folder struct {
-	Name        string
-	NumMessages uint32
-	NumUnread   uint32
+	Name        string `json:"name"`
+	NumMessages int    `json:"num_messages"`
+	NumUnread   int    `json:"num_unread"`
 }
 
 type EmailSendParams struct {
@@ -118,17 +118,15 @@ func (r *realEmailService) ListFolders(account *repository.MailAccount) ([]Folde
 		return nil, err
 	}
 
-	mailboxes, err := client.List("", "*", nil).Collect()
-	if err != nil {
-		return nil, err
-	}
+	listCmd := client.List("", "*", &imap.ListOptions{ReturnStatus: &imap.StatusOptions{NumMessages: true, NumUnseen: true}})
+	defer listCmd.Close()
 
 	folders := []Folder{}
-	for _, mailbox := range mailboxes {
+	for mailbox := listCmd.Next(); mailbox != nil; mailbox = listCmd.Next() {
 		folders = append(folders, Folder{
 			Name:        mailbox.Mailbox,
-			NumMessages: *mailbox.Status.NumMessages,
-			NumUnread:   *mailbox.Status.NumUnseen,
+			NumMessages: int(*mailbox.Status.NumMessages),
+			NumUnread:   int(*mailbox.Status.NumUnseen),
 		})
 	}
 

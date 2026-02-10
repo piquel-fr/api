@@ -140,6 +140,7 @@ func (h *EmailHandler) getSpec() Spec {
 				},
 			},
 		},
+		// TODO: fix this returns account info not just an account
 		Responses: openapi3.NewResponses(
 			openapi3.WithStatus(200, &openapi3.ResponseRef{
 				Value: openapi3.NewResponse().
