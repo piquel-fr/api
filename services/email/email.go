@@ -192,6 +192,10 @@ func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, fold
 		return nil, err
 	}
 
+	if _, err := client.Select(folder, nil).Wait(); err != nil {
+		return nil, err
+	}
+
 	seqSet := imap.SeqSet{{Start: offset, Stop: offset + limit}}
 	fetchOptions := &imap.FetchOptions{
 		Flags:    true,
