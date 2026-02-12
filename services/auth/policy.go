@@ -27,13 +27,16 @@ const (
 	// admin stuff
 	ActionUpdateAdmin = "update_admin"
 
+	// users
+	ActionViewEmail = "view_email"
+
 	// sessions
 	ActionViewUserSessions   = "view_user_sessions"
 	ActionDeleteUserSessions = "delete_user_sessions"
 
 	// email
-	ActionViewEmail         = "view_email"
 	ActionListEmailAccounts = "list_email_accounts"
+	ActionSendEmail         = "send_email"
 )
 
 func own(request *config.AuthRequest) error {
@@ -47,6 +50,30 @@ func makeOwn(action string) *config.Permission {
 	return &config.Permission{
 		Action:     action,
 		Conditions: config.Conditions{own},
+	}
+}
+
+// will check if you own of if the email account is shared with you
+func makeOwnEmail(action string) *config.Permission {
+	return &config.Permission{
+		Action: action,
+		Conditions: config.Conditions{
+			func(request *config.AuthRequest) error {
+				if request.Ressource.GetOwner() == request.User.ID {
+					return nil
+				}
+
+				info, ok := request.Ressource.(*email.AccountInfo)
+				if !ok {
+					return newRequestMalformedError(request)
+				}
+
+				if slices.Contains(info.Shares, request.User.Username) {
+					return nil
+				}
+				return errors.ErrorNotFound
+			},
+		},
 	}
 }
 
@@ -70,13 +97,14 @@ var policy = config.PolicyConfiguration{
 					{Action: ActionUpdateAdmin},
 					{Action: ActionViewUserSessions},
 					{Action: ActionDeleteUserSessions},
+					{Action: ActionListEmailAccounts},
 				},
 				repository.ResourceMailAccount: {
 					{Action: ActionView},
 					{Action: ActionUpdate},
 					{Action: ActionDelete},
-					{Action: ActionListEmailAccounts},
 					{Action: ActionShare},
+					{Action: ActionSendEmail},
 				},
 			},
 			Parents: []string{RoleDefault, RoleDeveloper},
@@ -85,32 +113,14 @@ var policy = config.PolicyConfiguration{
 			Name:  "Developer",
 			Color: "blue",
 			Permissions: map[string][]*config.Permission{
-				repository.ResourceMailAccount: {
-					{
-						Action: ActionView,
-						Conditions: config.Conditions{
-							func(request *config.AuthRequest) error {
-								if request.Ressource.GetOwner() == request.User.ID {
-									return nil
-								}
-
-								info, ok := request.Ressource.(*email.AccountInfo)
-								if !ok {
-									return newRequestMalformedError(request)
-								}
-
-								if slices.Contains(info.Shares, request.User.Username) {
-									return nil
-								}
-								return errors.ErrorNotFound
-							},
-						},
-					},
-					makeOwn(ActionDelete),
-				},
 				repository.ResourceUser: {
-					makeOwn(ActionShare),
 					makeOwn(ActionListEmailAccounts),
+				},
+				repository.ResourceMailAccount: {
+					makeOwnEmail(ActionView),
+					makeOwnEmail(ActionSendEmail),
+					makeOwn(ActionShare),
+					makeOwn(ActionDelete),
 				},
 			},
 			Parents: []string{RoleDefault},
