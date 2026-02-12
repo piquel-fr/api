@@ -255,17 +255,15 @@ func (r *realEmailService) GetEmail(account *repository.MailAccount, folder stri
 	if err != nil {
 		return Email{}, err
 	}
-
-	emails := []*Email{}
-	for _, msg := range messages {
-		email := &Email{
-			Head: *makeMailhead(msg),
-			Body: msg.FindBodySection(bodySection),
-		}
-		emails = append(emails, email)
+	if len(messages) != 1 {
+		return Email{}, fmt.Errorf("major error when fetching email %d from folder %s, %d emails were found", id, folder, len(messages))
 	}
 
-	return Email{}, nil
+	message := messages[0]
+	return Email{
+		Head: *makeMailhead(message),
+		Body: message.FindBodySection(bodySection),
+	}, nil
 }
 
 func (r *realEmailService) DeleteEmail(account *repository.MailAccount, folder string, id uint32) error {
