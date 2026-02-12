@@ -208,7 +208,7 @@ func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, fold
 		Flags:    true,
 		Envelope: true,
 		BodySection: []*imap.FetchItemBodySection{
-			{Specifier: imap.PartSpecifierHeader},
+			{Specifier: imap.PartSpecifierHeader, Peek: true},
 		},
 	}
 
