@@ -911,6 +911,9 @@ func (h *EmailHandler) handleGetFolderEmails(w http.ResponseWriter, r *http.Requ
 		if err != nil {
 			limit = config.MaxLimit
 		}
+		if limit < 1 {
+			limit = 1
+		}
 	}
 	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
 		offset, err = strconv.Atoi(offsetStr)
