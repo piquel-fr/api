@@ -7,7 +7,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 	"github.com/piquel-fr/api/services/auth"
 	"github.com/piquel-fr/api/services/email"
@@ -314,7 +313,7 @@ func (h *EmailHandler) handleAddAccount(w http.ResponseWriter, r *http.Request) 
 	}
 
 	params.OwnerId = user.ID
-	if _, err = database.Queries.AddEmailAccount(r.Context(), params); err != nil {
+	if _, err = h.emailService.AddAccount(r.Context(), params); err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}

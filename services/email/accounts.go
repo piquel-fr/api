@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/emersion/go-imap/v2/imapclient"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
 )
 
@@ -20,29 +19,29 @@ type AccountInfo struct {
 	Shares    []string  `json:"shares"`
 }
 
-func (r *realEmailService) GetAccountByEmail(ctx context.Context, email string) (*repository.MailAccount, error) {
-	return database.Queries.GetMailAccountByEmail(ctx, email)
+func (s *realEmailService) GetAccountByEmail(ctx context.Context, email string) (*repository.MailAccount, error) {
+	return s.storageService.GetMailAccountByEmail(ctx, email)
 }
 
-func (r *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]*repository.MailAccount, error) {
-	return database.Queries.ListUserMailAccounts(ctx, userId)
+func (s *realEmailService) ListAccounts(ctx context.Context, userId int32) ([]*repository.MailAccount, error) {
+	return s.storageService.ListUserMailAccounts(ctx, userId)
 }
 
-func (r *realEmailService) CountAccounts(ctx context.Context, userId int32) (int64, error) {
-	return database.Queries.CountUserMailAccounts(ctx, userId)
+func (s *realEmailService) CountAccounts(ctx context.Context, userId int32) (int64, error) {
+	return s.storageService.CountUserMailAccounts(ctx, userId)
 }
 
-func (r *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error) {
-	return database.Queries.AddEmailAccount(ctx, params)
+func (s *realEmailService) AddAccount(ctx context.Context, params repository.AddEmailAccountParams) (int32, error) {
+	return s.storageService.AddEmailAccount(ctx, params)
 }
 
-func (r *realEmailService) RemoveAccount(ctx context.Context, accountId int32) error {
+func (s *realEmailService) RemoveAccount(ctx context.Context, accountId int32) error {
 	// TODO: remove the shares as well
-	return database.Queries.DeleteMailAccount(ctx, accountId)
+	return s.storageService.DeleteMailAccount(ctx, accountId)
 }
 
-func (r *realEmailService) GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error) {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) GetAccountInfo(ctx context.Context, account *repository.MailAccount) (AccountInfo, error) {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return AccountInfo{}, err
 	}
@@ -73,13 +72,13 @@ func (r *realEmailService) GetAccountInfo(ctx context.Context, account *reposito
 	}
 
 	// get shares
-	shares, err := r.GetAccountShares(ctx, account.ID)
+	shares, err := s.GetAccountShares(ctx, account.ID)
 	if err != nil {
 		return AccountInfo{}, err
 	}
 
 	for _, share := range shares {
-		user, err := database.Queries.GetUserById(ctx, share)
+		user, err := s.storageService.GetUserById(ctx, share)
 		if err != nil {
 			return AccountInfo{}, err
 		}
@@ -89,14 +88,14 @@ func (r *realEmailService) GetAccountInfo(ctx context.Context, account *reposito
 	return accountInfo, nil
 }
 
-func (r *realEmailService) AddShare(ctx context.Context, params repository.AddShareParams) error {
-	return database.Queries.AddShare(ctx, params)
+func (s *realEmailService) AddShare(ctx context.Context, params repository.AddShareParams) error {
+	return s.storageService.AddShare(ctx, params)
 }
 
-func (r *realEmailService) RemoveShare(ctx context.Context, userId, accountId int32) error {
-	return database.Queries.DeleteShare(ctx, userId, accountId)
+func (s *realEmailService) RemoveShare(ctx context.Context, userId, accountId int32) error {
+	return s.storageService.DeleteShare(ctx, userId, accountId)
 }
 
-func (r *realEmailService) GetAccountShares(ctx context.Context, account int32) ([]int32, error) {
-	return database.Queries.ListAccountShares(ctx, account)
+func (s *realEmailService) GetAccountShares(ctx context.Context, account int32) ([]int32, error) {
+	return s.storageService.ListAccountShares(ctx, account)
 }
