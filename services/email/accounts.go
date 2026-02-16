@@ -7,16 +7,10 @@ import (
 	"github.com/piquel-fr/api/database/repository"
 )
 
-type Mailbox struct {
-	Name        string `json:"name"`
-	NumMessages int    `json:"num_messages"`
-	NumUnread   int    `json:"num_unread"`
-}
-
 type AccountInfo struct {
 	*repository.MailAccount
-	Mailboxes []Mailbox `json:"mailboxes"`
-	Shares    []string  `json:"shares"`
+	Folders []Folder `json:"mailboxes"`
+	Shares  []string `json:"shares"`
 }
 
 func (s *realEmailService) GetAccountByEmail(ctx context.Context, email string) (*repository.MailAccount, error) {
@@ -59,16 +53,9 @@ func (s *realEmailService) GetAccountInfo(ctx context.Context, account *reposito
 	account.Username = ""
 	account.Password = ""
 
-	// get mailboxes
-	listCmd := client.List("", "*", nil)
-	defer listCmd.Close()
-
-	for mailbox := listCmd.Next(); mailbox != nil; mailbox = listCmd.Next() {
-		accountInfo.Mailboxes = append(accountInfo.Mailboxes, Mailbox{
-			Name:        mailbox.Mailbox,
-			NumMessages: int(*mailbox.Status.NumMessages),
-			NumUnread:   int(*mailbox.Status.NumUnseen),
-		})
+	accountInfo.Folders, err = s.ListFolders(account)
+	if err != nil {
+		return AccountInfo{}, err
 	}
 
 	// get shares

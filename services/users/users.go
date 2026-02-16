@@ -180,8 +180,8 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 }
 
 func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([]*repository.User, error) {
-	if limit > 200 {
-		limit = 200
+	if limit > config.MaxLimit {
+		limit = config.MaxLimit
 	}
 	return s.storageService.ListUsers(ctx, offset, limit)
 }
