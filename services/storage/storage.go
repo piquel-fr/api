@@ -43,4 +43,3 @@ func NewDatabaseStorageService() StorageService {
 func (s *databaseStorageService) Close() {
 	s.connection.Close()
 }
-

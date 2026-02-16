@@ -25,9 +25,9 @@ func main() {
 
 	storageService := storage.NewDatabaseStorageService()
 	defer storageService.Close()
-	userService := users.NewRealUserService()
-	authService := auth.NewRealAuthService(userService)
-	emailService := email.NewRealEmailService()
+	userService := users.NewRealUserService(storageService)
+	authService := auth.NewRealAuthService(storageService, userService)
+	emailService := email.NewRealEmailService(storageService)
 
 	config.UsernameBlacklist = userService.GetUsernameBlacklist()
 	config.Policy = authService.GetPolicy()

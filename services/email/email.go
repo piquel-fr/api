@@ -6,6 +6,7 @@ import (
 
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/storage"
 )
 
 type EmailService interface {
@@ -24,12 +25,14 @@ type EmailService interface {
 }
 
 type realEmailService struct {
-	imapAddr string
+	imapAddr       string
+	storageService storage.StorageService
 }
 
-func NewRealEmailService() *realEmailService {
+func NewRealEmailService(storageService storage.StorageService) *realEmailService {
 	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
 	return &realEmailService{
-		imapAddr: addr,
+		imapAddr:       addr,
+		storageService: storageService,
 	}
 }
