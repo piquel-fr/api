@@ -12,8 +12,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/storage"
 	"github.com/piquel-fr/api/services/users"
 	"github.com/piquel-fr/api/utils"
 	"github.com/piquel-fr/api/utils/errors"
@@ -50,11 +50,12 @@ type AuthService interface {
 }
 
 type realAuthService struct {
-	userService users.UserService
+	userService    users.UserService
+	storageService storage.StorageService
 }
 
-func NewRealAuthService(userService users.UserService) AuthService {
-	return &realAuthService{userService}
+func NewRealAuthService(storageService storage.StorageService, userService users.UserService) AuthService {
+	return &realAuthService{userService, storageService}
 }
 
 func (s *realAuthService) GetPolicy() *config.PolicyConfiguration { return &policy }
@@ -87,7 +88,7 @@ func (s *realAuthService) FinishAuth(user *repository.User, r *http.Request, w h
 		IpAdress:  ipAddress,
 		ExpiresAt: time.Now().Add(refreshExpiry), // one month
 	}
-	if _, err := database.Queries.AddSession(r.Context(), sessionParams); err != nil {
+	if _, err := s.storageService.AddSession(r.Context(), sessionParams); err != nil {
 		return err
 	}
 
@@ -101,7 +102,7 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 	cookies := utils.GetCookiesFromStr(r.Header.Get("Cookie"))
 
 	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
-	session, err := database.Queries.GetSessionFromHash(r.Context(), hash)
+	session, err := s.storageService.GetSessionFromHash(r.Context(), hash)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return errors.ErrorNotAuthenticated
 	}
@@ -135,7 +136,7 @@ func (s *realAuthService) Refresh(w http.ResponseWriter, r *http.Request) error 
 		TokenHash: refreshHash,
 		ExpiresAt: time.Now().Add(refreshExpiry),
 	}
-	if err := database.Queries.UpdateSession(r.Context(), updateSessionParams); err != nil {
+	if err := s.storageService.UpdateSession(r.Context(), updateSessionParams); err != nil {
 		return err
 	}
 
@@ -152,7 +153,7 @@ func (s *realAuthService) Logout(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Set-Cookie", utils.GenerateClearCookie(accessKey, config.Envs.Domain, "/"))
 
 	hash := s.hashRefreshToken(cookies[refreshKey], ipAddress)
-	return database.Queries.DeleteSessionByHash(r.Context(), hash)
+	return s.storageService.DeleteSessionByHash(r.Context(), hash)
 }
 
 func (s *realAuthService) generateAccessToken(user *repository.User, expiresAt time.Time) *jwt.Token {
@@ -226,13 +227,13 @@ func (s *realAuthService) AuthMiddleware(next http.Handler) http.Handler {
 }
 
 func (s *realAuthService) GetUserSessions(ctx context.Context, userId int32) ([]*repository.UserSession, error) {
-	return database.Queries.GetUserSessions(ctx, userId)
+	return s.storageService.GetUserSessions(ctx, userId)
 }
 
 func (s *realAuthService) DeleteUserSession(ctx context.Context, userId, id int32) error {
-	return database.Queries.DeleteSessionById(ctx, userId, id)
+	return s.storageService.DeleteSessionById(ctx, userId, id)
 }
 
 func (s *realAuthService) DeleteUserSessions(ctx context.Context, userId int32) error {
-	return database.Queries.ClearUserSessions(ctx, userId)
+	return s.storageService.ClearUserSessions(ctx, userId)
 }

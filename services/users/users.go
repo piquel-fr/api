@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/piquel-fr/api/config"
-	"github.com/piquel-fr/api/database"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/storage"
 	"github.com/piquel-fr/api/utils/errors"
 )
 
@@ -34,22 +34,24 @@ type UserService interface {
 	ListUsers(ctx context.Context, offset, limit int32) ([]*repository.User, error)
 }
 
-type realUserService struct{}
+type realUserService struct {
+	storageService storage.StorageService
+}
 
-func NewRealUserService() *realUserService {
-	return &realUserService{}
+func NewRealUserService(storageService storage.StorageService) UserService {
+	return &realUserService{storageService}
 }
 
 func (s *realUserService) GetUserById(ctx context.Context, id int32) (*repository.User, error) {
-	return database.Queries.GetUserById(ctx, id)
+	return s.storageService.GetUserById(ctx, id)
 }
 
 func (s *realUserService) GetUserByUsername(ctx context.Context, username string) (*repository.User, error) {
-	return database.Queries.GetUserByUsername(ctx, username)
+	return s.storageService.GetUserByUsername(ctx, username)
 }
 
 func (s *realUserService) GetUserByEmail(ctx context.Context, email string) (*repository.User, error) {
-	return database.Queries.GetUserByEmail(ctx, email)
+	return s.storageService.GetUserByEmail(ctx, email)
 }
 
 func (s *realUserService) GetUserFromContext(ctx context.Context) (*repository.User, error) {
@@ -67,7 +69,7 @@ func (s *realUserService) UpdateUser(ctx context.Context, params repository.Upda
 	}
 	params.Username = username
 
-	return database.Queries.UpdateUser(ctx, params)
+	return s.storageService.UpdateUser(ctx, params)
 }
 
 func (s *realUserService) UpdateUserAdmin(ctx context.Context, params repository.UpdateUserAdminParams) error {
@@ -81,7 +83,7 @@ func (s *realUserService) UpdateUserAdmin(ctx context.Context, params repository
 		return err
 	}
 
-	return database.Queries.UpdateUserAdmin(ctx, params)
+	return s.storageService.UpdateUserAdmin(ctx, params)
 }
 
 func (s *realUserService) RegisterUser(ctx context.Context, username, email, name, image, role string) (*repository.User, error) {
@@ -102,7 +104,7 @@ func (s *realUserService) RegisterUser(ctx context.Context, username, email, nam
 		Role:     role,
 	}
 
-	return database.Queries.AddUser(ctx, params)
+	return s.storageService.AddUser(ctx, params)
 }
 
 func (s *realUserService) DeleteUser(ctx context.Context, user *repository.User) error {
@@ -150,7 +152,7 @@ func (s *realUserService) formatAndValidateUsername(ctx context.Context, usernam
 	}
 
 	// already existing users
-	names, err := database.Queries.ListUserNames(ctx)
+	names, err := s.storageService.ListUserNames(ctx)
 	if err != nil {
 		random = true
 		if !force {
@@ -181,7 +183,7 @@ func (s *realUserService) ListUsers(ctx context.Context, offset, limit int32) ([
 	if limit > config.MaxLimit {
 		limit = config.MaxLimit
 	}
-	return database.Queries.ListUsers(ctx, offset, limit)
+	return s.storageService.ListUsers(ctx, offset, limit)
 }
 
 func (s *realUserService) GetUsernameBlacklist() []string {

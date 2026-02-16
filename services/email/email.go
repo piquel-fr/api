@@ -9,6 +9,7 @@ import (
 	"github.com/emersion/go-imap/v2/imapclient"
 	"github.com/piquel-fr/api/config"
 	"github.com/piquel-fr/api/database/repository"
+	"github.com/piquel-fr/api/services/storage"
 	"github.com/wneessen/go-mail"
 )
 
@@ -69,15 +70,19 @@ type EmailService interface {
 }
 
 type realEmailService struct {
-	imapAddr string
+	imapAddr       string
+	storageService storage.StorageService
 }
 
-func NewRealEmailService() EmailService {
+func NewRealEmailService(storageService storage.StorageService) EmailService {
 	addr := fmt.Sprintf("%s:%s", config.Envs.ImapHost, config.Envs.ImapPort)
-	return &realEmailService{imapAddr: addr}
+	return &realEmailService{
+		imapAddr:       addr,
+		storageService: storageService,
+	}
 }
 
-func (r *realEmailService) SendEmail(from *repository.MailAccount, params EmailSendParams) error {
+func (s *realEmailService) SendEmail(from *repository.MailAccount, params EmailSendParams) error {
 	message := mail.NewMsg()
 	if err := message.From(from.Email); err != nil {
 		return fmt.Errorf("failed to add FROM address %s: %w", from.Email, err)
@@ -107,8 +112,8 @@ func (r *realEmailService) SendEmail(from *repository.MailAccount, params EmailS
 	return nil
 }
 
-func (r *realEmailService) ListFolders(account *repository.MailAccount) ([]Folder, error) {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) ListFolders(account *repository.MailAccount) ([]Folder, error) {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +138,8 @@ func (r *realEmailService) ListFolders(account *repository.MailAccount) ([]Folde
 	return folders, nil
 }
 
-func (r *realEmailService) CreateFolder(account *repository.MailAccount, name string) error {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) CreateFolder(account *repository.MailAccount, name string) error {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return err
 	}
@@ -147,8 +152,8 @@ func (r *realEmailService) CreateFolder(account *repository.MailAccount, name st
 	return client.Create(name, nil).Wait()
 }
 
-func (r *realEmailService) DeleteFolder(account *repository.MailAccount, name string) error {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) DeleteFolder(account *repository.MailAccount, name string) error {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return err
 	}
@@ -163,8 +168,8 @@ func (r *realEmailService) DeleteFolder(account *repository.MailAccount, name st
 	return client.Delete(name).Wait()
 }
 
-func (r *realEmailService) RenameFolder(account *repository.MailAccount, name, newName string) error {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) RenameFolder(account *repository.MailAccount, name, newName string) error {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return err
 	}
@@ -177,12 +182,12 @@ func (r *realEmailService) RenameFolder(account *repository.MailAccount, name, n
 	return client.Rename(name, newName, nil).Wait()
 }
 
-func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, folder string, offset, limit uint32) ([]*EmailHead, error) {
+func (s *realEmailService) GetFolderEmails(account *repository.MailAccount, folder string, offset, limit uint32) ([]*EmailHead, error) {
 	if limit > config.MaxLimit {
 		limit = config.MaxLimit
 	}
 
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -225,8 +230,8 @@ func (r *realEmailService) GetFolderEmails(account *repository.MailAccount, fold
 	return emails, nil
 }
 
-func (r *realEmailService) GetEmail(account *repository.MailAccount, folder string, id uint32) (Email, error) {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) GetEmail(account *repository.MailAccount, folder string, id uint32) (Email, error) {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return Email{}, err
 	}
@@ -266,8 +271,8 @@ func (r *realEmailService) GetEmail(account *repository.MailAccount, folder stri
 	}, nil
 }
 
-func (r *realEmailService) DeleteEmail(account *repository.MailAccount, folder string, id uint32) error {
-	client, err := imapclient.DialTLS(r.imapAddr, nil)
+func (s *realEmailService) DeleteEmail(account *repository.MailAccount, folder string, id uint32) error {
+	client, err := imapclient.DialTLS(s.imapAddr, nil)
 	if err != nil {
 		return err
 	}
